@@ -1,9 +1,11 @@
 import sys
 
 class User(object):
-    def __init__(self, db):
+    def __init__(self, db, login=None, password=None):
         self.db = db
         self.user_id, self.login, self.email, self.authorization, self.password, self.name = None, None, None, None, None, None  # unknown user
+        if login and password:
+            self.get_user(login, password)
 
     def get_user(self, login, password):
         """
@@ -19,9 +21,6 @@ class User(object):
                 user_row = curs.fetchall()
                 if len(user_row) == 1:
                     self.user_id, self.login, self.email, self.authorization, self.password, self.name = user_row[0]
-            except:
-                e = sys.exc_info()
-                print("Error({0}): {1}".format(e.pgcode, e.pgerror))
             finally:
                 curs.close()
 
