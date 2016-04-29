@@ -1,4 +1,4 @@
-class User():
+class User(object):
     def __init__(self, db):
         self.db = db
         self.user_id, self.login, self.email, self.authorization, self.password, self.name = None, None, None, None, None, None  # unknown user
