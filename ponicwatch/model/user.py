@@ -1,4 +1,10 @@
-import sys
+"""
+    Model for the table tb_user.
+    Users authorized to connect to the database.
+
+    Convention: the controller itself must have the user_id = 1 and its login is 'ctrl'  --> secure access to add later
+    'login' and 'password' must be unique as they are used to query the table.
+"""
 
 class User(object):
     def __init__(self, db, login=None, password=None):
@@ -10,7 +16,6 @@ class User(object):
     def get_user(self, login, password):
         """
         Fetch one record in tb_user matching the given parameters
-        Convention: the controller itself must have the user_id = 1 and its login is 'ctrl'  --> secure access to add later
         :param name: tb_user.name
         :param password: tb_user.password --> to do: provide password encryption
         """

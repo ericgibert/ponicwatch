@@ -6,6 +6,7 @@ import unittest
 from pw_db import Ponicwatch_db
 from user import User
 from ponic_system import Ponic_System
+from switch import Switch
 
 class Db_connection(unittest.TestCase):
     def test_connection(self):
@@ -46,6 +47,19 @@ class P_Systems(unittest.TestCase):
         psys = Ponic_System(pw_db, 'Does Not Exist')
         self.assertEqual(psys.name, None)
         print("'Does Not Exist' was not found...", psys.name)
+
+class Switchs(unittest.TestCase):
+    def test_get_switch(self):
+        """get by id first the use the name for testing get by name"""
+        pw_db = Ponicwatch_db("sqlite3", **{"database": "../ponicwatch.db"})
+        switch1 = Switch(pw_db, id=1)
+        self.assertEqual(switch1.switch_id, 1)
+        print("[{}] has the id: {}".format(switch1.name, switch1.switch_id))
+        name = switch1.name
+        switch1 = Switch(pw_db, name=name)
+        self.assertEqual(switch1.switch_id, 1)
+
+
 
 if __name__ == "__main__":
     # test for the database on Sqlite3

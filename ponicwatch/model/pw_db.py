@@ -2,7 +2,7 @@
 """
     Created by Eric Gibert on 29 Apr 2016
 
-    model.py: the database model which can be used on both locally Sqlite3 and MySQL (or equivalent like MAriaDB) in the Cloud.
+    pw_db.py: the database connection parameters which can be used on both locally Sqlite3 and MySQL (or equivalent like MariaDB) in the Cloud.
 """
 import sqlite3
 
