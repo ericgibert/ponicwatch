@@ -7,6 +7,8 @@ from pw_db import Ponicwatch_db
 from user import User
 from ponic_system import Ponic_System
 from switch import Switch
+from sensor import Sensor
+
 
 class Db_connection(unittest.TestCase):
     def test_connection(self):
@@ -48,6 +50,7 @@ class P_Systems(unittest.TestCase):
         self.assertEqual(psys.name, None)
         print("'Does Not Exist' was not found...", psys.name)
 
+
 class Switchs(unittest.TestCase):
     def test_get_switch(self):
         """get by id first the use the name for testing get by name"""
@@ -60,6 +63,16 @@ class Switchs(unittest.TestCase):
         self.assertEqual(switch1.switch_id, 1)
 
 
+class Sensors(unittest.TestCase):
+    def test_get_sensor(self):
+        """get by id first the use the name for testing get by name"""
+        pw_db = Ponicwatch_db("sqlite3", **{"database": "../ponicwatch.db"})
+        sensor1 = Sensor(pw_db, id=1)
+        self.assertEqual(sensor1.sensor_id, 1)
+        print("[{}] has the id: {}".format(sensor1.name, sensor1.sensor_id))
+        name = sensor1.name
+        sensor1 = Sensor(pw_db, name=name)
+        self.assertEqual(sensor1.sensor_id, 1)
 
 if __name__ == "__main__":
     # test for the database on Sqlite3

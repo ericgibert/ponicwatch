@@ -6,7 +6,7 @@
     They belong to one Controller that controls their state.
     A switch is either set manually ON/OFF while in AUTO mode,the controler will tabulate the current time on the 'timer' string.
 
-    - 'switch_id' and 'name' identify uniquely a switch withon a Controller database.
+    - 'switch_id' and 'name' identify uniquely a switch within a Controller database.
     - 'mode': indicates if the switch should be 'ON' or 'OFF' or 'AUTO'
         * at starting time, a switch of mode 'ON' will be set on, 'OFF' will be turn off (default)
         * in 'AUTO' mode, the state of the switch is define by the current time tabulated in the 'timer' sting --> 0 = OFF, 1 = OFF
