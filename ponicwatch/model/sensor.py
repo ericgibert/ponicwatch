@@ -1,6 +1,7 @@
 #!/bin/python3
 """
     Model for the table tb_sensor.
+    Created by Eric Gibert on 29 Apr 2016
 
     Sensors are objects linked to a hardware pin (on/off digital input) or an analog input to capture a sensor's state.
     They belong to one Controller.

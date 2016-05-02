@@ -1,6 +1,7 @@
 #!/bin/python3
 """
   Test the integrity of the database models
+  Created by Eric Gibert on 29 Apr 2016
 """
 import unittest
 from pw_db import Ponicwatch_db

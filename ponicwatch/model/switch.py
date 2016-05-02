@@ -1,6 +1,7 @@
 #!/bin/python3
 """
     Model for the table tb_switch.
+    Created by Eric Gibert on 29 Apr 2016
 
     Swicthes are objects linked to a hardware pin (with or without a relay) to control an pieceof equipement (pump, light,...).
     They belong to one Controller that controls their state.

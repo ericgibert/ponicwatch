@@ -1,6 +1,8 @@
 #!/bin/python
 """
   Model for the table tb_system
+  Created by Eric Gibert on 29 Apr 2016
+
   A system represents an hydroponic/aquaponic/aeroponic system.
 
   Note: 'Atmosphere' can be a system to link sensor like temperature, humidity, etc
