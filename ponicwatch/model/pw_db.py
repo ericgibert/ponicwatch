@@ -10,10 +10,16 @@ class Ponicwatch_db(object):
     """
     Common 'interface' to be used to access the database layer without specific DBMS
     """
-    def __init__(self, dbms, **server_params):
-        self.server_params = server_params
+    def __init__(self, dbms):
+        """Either sqlite3 or mySQL connection"""
         self.dbms = dbms
-        self.connect = sqlite3.connect if dbms == "sqlite3" else None
+        if dbms == "sqlite3":
+            self.server_params = {"database": "../ponicwatch.db", "detect_types": sqlite3.PARSE_DECLTYPES} # to allow datetime converion for timestamps
+            self.connect = sqlite3.connect
+        elif dbms == "mysql":
+            pass
+        else:
+            raise ValueError
 
         # refer to: http://www.philvarner.com/test/ng-python3-db-api/
         # server_params = {'database': 'mydb',

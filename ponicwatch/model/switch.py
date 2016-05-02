@@ -16,18 +16,33 @@
     - 'timer_interval': duration in  minutes of one timer unit, usually 15 minutes.
 """
 
-class Switch(object):
+class Switch(dict):
     """
 
     """
-    OFF = 0    # either the switch mode or the timer off
-    ON = 1     # either the switch mode or the timer on
-    AUTO = 2   # switch mode to automatic i.e. relies on current time & 'timer' to know the current value
+    MODE = {
+        0: "OFF",    # either the switch mode or the timer off
+        1: "ON",     # either the switch mode or the timer on
+        2: "AUTO",   # switch mode to automatic i.e. relies on current time & 'timer' to know the current value
+    }
 
-    def __init__(self, db, name=None, id=None):
+    _tb_switch = (
+        "switch_id", # INTEGER NOT NULL,
+        "name", #  TEXT NOT NULL,
+        "mode", #  INTEGER NOT NULL DEFAULT (0),
+        "hardware", #  TEXT NOT NULL,
+        "timer", #  TEXT NOT NULL,
+        "value", #  INTEGER NOT NULL DEFAULT (0),
+        "timer_interval", #  INTEGER NOT NULL DEFAULT (15),
+        "updated_on", #  TIMESTAMP,
+        "synchro_on", #  TIMESTAMP
+    )
+
+    def __init__(self, db, name=None, id=None,*args,**kwargs):
+        dict.__init__(self, *args, **kwargs)
         self.db = db
-        (self.switch_id, self.name, self.mode, self.hardware,
-         self.timer, self.value, self.timer_interval) = None, None, None, None, None, None, None
+        for col in Switch._tb_switch:
+            self[col] = None
         if name:
             self.get_switch(name=name)
         elif id:
@@ -50,10 +65,10 @@ class Switch(object):
                     raise ValueError
                 switch_row = curs.fetchall()
                 if len(switch_row) == 1:
-                    (self.switch_id, self.name, self.mode, self.hardware,
-                     self.timer, self.value, self.timer_interval) = switch_row[0]
+                    for idx, col in enumerate(Switch._tb_switch):
+                        self[col] = switch_row[0][idx]
             finally:
                 curs.close()
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.mode)
+        return "{} ({})".format(self["name"], Switch.MODE[self["mode"]])

@@ -6,20 +6,31 @@
   Note: 'Atmosphere' can be a system to link sensor like temperature, humidity, etc
 """
 
-class Ponic_System(object):
+class Ponic_System(dict):
     """
       name: to identify the system easily withion an area
       location: where is the system installed
       sys_type: NFT, aeroponic, Ebb and Flow, etc
       nb_plants:  *important* number of plants is necessary to track the timing of plantations --> to do list
     """
-    def __init__(self, db, name=None):
+
+    _tb_system = (
+        "system_id", # INTEGER NOT NULL,
+        "name", # TEXT NOT NULL,
+        "location", # TEXT,
+        "nb_plants", # INTEGER NOT NULL DEFAULT (0),
+        "sys_type", # TEXT
+    )
+
+    def __init__(self, db, name=None, *args,**kwargs):
+        dict.__init__(self, *args, **kwargs)
         self.db = db
-        self.system_id, self.name, self.location, self.nb_plants, self.sys_type = None, None, None, None, None
+        for col in Ponic_System._tb_system:
+            self[col] = None
         if name:
             self.get_system(name)
 
-    def get_system(self, name):
+    def get_system(self, name=None, id=None):
         """
         Fetch one record in tb_system matching the given parameters
         :param name: tb_system.name
@@ -27,12 +38,18 @@ class Ponic_System(object):
         with self.db.get_connection() as conn:
             curs = conn.cursor()
             try:
-                curs.execute("SELECT * from tb_system where name=?", (name, ))
+                if name and type(name) is str:
+                    curs.execute("SELECT * from tb_system where name=?", (name, ))
+                elif id and type(id) is int:
+                    curs.execute("SELECT * from tb_system where system_id=?", (id,))
+                else:
+                    raise ValueError
                 sys_row = curs.fetchall()
                 if len(sys_row) == 1:
-                    self.system_id, self.name, self.location, self.nb_plants, self.sys_type = sys_row[0]
+                    for idx, col in enumerate(Ponic_System._tb_system):
+                        self[col] = sys_row[0][idx]
             finally:
                 curs.close()
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.location)
+        return "{} ({})".format(self["name"], self["location"])

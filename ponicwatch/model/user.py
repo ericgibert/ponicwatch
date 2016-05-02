@@ -6,10 +6,22 @@
     'login' and 'password' must be unique as they are used to query the table.
 """
 
-class User(object):
-    def __init__(self, db, login=None, password=None):
+class User(dict):
+
+    _tb_user = (
+        "user_id", # INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "login", # TEXT NOT NULL,
+        "email", # TEXT NOT NULL,
+        "authorization", # INTEGER NOT NULL DEFAULT (0),
+        "password", # TEXT,
+        "name", # TEXT
+    )
+
+    def __init__(self, db, login=None, password=None, *args,**kwargs):
+        dict.__init__(self, *args,**kwargs)
         self.db = db
-        self.user_id, self.login, self.email, self.authorization, self.password, self.name = None, None, None, None, None, None  # unknown user
+        for col in User._tb_user:
+            self[col] = None
         if login and password:
             self.get_user(login, password)
 
@@ -25,9 +37,10 @@ class User(object):
                 curs.execute("SELECT * from tb_user where login=? and password=?", (login, password))
                 user_row = curs.fetchall()
                 if len(user_row) == 1:
-                    self.user_id, self.login, self.email, self.authorization, self.password, self.name = user_row[0]
+                    for idx, col in enumerate(User._tb_user):
+                        self[col] = user_row[0][idx]
             finally:
                 curs.close()
 
     def __str__(self):
-        return "{}".format(self.name)
+        return "{}".format(self["name"])
