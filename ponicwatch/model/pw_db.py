@@ -1,4 +1,4 @@
-#!/bin/python
+#!/bin/python3
 """
     Created by Eric Gibert on 29 Apr 2016
 

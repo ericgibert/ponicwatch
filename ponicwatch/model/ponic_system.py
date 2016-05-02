@@ -24,13 +24,15 @@ class Ponic_System(dict):
         "sys_type", # TEXT
     )
 
-    def __init__(self, db, name=None, *args,**kwargs):
+    def __init__(self, db, name=None, id=None, *args,**kwargs):
         dict.__init__(self, *args, **kwargs)
         self.db = db
         for col in Ponic_System._tb_system:
             self[col] = None
         if name:
-            self.get_system(name)
+            self.get_system(name=name)
+        elif id:
+            self.get_system(id=id)
 
     def get_system(self, name=None, id=None):
         """

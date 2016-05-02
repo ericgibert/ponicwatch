@@ -3,7 +3,7 @@
     Model for the table tb_switch.
     Created by Eric Gibert on 29 Apr 2016
 
-    Swicthes are objects linked to a hardware pin (with or without a relay) to control an pieceof equipement (pump, light,...).
+    Swicthes are objects linked to a hardware pin (with or without a relay) to control an piece of equipement (pump, light,...).
     They belong to one Controller that controls their state.
     A switch is either set manually ON/OFF while in AUTO mode,the controler will tabulate the current time on the 'timer' string.
 
