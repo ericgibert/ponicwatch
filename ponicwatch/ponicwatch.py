@@ -10,15 +10,20 @@ from model.pw_db import Ponicwatch_db
 from model.pw_log import Ponicwatch_log
 from model.user import User
 
+DEBUG = True  # activate theDebug mode or not
+
 class Controller(object):
 
     def __init__(self, db):
         self.db = db
-        self.user = User(db, "ctrl", "passwd")
-        print(self.user)
+        # finding the Controller User entry
+        self.user = User(self.db, "ctrl", "passwd")
+        # opening the LOG
+        self.log = Ponicwatch_log(self.db, debug=DEBUG)
+        self.log["controller_name"] = self.user["name"]
 
     def run(self):
-        print("running")
+        self.log.add_info("Controller is running")
 
 
 def exist_file(x):
@@ -31,7 +36,7 @@ def exist_file(x):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--sqlite", dest="dbfilename", required=False, type=exist_file,
+    parser.add_argument("-s", "--sqlite", dest="dbfilename",  type=exist_file, # required=False,
                         help="Path of a Sqlite3 database.")
     # parser.add_argument('config_file', nargs='?', default='')
     args, unk = parser.parse_known_args()

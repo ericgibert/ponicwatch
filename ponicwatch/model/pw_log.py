@@ -59,12 +59,13 @@ class Ponicwatch_log(dict):
         "created_on", # TIMESTAMP NOT NULL
     )
 
-    def __init__(self, db, id=None,*args,**kwargs):
+    def __init__(self, db, id=None, debug=False, *args,**kwargs):
         """Model to access the _tb_log table
         - db: the database containinng the log table
         - id: optional: fetch on log entry"""
         dict.__init__(self, *args, **kwargs)
         self.db = db
+        self.debug = debug
         for col in Ponicwatch_log._tb_log:
             self[col] = None
         if id:
@@ -102,7 +103,7 @@ class Ponicwatch_log(dict):
         :param system_name: optional
         :param param:
             - message: a dictionary for { 'error_code', 'float_value', 'text_value' }
-            - switch/sensor: object itself to get its values
+            - switch/sensor: object itself to get its values as a JSON string
         :return: log_id if INSERT is successful or None
         """
         new_id = -1
@@ -166,8 +167,17 @@ class Ponicwatch_log(dict):
                 new_id = curs.lastrowid
             finally:
                 curs.close()
+        if new_id>=0:
+            self.get_log(new_id)
+        if self.debug:
+            print(str(self))
         return new_id
 
+    def add_info(self, msg, err_code=0, fval=0.0):
+        """Helper function for the controller to log an INFO message"""
+        if "controller_name" in self:
+            self.add_log(self["controller_name"], "INFO", "controller",
+                         {'error_code': err_code, 'float_value': fval, 'text_value': msg})
 
     def __str__(self):
-        return "[{}] {})".format(self["controller_name"], self["text_value"])
+        return "[{}] {}".format(self["controller_name"], self["text_value"])
