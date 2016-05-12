@@ -29,8 +29,8 @@
 """
 from datetime import datetime, timezone
 import json
-from switch import Switch
-from sensor import Sensor
+from .switch import Switch
+from .sensor import Sensor
 
 class Ponicwatch_log(dict):
     """
@@ -60,6 +60,9 @@ class Ponicwatch_log(dict):
     )
 
     def __init__(self, db, id=None,*args,**kwargs):
+        """Model to access the _tb_log table
+        - db: the database containinng the log table
+        - id: optional: fetch on log entry"""
         dict.__init__(self, *args, **kwargs)
         self.db = db
         for col in Ponicwatch_log._tb_log:

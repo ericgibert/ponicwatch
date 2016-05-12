@@ -10,11 +10,12 @@ class Ponicwatch_db(object):
     """
     Common 'interface' to be used to access the database layer without specific DBMS
     """
-    def __init__(self, dbms):
+    def __init__(self, dbms, params=[]):
         """Either sqlite3 or mySQL connection"""
         self.dbms = dbms
         if dbms == "sqlite3":
-            self.server_params = {"database": "../ponicwatch.db", "detect_types": sqlite3.PARSE_DECLTYPES} # to allow datetime converion for timestamps
+            # params[0]: full path to the Sqlite3 database
+            self.server_params = {"database": params[0], "detect_types": sqlite3.PARSE_DECLTYPES} # to allow datetime converion for timestamps
             self.connect = sqlite3.connect
         elif dbms == "mysql":
             pass
