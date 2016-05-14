@@ -175,9 +175,16 @@ class Ponicwatch_log(dict):
 
     def add_info(self, msg, err_code=0, fval=0.0):
         """Helper function for the controller to log an INFO message"""
-        if "controller_name" in self:
-            self.add_log(self["controller_name"], "INFO", "controller",
-                         {'error_code': err_code, 'float_value': fval, 'text_value': msg})
+        self.add_log(self["controller_name"], "INFO", "controller",
+                     {'error_code': err_code, 'float_value': fval, 'text_value': msg})
+    def add_warning(self, msg, err_code=0, fval=0.0):
+        """Helper function for the controller to log a WARNING message"""
+        self.add_log(self["controller_name"], "WARNING", "controller",
+                     {'error_code': err_code, 'float_value': fval, 'text_value': msg})
+    def add_error(self, msg, err_code=0, fval=0.0):
+        """Helper function for the controller to log an ERROR message"""
+        self.add_log(self["controller_name"], "ERROR", "controller",
+                     {'error_code': err_code, 'float_value': fval, 'text_value': msg})
 
     def __str__(self):
         return "[{}] {}".format(self["controller_name"], self["text_value"])

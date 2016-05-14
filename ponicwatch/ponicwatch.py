@@ -18,12 +18,13 @@ class Controller(object):
         self.db = db
         # finding the Controller User entry
         self.user = User(self.db, "ctrl", "passwd")
+        self.name = self.user["name"]
         # opening the LOG
         self.log = Ponicwatch_log(self.db, debug=DEBUG)
-        self.log["controller_name"] = self.user["name"]
+        self.log["controller_name"] = self.name
 
     def run(self):
-        self.log.add_info("Controller is running")
+        self.log.add_info("Controller is now running")
 
 
 def exist_file(x):
