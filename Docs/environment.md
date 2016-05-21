@@ -25,3 +25,6 @@ GUI: dnf install sqliteman
 
 
 
+For electronic:
+- smbus
+- gpiozero
