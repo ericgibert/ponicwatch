@@ -26,5 +26,5 @@ GUI: dnf install sqliteman
 
 
 For electronic:
-- smbus
+- smbus  / alternative wiringpi2: http://raspi.tv/2013/using-the-mcp23017-port-expander-with-wiringpi2-to-give-you-16-new-gpio-ports-part-3#top
 - gpiozero
