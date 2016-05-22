@@ -39,3 +39,4 @@ class Sensor_DHT(Sensor):
         :return: temperature or humidity
         """
         return self.hw.temperature if self.mode == 'T' else self.hw.humidity
+

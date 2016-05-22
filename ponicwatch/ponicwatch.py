@@ -40,14 +40,14 @@ class Controller(object):
                 sensor_dht = Sensor_DHT(hw_dht, sensor)
                 hw_id = hw_components[0] + '.' + hw_components[1]
                 if hw_id in self.sensors:
-                    h, l = self.sensors[hw_id]
+                    (h, l) = self.sensors[hw_id]
                     l.append(sensor_dht)
                 else:
                     self.sensors[hw_id] = ( hw_dht,[ sensor_dht ])  # the hardware object and a list of sensors
             else:
                 print("ERROR: unknown hardware in sensor table:", hw_components[0])
                 print(sensor)
-        print(self.sensors)
+        # print(self.sensors)
 
 
     def run(self):

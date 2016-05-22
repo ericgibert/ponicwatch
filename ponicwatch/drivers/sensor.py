@@ -28,3 +28,6 @@ class Sensor(object):
     def read(self):
         """Read the sensor"""
         raise NotImplementedError
+
+    def __str__(self):
+        return "Sensor {}".format(self.name)
