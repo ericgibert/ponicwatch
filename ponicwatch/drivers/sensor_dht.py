@@ -14,7 +14,7 @@ class Sensor_DHT(Sensor):
         :param sensor_def: object retrieved from the database to create this sensor instance
         """
         print(sensor_db_rec["name"])
-        super().__init__(sensor_db_rec["name"])
+        Sensor.__init__(self, sensor_db_rec["name"])
         self. hw = hw_dht
         # expected string for hardware: [DHT11|DHT22|AM2302].<pin>.[T: temperature|H:humidity]
         # example:  AM2302.4.T  : reads the temperature on an AM2302 connected on pin GPIO 4
@@ -22,21 +22,7 @@ class Sensor_DHT(Sensor):
         assert(len(hdware) == 3)
         self.IC, self.pin, self.mode = hdware[0], int(hdware[1]), hdware[2]
 
-    @property
-    def calculated_value(self):
-        """
-        Accordingly to the Sensor mode (T or H)
-        Note: read_value and calculated_value are the same
-        :return: temperature or humidity
-        """
-        return self.hw.temperature if self.mode == 'T' else self.hw.humidity
-
-    @property
-    def read_value(self):
-        """
-        Accordingly to the Sensor mode (T or H)
-        Note: read_value and calculated_value are the same
-        :return: temperature or humidity
-        """
-        return self.hw.temperature if self.mode == 'T' else self.hw.humidity
+    def calculate_value(self):
+        """Assign temperature or humidity read on IC to values"""
+        self.calculated_value = self.read_value = self.hw.temperature if self.mode == 'T' else self.hw.humidity
 

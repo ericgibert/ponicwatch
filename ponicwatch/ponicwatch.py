@@ -47,7 +47,7 @@ class Controller(object):
             else:
                 print("ERROR: unknown hardware in sensor table:", hw_components[0])
                 print(sensor)
-        # print(self.sensors)
+        print(self.sensors)
 
 
     def run(self):
@@ -59,12 +59,11 @@ class Controller(object):
             print("read HW", hw.temperature, hw.humidity)
 
             for sensor in sensor_list:
+                sensor.calculated_value()
                 print(sensor.name, sensor.calculated_value)
 
         # while self.running:
         #     now = datetime.now()  # should we take local time or UTC?
-
-
 
 
 
