@@ -29,6 +29,7 @@ class Sensor(dict):
         "name", # TEXT NOT NULL,
         "mode", # INTEGER NOT NULL DEFAULT (0),
         "hardware", # TEXT NOT NULL,
+        "timer", # TEXT,
         "read_value", # FLOAT NOT NULL DEFAULT (0.0),
         "calculated_value", # REAL NOT NULL DEFAULT (0.0)
         "timestamp_value", #             TIMESTAMP,
@@ -70,3 +71,11 @@ class Sensor(dict):
 
     def __str__(self):
         return "{} ({})".format(self["name"], Sensor.MODE[self["mode"]])
+
+    @classmethod
+    def list_sensors(cls, db):
+        with db.get_connection() as conn:
+            curs = conn.cursor()
+            curs.execute("select * from tb_sensor")
+            sensors = curs.fetchall()
+        return sensors
