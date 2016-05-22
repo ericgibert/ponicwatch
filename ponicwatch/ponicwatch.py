@@ -34,9 +34,9 @@ class Controller(object):
         for sensor in db_sensor.list_sensors(self.db):
             # split hardware in components
             hw_components = sensor["hardware"].split('.')
-            if hw_components[0] in ["DHT11", "DHT22", "AM3202"]:
+            if hw_components[0] in ["DHT11", "DHT22", "AM2302"]:
                 assert(len(hw_components) == 3)
-                hw_dht = Hardware_DHT(hw_components[0][2:], int(hw_components[1]))  # model and pin number
+                hw_dht = Hardware_DHT(hw_components[0], int(hw_components[1]))  # model and pin number
                 sensor_dht = Sensor_DHT(hw_dht, sensor)
                 hw_id = hw_components[0] + '.' + hw_components[1]
                 if hw_id in self.sensors:
