@@ -19,7 +19,7 @@ class Hardware_DHT(object):
         :param model: DHT11|DHT22|AM2302
         :param pin: the data pin of the IC
         """
-        self.model, self.pin = int(model[2:]), int(pin)
+        self.model, self.pin = (11 if model=='DHT11' else 22), int(pin)
         self.temperature = 0.0
         self.humidity = 0.0
 
