@@ -52,6 +52,7 @@ class Controller(object):
 
         for hw in self.sensors:
             hw.read()
+            print("read HW", hw.temperature, hw.humidity)
 
             for sensor in self.sensors[hw]:
                 print(sensor.name, sensor.calculated_value)

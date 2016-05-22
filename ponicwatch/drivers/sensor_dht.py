@@ -21,9 +21,8 @@ class Sensor_DHT(Sensor):
         # expected string for hardware: [DHT11|DHT22|AM2302].<pin>.[T: temperature|H:humidity]
         # example:  AM2302.4.T  : reads the temperature on an AM2302 connected on pin GPIO 4
         hdware = sensor_def["hardware"].split('.')
-        assert(len(hdware), 3)
+        assert(len(hdware) == 3)
         self.IC, self.pin, self.mode = hdware[0], int(hdware[1]), hdware[2]
-
 
     @property
     def calculated_value(self):
