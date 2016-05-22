@@ -13,7 +13,7 @@ class Sensor_DHT(Sensor):
         """
         :param sensor_def: object retrieved from the database to create this sensor instance
         """
-        print(sensor_db_rec["name"])
+        # print(sensor_db_rec["name"])
         Sensor.__init__(self, sensor_db_rec["name"])
         self. hw = hw_dht
         # expected string for hardware: [DHT11|DHT22|AM2302].<pin>.[T: temperature|H:humidity]
@@ -21,8 +21,9 @@ class Sensor_DHT(Sensor):
         hdware = sensor_db_rec["hardware"].split('.')
         assert(len(hdware) == 3)
         self.IC, self.pin, self.mode = hdware[0], int(hdware[1]), hdware[2]
+        # print(self.mode)
 
     def calculate_value(self):
         """Assign temperature or humidity read on IC to values"""
-        self.calculated_value = self.read_value = self.hw.temperature if self.mode == 'T' else self.hw.humidity * 100
+        self.calculated_value = self.read_value = (self.hw.temperature if self.mode == 'T' else self.hw.humidity)
 
