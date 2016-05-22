@@ -24,5 +24,5 @@ class Sensor_DHT(Sensor):
 
     def calculate_value(self):
         """Assign temperature or humidity read on IC to values"""
-        self.calculated_value = self.read_value = self.hw.temperature if self.mode == 'T' else self.hw.humidity
+        self.calculated_value = self.read_value = self.hw.temperature if self.mode == 'T' else self.hw.humidity * 100
 
