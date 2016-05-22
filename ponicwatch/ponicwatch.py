@@ -34,19 +34,22 @@ class Controller(object):
         for sensor in db_sensor.list_sensors(self.db):
             # split hardware in components
             hw_components = sensor["hardware"].split('.')
-            if hw_components[0] in ["DHT11", "DHT22", "AM2302"]:
-                assert(len(hw_components) == 3)
-                hw_dht = Hardware_DHT(hw_components[0], hw_components[1])  # model and pin number
-                sensor_dht = Sensor_DHT(hw_dht, sensor)
-                hw_id = hw_components[0] + '.' + hw_components[1]
-                if hw_id in self.sensors:
-                    (h, l) = self.sensors[hw_id]
-                    l.append(sensor_dht)
-                else:
+            hw_id = hw_components[0] + '.' + hw_components[1]
+
+            if hw_id in self.sensors: # hardware has been already defined --> just add the new sensor to the list
+                (_h, _l) = self.sensors[hw_id]
+                if hw_components[0] in ["DHT11", "DHT22", "AM2302"]:
+                    sensor_dht = Sensor_DHT(_h, sensor)
+                    _l.append(sensor_dht)
+            else: # a new hardware needs to be created then that sensor starts its list
+                if hw_components[0] in ["DHT11", "DHT22", "AM2302"]:
+                    assert(len(hw_components) == 3)
+                    hw_dht = Hardware_DHT(hw_components[0], hw_components[1])  # model and pin number
+                    sensor_dht = Sensor_DHT(hw_dht, sensor)
                     self.sensors[hw_id] = ( hw_dht,[ sensor_dht ])  # the hardware object and a list of sensors
-            else:
-                print("ERROR: unknown hardware in sensor table:", hw_components[0])
-                print(sensor)
+                else:
+                    print("ERROR: unknown hardware in sensor table:", hw_components[0])
+                    print(sensor)
         print(self.sensors)
 
 
