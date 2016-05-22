@@ -37,15 +37,13 @@ class Sensor(dict):
         "synchro_on",  #    TIMESTAMP
     )
 
-    def __init__(self, db, name=None, id=None, *args,**kwargs):
-        dict.__init__(self, *args,**kwargs)
+    def __init__(self, db, name=None, id=None):
+        # dict.__init__(self, *args,**kwargs)
         self.db = db
         for col in Sensor._tb_sensor:
             self[col] = None
-        if name:
-            self.get_sensor(name=name)
-        elif id:
-            self.get_sensor(id=id)
+        if name or id:
+            self.get_sensor(name=name, id=id)
 
     def get_sensor(self, name=None, id=None):
         """
@@ -61,6 +59,7 @@ class Sensor(dict):
                 elif id and type(id) is int:
                     curs.execute("SELECT * from tb_sensor where sensor_id=?", (id,))
                 else:
+                    print("No name nor id porvided:", name, id)
                     raise ValueError
                 sensor_row = curs.fetchall()
                 if len(sensor_row) == 1:
@@ -74,8 +73,10 @@ class Sensor(dict):
 
     @classmethod
     def list_sensors(cls, db):
+        sensors = []
         with db.get_connection() as conn:
             curs = conn.cursor()
-            curs.execute("select * from tb_sensor")
-            sensors = curs.fetchall()
+            curs.execute("select sensor_id from tb_sensor")
+            for id in curs.fetchall():
+                sensors.append(Sensor(db, id=id[0]))
         return sensors

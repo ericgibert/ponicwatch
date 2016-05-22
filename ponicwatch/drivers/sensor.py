@@ -12,10 +12,14 @@
 
 class Sensor(object):
     """Interface for all sensors"""
+    read_value = 0.0
+    calculated_value = 0.0
+    name = ""
     def __init__(self, name):
-        self.read_value = 0.0 # last reading
-        self.calculated_value = 0.0  # last calculated value from reading value
-        self.name = name
+        # self.read_value = 0.0 # last reading
+        # self.calculated_value = 0.0  # last calculated value from reading value
+        # self.name = name
+        pass
 
     def calculate_value(self):
         """Surclass to implement an alogrithm to convert a read value into a calculated one - more meaningfull for human"""

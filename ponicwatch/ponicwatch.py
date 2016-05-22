@@ -10,7 +10,7 @@ from datetime import datetime
 from model.pw_db import Ponicwatch_db
 from model.pw_log import Ponicwatch_log
 from model.user import User
-from model.sensor import Sensor
+from model.sensor import Sensor as db_sensor
 
 # specific hardware
 from drivers.hardware_dht import Hardware_DHT
@@ -31,18 +31,22 @@ class Controller(object):
 
         # create the sensors and their supporting hardware
         self.sensors = {}  # key: hardware chip, values: sensors object containing the values
-        for sensor in Sensor.list_sensors(self.db):
+        for sensor in db_sensor.list_sensors(self.db):
             # split hardware in components
-            hw_components = sensor[Sensor._tb_sensor.index("hardware")].split('.')
+            hw_components = sensor["hardware"].split('.')
             if hw_components[0] in ["DHT11", "DHT22", "AM3202"]:
                 assert(len(hw_components) == 3)
                 hw_dht = Hardware_DHT(hw_components[0], int(hw_components[1]))  # model and pin number
                 sensor_dht = Sensor_DHT(hw_dht, sensor)
                 hw_id = hw_components[0] + '.' + hw_components[1]
                 if hw_id in self.sensors:
-                    self.sensors[hw_id].append(sensor_dht)
+                    h, l = self.sensors[hw_id]
+                    l.append(sensor_dht)
                 else:
-                    self.sensors[hw_id] = [ sensor_dht ]
+                    self.sensors[hw_id] = ( hw_dht,[ sensor_dht ])  # the hardware object and a list of sensors
+            else:
+                print("ERROR: unknown hardware in sensor table:", hw_components[0])
+                print(sensor)
         print(self.sensors)
 
 
@@ -50,11 +54,11 @@ class Controller(object):
         self.log.add_info("Controller is now running")
         self.running = True
 
-        for hw in self.sensors:
+        for hw, sensor_list in self.sensors.values():
             hw.read()
             print("read HW", hw.temperature, hw.humidity)
 
-            for sensor in self.sensors[hw]:
+            for sensor in sensor_list:
                 print(sensor.name, sensor.calculated_value)
 
         # while self.running:

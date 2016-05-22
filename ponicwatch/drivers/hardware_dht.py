@@ -5,7 +5,10 @@
 """
 # refer to https://learn.adafruit.com/dht-humidity-sensing-on-raspberry-pi-with-gdocs-logging/software-install-updated
 # source at: git clone https://github.com/adafruit/Adafruit_Python_DHT.git
-import Adafruit_DHT
+try:
+    import Adafruit_DHT
+except ImportError:
+    pass
 
 class Hardware_DHT(object):
     """

@@ -4,23 +4,21 @@
     This IC can read ambiant temperature and humidity
 """
 from drivers.sensor import Sensor
-# refer to https://learn.adafruit.com/dht-humidity-sensing-on-raspberry-pi-with-gdocs-logging/software-install-updated
-# source at: git clone https://github.com/adafruit/Adafruit_Python_DHT.git
-import Adafruit_DHT
 
 class Sensor_DHT(Sensor):
     """
         Only expects a GPI pin for dialog
     """
-    def __init__(self, hw_dht, sensor_def):
+    def __init__(self, hw_dht, sensor_db_rec):
         """
         :param sensor_def: object retrieved from the database to create this sensor instance
         """
-        Sensor.__init__(sensor_def["name"])
+        print(sensor_db_rec["name"])
+        super().__init__(sensor_db_rec["name"])
         self. hw = hw_dht
         # expected string for hardware: [DHT11|DHT22|AM2302].<pin>.[T: temperature|H:humidity]
         # example:  AM2302.4.T  : reads the temperature on an AM2302 connected on pin GPIO 4
-        hdware = sensor_def["hardware"].split('.')
+        hdware = sensor_db_rec["hardware"].split('.')
         assert(len(hdware) == 3)
         self.IC, self.pin, self.mode = hdware[0], int(hdware[1]), hdware[2]
 
