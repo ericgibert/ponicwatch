@@ -3,7 +3,7 @@
     Create a sensor based on the IC DHT11, DHT22 or AM3202
     This IC can read ambiant temperature and humidity
 """
-from sensor import Sensor
+from drivers.sensor import Sensor
 # refer to https://learn.adafruit.com/dht-humidity-sensing-on-raspberry-pi-with-gdocs-logging/software-install-updated
 # source at: git clone https://github.com/adafruit/Adafruit_Python_DHT.git
 import Adafruit_DHT
