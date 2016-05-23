@@ -60,6 +60,7 @@ class Controller(object):
             if new_sensor:
                 new_sensor.cron = croniter(sensor["timer"], now)
                 new_sensor.next_read = new_sensor.cron.get_next(datetime).strftime("%Y-%m-%d %H:%M")
+                print(new_sensor.name, "next read at:", new_sensor.next_read)
         # print(self.sensors)
 
 
@@ -83,6 +84,7 @@ class Controller(object):
                         sensor.db_rec["calculated_value"] = sensor.calculated_value
                         self.log.add_log(self.name, system_name="Horizon 1", param=sensor.db_rec)
                         sensor.next_read = sensor.cron.get_next(datetime).strftime("%Y-%m-%d %H:%M")
+                        print(sensor.name, "next read at:", sensor.next_read)
 
             while now == datetime.now().strftime("%Y-%m-%d %H:%M"):
                 sleep(10)
