@@ -16,6 +16,7 @@ class Sensor_DHT(Sensor):
         # print(sensor_db_rec["name"])
         Sensor.__init__(self, sensor_db_rec["name"])
         self. hw = hw_dht
+        self.db_rec = sensor_db_rec
         # expected string for hardware: [DHT11|DHT22|AM2302].<pin>.[T: temperature|H:humidity]
         # example:  AM2302.4.T  : reads the temperature on an AM2302 connected on pin GPIO 4
         hdware = sensor_db_rec["hardware"].split('.')
@@ -26,4 +27,6 @@ class Sensor_DHT(Sensor):
     def calculate_value(self):
         """Assign temperature or humidity read on IC to values"""
         self.calculated_value = self.read_value = (self.hw.temperature if self.mode == 'T' else self.hw.humidity)
+        self.db_rec.update_values(self.read_value , self.calculated_value)
+        # print(".calculate_value():", self.calculated_value , self.read_value)
 

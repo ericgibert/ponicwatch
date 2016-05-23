@@ -13,7 +13,7 @@
     - 'calculated_value': conversion of the 'read_value' to reflect the expected metric
     Note: if the peripheric already provides a converted value then 'read_value' = 'calculated_value'
 """
-
+from datetime import datetime, timezone
 class Sensor(dict):
     """
 
@@ -67,6 +67,19 @@ class Sensor(dict):
                         self[col] = sensor_row[0][idx]
             finally:
                 curs.close()
+
+    def update_values(self, read_value, calculated_value):
+        self["read_value"] = read_value
+        self["calculated_value"] = calculated_value
+        with self.db.get_connection() as conn:
+            curs = conn.cursor()
+            try:
+                curs.execute("update tb_sensor set read_value=?, calculated_value=?, updated_on=? where sensor_id=?",
+                             (read_value, calculated_value, datetime.now(timezone.utc), self["sensor_id"]))
+
+            finally:
+                curs.close()
+
 
     def __str__(self):
         return "{} ({})".format(self["name"], Sensor.MODE[self["mode"]])

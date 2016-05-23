@@ -8,7 +8,12 @@
 try:
     import Adafruit_DHT
 except ImportError:
-    pass
+    from random import randint
+    class Adafruit_DHT():
+        @staticmethod
+        def read_retry(model, pin):
+            print("DHT simulation")
+            return (randint(50, 80), randint(25, 35))
 
 class Hardware_DHT(object):
     """
