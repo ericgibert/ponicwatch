@@ -4,7 +4,7 @@ Environment and Setups
 Python 3
 --------
 
-On the development: Python 3.4.2
+On the development: Python 3.4.2 --> now 3.5.1
 
 mkvirtualenv -p python3 ponicwatch
 
