@@ -6,7 +6,7 @@
 """
 import os
 import sqlite3
-from create_sqlite3_tables import create_tables
+from model.create_sqlite3_tables import create_tables
 
 class Ponicwatch_db(object):
     """
@@ -14,6 +14,7 @@ class Ponicwatch_db(object):
     """
     def __init__(self, dbms, params=[]):
         """Either sqlite3 or mySQL connection"""
+        assert(dbms in ["sqlite3", "mysql"])
         self.dbms = dbms
         if dbms == "sqlite3":
             # params[0]: full path to the Sqlite3 database
