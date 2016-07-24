@@ -57,14 +57,14 @@ class Controller(object):
             else: # a new hardware needs to be created then that sensor starts its list
                 if hw_components[0] in ["DHT11", "DHT22", "AM2302"]:
                     assert(len(hw_components) == 3)
-                    hw_dht = Hardware_DHT(hw_components[0], hw_components[1])  # model and pin number foe the deriver
+                    hw_dht = Hardware_DHT(hw_components[0], hw_components[1])  # model and pin number for the driver
                     new_sensor = Sensor_DHT(hw_dht, sensor)
                     self.sensors[hw_id] = ( hw_dht,[ new_sensor ])  # store the hardware object and a singleton sensor
                 else:
                     print("ERROR: unknown hardware in sensor table:", hw_components[0])
                     print(sensor)
 
-            # when do we need to read the sensor?
+            # When do we need to read the sensor?
             # ┌───────────── min (0 - 59)
             # │ ┌────────────── hour (0 - 23)
             # │ │ ┌─────────────── day of month (1 - 31)
@@ -75,9 +75,10 @@ class Controller(object):
             # │ │ │ │ │
             # * * * * *
             if new_sensor:
+                new_sensor.set_controller(self)
                 min, hrs, dom, mon, dow = sensor["timer"].split()  # like "*/5 * * * *" --> every 5 minutes
                 self.scheduler.add_job(new_sensor.read, 'cron', second=min, hour=hrs, day=dom, month=mon, day_of_week=dow)
-        print(self.sensors)
+        # print(self.sensors)
 
 
     def run(self):

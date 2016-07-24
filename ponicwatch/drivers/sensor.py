@@ -25,5 +25,10 @@ class Sensor(object):
         """Read the sensor"""
         raise NotImplementedError
 
+    def set_controller(self, ctrl):
+        """refer to the controller and its logger"""
+        self.ctrl = ctrl
+        self.logger = ctrl.log
+
     def __str__(self):
         return "Sensor {}".format(self.name)

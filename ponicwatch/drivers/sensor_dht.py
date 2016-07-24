@@ -32,3 +32,5 @@ class Sensor_DHT(Sensor):
 
     def read(self):
         self.hw.read()
+        self.calculate_value()
+        self.logger.add_log(self.ctrl.name, system_name="Horizon 1", param=self.db_rec)
