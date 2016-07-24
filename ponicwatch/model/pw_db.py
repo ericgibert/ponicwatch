@@ -4,7 +4,9 @@
 
     pw_db.py: the database connection parameters which can be used on both locally Sqlite3 and MySQL (or equivalent like MariaDB) in the Cloud.
 """
+import os
 import sqlite3
+from create_sqlite3_tables import create_tables
 
 class Ponicwatch_db(object):
     """
@@ -15,6 +17,9 @@ class Ponicwatch_db(object):
         self.dbms = dbms
         if dbms == "sqlite3":
             # params[0]: full path to the Sqlite3 database
+            if not os.path.isfile(params[0]):
+                create_tables(params[0])
+
             self.server_params = {"database": params[0], "detect_types": sqlite3.PARSE_DECLTYPES} # to allow datetime converion for timestamps
             self.connect = sqlite3.connect
         elif dbms == "mysql":

@@ -105,7 +105,7 @@ def exist_file(x):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--sqlite", dest="dbfilename",  type=exist_file, # required=False,
+    parser.add_argument("-s", "--sqlite", dest="dbfilename",  # type=exist_file, # required=False,
                         help="Path of a Sqlite3 database.")
     # parser.add_argument('config_file', nargs='?', default='')
     args, unk = parser.parse_known_args()
