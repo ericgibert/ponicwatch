@@ -65,6 +65,9 @@ class Sensor(dict):
                 if len(sensor_row) == 1:
                     for idx, col in enumerate(Sensor._tb_sensor):
                         self[col] = sensor_row[0][idx]
+                    self.hw_components = self["hardware"].split('.')  # example:"AM2302.4.T" --> ['AM2302', '4', 'T']
+                    self.IC, self.pins = self.hw_components[0], self.hw_components[1]
+                    self.hw_id = self.IC + '.' + self.pins #  like "AM2302.4"  pin 4 on chip AM2302
             finally:
                 curs.close()
 

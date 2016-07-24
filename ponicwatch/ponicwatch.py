@@ -6,9 +6,7 @@
 """
 import argparse
 import os.path
-# from croniter import croniter
 from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime
 from time import sleep
 from model.pw_db import Ponicwatch_db
 from model.pw_log import Ponicwatch_log
@@ -41,28 +39,24 @@ class Controller(object):
 
         # create the sensors and their supporting hardware as a dictionary
         #   - key: hardware chip
-        #   - value: (hardware driver, list of sensors object containing associated to the harware)
+        #   - value: tuple (hardware driver, list of sensors object containing associated to the harware)
         self.sensors = {}
-        now = datetime.now()
-        for sensor in db_sensor.list_sensors(self.db):
-            # split the 'hardware' text field in its components
-            hw_components = sensor["hardware"].split('.')
-            hw_id = hw_components[0] + '.' + hw_components[1]
+        for sensor_rec in db_sensor.list_sensors(self.db):
             new_sensor = None
-            if hw_id in self.sensors: # if the hardware has been already defined --> just add the new sensor to its list
-                (_h, _l) = self.sensors[hw_id]
-                if hw_components[0] in ["DHT11", "DHT22", "AM2302"]:
-                    new_sensor = Sensor_DHT(_h, sensor)
+            if sensor_rec.hw_id in self.sensors: # if the hardware has been already defined --> just add the new sensor to its list
+                (_h, _l) = self.sensors[sensor_rec.hw_id]
+                if sensor_rec.IC in ["DHT11", "DHT22", "AM2302"]:
+                    new_sensor = Sensor_DHT(_h, sensor_rec)
                     _l.append(new_sensor)
             else: # a new hardware needs to be created then that sensor starts its list
-                if hw_components[0] in ["DHT11", "DHT22", "AM2302"]:
-                    assert(len(hw_components) == 3)
-                    hw_dht = Hardware_DHT(hw_components[0], hw_components[1])  # model and pin number for the driver
-                    new_sensor = Sensor_DHT(hw_dht, sensor)
-                    self.sensors[hw_id] = ( hw_dht,[ new_sensor ])  # store the hardware object and a singleton sensor
+                if sensor_rec.IC  in ["DHT11", "DHT22", "AM2302"]:
+                    assert(len(sensor_rec.hw_components) == 3)
+                    hw_dht = Hardware_DHT(sensor_rec.IC, sensor_rec.pins)  # model and pin number for the driver
+                    new_sensor = Sensor_DHT(hw_dht, sensor_rec)
+                    self.sensors[sensor_rec.hw_id] = ( hw_dht,[ new_sensor ])  # store the hardware object and a singleton sensor
                 else:
-                    print("ERROR: unknown hardware in sensor table:", hw_components[0])
-                    print(sensor)
+                    print("ERROR: unknown hardware in sensor table:", sensor_rec.hw_id)
+                    print(sensor_rec)
 
             # When do we need to read the sensor?
             # ┌───────────── min (0 - 59)
@@ -76,7 +70,7 @@ class Controller(object):
             # * * * * *
             if new_sensor:
                 new_sensor.set_controller(self)
-                min, hrs, dom, mon, dow = sensor["timer"].split()  # like "*/5 * * * *" --> every 5 minutes
+                min, hrs, dom, mon, dow = sensor_rec["timer"].split()  # like "*/5 * * * *" --> every 5 minutes
                 self.scheduler.add_job(new_sensor.read, 'cron', second=min, hour=hrs, day=dom, month=mon, day_of_week=dow)
         # print(self.sensors)
 
