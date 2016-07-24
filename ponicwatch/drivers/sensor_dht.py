@@ -30,3 +30,5 @@ class Sensor_DHT(Sensor):
         self.db_rec.update_values(self.read_value , self.calculated_value)
         # print(".calculate_value():", self.calculated_value , self.read_value)
 
+    def read(self):
+        self.hw.read()
