@@ -9,6 +9,11 @@
     - 'sensor_id' and 'name' identify uniquely a sensor within a Controller database.
     - 'mode': analog or digital
     - 'hardware': identification of the hardware undelying the sensor. Usually a pin number within an IC.
+        * RPI3.4: GPIO 4 of the RPI3 --> declare it as 'Analog Input' to read 0/1 for on/off
+        * AM2302.4.T and AM2302.4.H --> IC to read both temperature and humidity, hence the need to add extra 3rd param
+        * MCP3208.4 --> reads the voltage on the chip's Channel 4
+        * MCP23017/MCP23S17.4 --> anolog input on channel 4 of the I/O Expander
+        * DS18B20.4 --> read temperture given by the DS18B20 probe on pin 4
     - 'read_value': last reading, always as float even for digital input. Float between 0.0 and 1.0 to be converted.
     - 'calculated_value': conversion of the 'read_value' to reflect the expected metric
     Note: if the peripheric already provides a converted value then 'read_value' = 'calculated_value'
