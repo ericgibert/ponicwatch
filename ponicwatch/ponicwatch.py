@@ -23,6 +23,10 @@ class Controller(object):
     """The Controller in a MVC model"""
 
     def __init__(self, db):
+        """- Create the controller, its Viewer and connect to database (Model)
+           - Select all the hardware (sensors/switches) for the systems under its control
+           - Launch the scheduler
+        """
         # keep a link to the database i.e. M in MVC
         self.db = db
         # finding the Controller User entry --> currently 'hard coded' as 'ctrl'/'passwd' --> to improve later
@@ -36,6 +40,8 @@ class Controller(object):
         # Create the background scheduler that will execute the actions
         self.scheduler = BackgroundScheduler()
 
+        # select all the systems to monitor
+        self.systems = []
 
         # create the sensors and their supporting hardware as a dictionary
         #   - key: hardware chip
