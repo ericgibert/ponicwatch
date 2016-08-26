@@ -17,7 +17,7 @@ from model.sensor import Sensor as db_sensor
 from drivers.hardware_dht import Hardware_DHT
 from drivers.sensor_dht import Sensor_DHT
 
-DEBUG = True  # activate theDebug mode or not
+DEBUG = True  # activate the Debug mode or not
 
 class Controller(object):
     """The Controller in a MVC model"""
@@ -31,13 +31,13 @@ class Controller(object):
         self.db = db
         # finding the Controller User entry --> currently 'hard coded' as 'ctrl'/'passwd' --> to improve later
         self.user = User(self.db, "ctrl", "passwd")
-        self.name = self.user["name"]  # this name is used to identfy the log messages posted by this controller
+        self.name = self.user["name"]  # this name is used to identify the log messages posted by this controller
 
         # opening the LOGger with the debug level for this application run
         self.log = Ponicwatch_log(self.db, debug=DEBUG)
         self.log["controller_name"] = self.name  # set as default for controller's log entries
 
-        # Create the background scheduler that will execute the actions
+        # Create the background scheduler that will execute the actions (using the APScheduler library)
         self.scheduler = BackgroundScheduler()
 
         # select all the systems to monitor
