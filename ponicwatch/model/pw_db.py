@@ -7,7 +7,6 @@
 import os
 import atexit
 import sqlite3
-from create_sqlite3_tables import create_tables
 
 class Ponicwatch_Db():
     """
@@ -15,14 +14,15 @@ class Ponicwatch_Db():
     """
     def __init__(self, dbms, server_params):
         """Connects to a database and create a cursor. Ensure the db closing at exit"""
-        assert (dbms in ["sqlite3", "mysql"])
+        assert(dbms in ["sqlite3", "mysql"])
+        assert(type(server_params) is dict)
         if dbms == "sqlite3" and "database" in server_params:
             # server_params = {'database': 'path to the file', "detect_types": sqlite3.PARSE_DECLTYPES}
             # to allow datetime conversion for timestamps
             if "detect_types" not in server_params:
                 server_params["detect_types"] = sqlite3.PARSE_DECLTYPES
             if not os.path.isfile(server_params["database"]):
-                create_tables(server_params["database"])
+                self.create_tables(server_params["database"])
             self.connect = sqlite3.connect
         else:
             # refer to: http://www.philvarner.com/test/ng-python3-db-api/
@@ -49,5 +49,71 @@ class Ponicwatch_Db():
         pass
 
 
+    def create_tables(self, db_path):
+        """Loop thru all table and execute them"""
+        with sqlite3.connect(db_path) as conn:
+            curs = conn.cursor()
+            for table, sql in sql_statements.items():
+                curs.execute(sql)
+            conn.commit()
 
 
+sql_statements = {
+
+'tb_log': """CREATE TABLE tb_log (
+"log_id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "controller_name" TEXT NOT NULL,
+    "log_type" TEXT NOT NULL,
+    "object_id" INTEGER NOT NULL,
+    "system_name" TEXT NOT NULL,
+    "float_value" REAL NOT NULL DEFAULT (0.0),
+    "text_value" TEXT,
+    "created_on" TIMESTAMP NOT NULL
+)""",
+
+'tb_sensor': """CREATE TABLE tb_sensor (
+    "sensor_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "mode" INTEGER NOT NULL DEFAULT (0),
+    "hardware" TEXT NOT NULL
+  , "timer" TEXT,
+    "read_value" FLOAT NOT NULL DEFAULT (0.0),
+    "calculated_value" REAL NOT NULL DEFAULT (0.0),
+    "timestamp_value" TIMESTAMP,
+    "updated_on" TIMESTAMP,
+    "synchro_on" TIMESTAMP
+)""",
+'tb_switch':    """CREATE TABLE tb_switch (
+    "switch_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "mode" INTEGER NOT NULL DEFAULT (0),
+    "hardware" TEXT NOT NULL,
+    "timer" TEXT NOT NULL,
+    "value" INTEGER NOT NULL DEFAULT (0),
+    "timer_interval" INTEGER NOT NULL DEFAULT (15),
+    "updated_on" TIMESTAMP,
+    "synchro_on" TIMESTAMP
+)
+""",
+'tb_system':    """CREATE TABLE tb_system (
+    "system_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "location" TEXT,
+    "nb_plants" INTEGER NOT NULL DEFAULT (0),
+    "sys_type" TEXT
+)""",
+
+'tb_user':    """CREATE TABLE tb_user (
+    "user_id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "login" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "authorization" INTEGER NOT NULL DEFAULT (0),
+    "password" TEXT,
+    "name" TEXT
+)
+"""
+}
+
+
+if __name__ == "__main__":
+    db = Ponicwatch_Db("sqlite3", {'database': "test_to_delete.db"})

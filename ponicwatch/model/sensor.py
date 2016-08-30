@@ -7,7 +7,7 @@
     They belong to one Controller.
 """
 from datetime import datetime, timezone
-from model import Ponicwatch_Table
+from model.model import Ponicwatch_Table
 
 class Sensor(Ponicwatch_Table):
     """

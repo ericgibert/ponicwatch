@@ -10,7 +10,7 @@
 
     'login' and 'password' must be unique as they are used to query the table.
 """
-from model import Ponicwatch_Table
+from model.model import Ponicwatch_Table
 
 class User(Ponicwatch_Table):
     """Access the tb_user table to fetch a user's information"""
@@ -52,3 +52,7 @@ if __name__ == "__main__":
 
     user.get_user("eric", "test")
     print("Name: {}   Email: {}".format(user, user["email"]))
+
+    new_user = User(pw_db)
+    new_user.insert(login="new", email="new@new", authorization=0, password="qwertyuiop", name="New User")
+    print(new_user)

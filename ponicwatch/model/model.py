@@ -64,6 +64,23 @@ class Ponicwatch_Table(dict):
             self.db.conn.commit()
             self.get_record(id=self["id"]) # reload data after the update
 
+    def insert(self, **kwargs):
+        """INSERT a record in the table"""
+        col_value = []  # list of tuple col=value to insert
+        for col, val in kwargs.items():
+            if col in self.columns:
+                col_value.append((col, val))
+            else:
+                raise KeyError(col, ": column cannot be inserted. Is it properly spelled?")
+        if col_value:
+            sql = "INSERT INTO {0} ({1}) VALUES ({2})".format(self.table,
+                                                                ",".join([c for c, v in col_value]),
+                                                                ",".join(["?" for _ in col_value]))
+            self.db.curs.execute(sql, [v for c, v in col_value])
+            self.db.conn.commit()
+            self.get_record(id=self.db.curs.lastrowid)  # reload data after the update
+
+
     @classmethod
     def all_keys(cls, db, META):
         """return all the keys found in the table"""

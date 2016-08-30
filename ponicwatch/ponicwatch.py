@@ -8,10 +8,10 @@ import argparse
 import os.path
 from apscheduler.schedulers.background import BackgroundScheduler
 from time import sleep
-from model.pw_db import Ponicwatch_db
-from model.pw_log import Ponicwatch_log
+from model.pw_db import Ponicwatch_Db
+from model.pw_log import Ponicwatch_Log
 from model.user import User
-from model.sensor import Sensor as db_sensor
+from model.sensor import Sensor
 
 # specific hardware
 from drivers.hardware_dht import Hardware_DHT
@@ -30,11 +30,12 @@ class Controller(object):
         # keep a link to the database i.e. M in MVC
         self.db = db
         # finding the Controller User entry --> currently 'hard coded' as 'ctrl'/'passwd' --> to improve later
-        self.user = User(self.db, "ctrl", "passwd")
+        self.user = User(self.db)
+        self.user.get_user("ctrl", "passwd")
         self.name = self.user["name"]  # this name is used to identify the log messages posted by this controller
 
         # opening the LOGger with the debug level for this application run
-        self.log = Ponicwatch_log(self.db, debug=DEBUG)
+        self.log = Ponicwatch_Log(self.db, debug=DEBUG)
         self.log["controller_name"] = self.name  # set as default for controller's log entries
 
         # Create the background scheduler that will execute the actions (using the APScheduler library)
@@ -95,32 +96,6 @@ class Controller(object):
             self.scheduler.shutdown()
 
 
-        # while self.running:
-        #     now = datetime.now().strftime("%Y-%m-%d %H:%M")  # should we take local time or UTC?
-        #     for hw, sensor_list in self.sensors.values():
-        #         # is there a sensor that needs to be read now?
-        #         for sensor in sensor_list:
-        #             if sensor.next_read == now:
-        #                 hw.read()
-        #                 break
-        #         # ok, let's get the sensors reading from their hardware and set them for their next reading time
-        #         for sensor in sensor_list:
-        #             if sensor.next_read == now:
-        #                 sensor.calculate_value()
-        #                 print(sensor.name, sensor.calculated_value)
-        #                 sensor.db_rec["calculated_value"] = sensor.calculated_value
-        #                 self.log.add_log(self.name, system_name="Horizon 1", param=sensor.db_rec)
-        #                 sensor.next_read = sensor.cron.get_next(datetime).strftime("%Y-%m-%d %H:%M")
-        #                 if DEBUG:
-        #                     print(sensor.name, "next read at:", sensor.next_read)
-        #
-        #     while now == datetime.now().strftime("%Y-%m-%d %H:%M"):
-        #         sleep(10)
-
-
-
-
-
 def exist_file(x):
     """
     'Type' for argparse - checks that file exists but does not open.
@@ -136,7 +111,7 @@ if __name__ == "__main__":
     args, unk = parser.parse_known_args()
 
     if args.dbfilename:
-        db = Ponicwatch_db("sqlite3", [args.dbfilename])
+        db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename})
         ctrl = Controller(db)
         ctrl.run()
     else:
