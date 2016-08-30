@@ -24,6 +24,72 @@ class Ponicwatch_Model():
     def get_connection(self):
         return self.connect(**self.server_params)
 
+class Ponicwatch_table(dict):
+    """associates a dictionary to a table record"""
+    def __init__(self, db, table, columns, *args,**kwargs):
+        """Select one record from the given table"""
+        dict.__init__(self, *args, **kwargs)
+        self.db = db
+        self.table = table
+        self.columns = columns
+        # look for the record id as a column's name ending with '_id'
+        for col in columns:
+            if col.endswith("_id"):
+                self.id = col
+                break
+        # is a record already requested? i.e one of the possible key argument is given as parameter
+        if "name" in kwargs:
+            self.get_record(name=kwargs["name"])
+        elif "id" in kwargs:
+            self.get_record(id=kwargs["id"])
+        elif self.id in kwargs:
+            self.get_record(id=kwargs[self.id])
+        else:
+            for col in self.columns:
+                self[col] = None
+            self["name"] = "<no record>"
+
+    def get_record(self, id=None, name=None):
+        """get on record form the table"""
+        with self.db.get_connection() as conn:
+            curs = conn.cursor()
+            try:
+                if type(name) is str:
+                    curs.execute("SELECT * from %s where name=?" % self.table, (name,))
+                elif type(id) is int:
+                    curs.execute("SELECT * from %s where system_id=?" % self.table, (id,))
+                else:
+                    raise ValueError("Missing or incorrect argument: id or name")
+                rows = curs.fetchall()
+                if len(rows) == 1:
+                    for idx, col in enumerate(self.columns):
+                        self[col] = rows[0][idx]
+                        if col == self.id:
+                            self["id"] = rows[0][idx]
+                elif len(rows) == 0: # unknown key
+                    raise KeyError("Unkown record key on id/name: " + str(name or id))
+                else: # not a key: more than one record found ?1?
+                    raise KeyError("Too many records found ?!? Not a key on id/name: " + str(name or id))
+            finally:
+                curs.close()
+
+    def __str__(self):
+        return self["name"]
+
+    @classmethod
+    def all_keys(cls, db, table, id):
+        """return all the keys found in the table"""
+        rows = []
+        with db.get_connection() as conn:
+            curs = conn.cursor()
+            try:
+                curs.execute("SELECT %s from %s" % (id, table))
+                rows = curs.fetchall()
+            finally:
+                curs.close()
+        return [r[0] for r in rows]
+
+
 class User():
     def __init__(self, db):
         self.db = db
