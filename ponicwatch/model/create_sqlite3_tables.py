@@ -63,9 +63,8 @@ sql_statements = {
 
 def create_tables(db_path):
     """Loop thru all table and execute them"""
-    conn = sqlite3.connect(db_path)
-    curs = conn.cursor()
-    for table, sql in sql_statements.items():
-        curs.execute(sql)
-    conn.commit()
-    conn.close()
+    with sqlite3.connect(db_path) as conn:
+        curs = conn.cursor()
+        for table, sql in sql_statements.items():
+            curs.execute(sql)
+        conn.commit()

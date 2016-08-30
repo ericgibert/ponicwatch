@@ -5,39 +5,41 @@
     pw_db.py: the database connection parameters which can be used on both locally Sqlite3 and MySQL (or equivalent like MariaDB) in the Cloud.
 """
 import os
+import atexit
 import sqlite3
-from model.create_sqlite3_tables import create_tables
+from create_sqlite3_tables import create_tables
 
-class Ponicwatch_db(object):
+class Ponicwatch_Db():
     """
-    Common 'interface' to be used to access the database layer without specific DBMS
+    Common 'interface' to be used to access the database layer with a specific DBMS
     """
-    def __init__(self, dbms, params=[]):
-        """Either sqlite3 or mySQL connection"""
-        assert(dbms in ["sqlite3", "mysql"])
-        self.dbms = dbms
-        if dbms == "sqlite3":
-            # params[0]: full path to the Sqlite3 database
-            if not os.path.isfile(params[0]):
-                create_tables(params[0])
-
-            self.server_params = {"database": params[0], "detect_types": sqlite3.PARSE_DECLTYPES} # to allow datetime converion for timestamps
+    def __init__(self, dbms, server_params):
+        """Connects to a database and create a cursor. Ensure the db closing at exit"""
+        assert (dbms in ["sqlite3", "mysql"])
+        if dbms == "sqlite3" and "database" in server_params:
+            # server_params = {'database': 'path to the file', "detect_types": sqlite3.PARSE_DECLTYPES}
+            # to allow datetime conversion for timestamps
+            if "detect_types" not in server_params:
+                server_params["detect_types"] = sqlite3.PARSE_DECLTYPES
+            if not os.path.isfile(server_params["database"]):
+                create_tables(server_params["database"])
             self.connect = sqlite3.connect
-        elif dbms == "mysql":
-            pass
         else:
-            raise ValueError
+            # refer to: http://www.philvarner.com/test/ng-python3-db-api/
+            # server_params = {'database': 'mydb',
+            #          'host': 'localhost', 'port': '5432',
+            #          'user': 'postgres', 'password': 'postgres'}
+            pass
 
-        # refer to: http://www.philvarner.com/test/ng-python3-db-api/
-        # server_params = {'database': 'mydb',
-        #          'host': 'localhost', 'port': 'leave default',
-        #          'user': 'machin', 'password': 'bidule'}
+        _conn = self.connect(**server_params)
+        self.conn = _conn
+        _curs = self.conn.cursor()
+        self.curs = _curs
 
-        # refer tp: https://docs.python.org/3.4/library/sqlite3.html
-        # server_params = {'database': 'path to the file'} for Sqlite3
-
-    def get_connection(self):
-        return self.connect(**self.server_params)
+        @atexit.register
+        def close():
+            _curs.close()
+            _conn.close()
 
     def __str__(self):
         return "{} on {}".format(self.server_params["database"],self.dbms)

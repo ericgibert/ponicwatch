@@ -5,58 +5,56 @@
   The atmosphere can be assimilated to a system too in order to montor air temperature and humidity for example.
 """
 
-from model import Ponicwatch_table, Ponicwatch_Model
+from model import Ponicwatch_Table
 
-class System(Ponicwatch_table):
-
-    _tb_system = (
-        "system_id",  # INTEGER NOT NULL,
-        "name",  # TEXT NOT NULL,
-        "location",  # TEXT,
-        "nb_plants",  # INTEGER NOT NULL DEFAULT(0),
-        "sys_type"  # TEXT
-    )
+class System(Ponicwatch_Table):
+    """
+    - name: to identify the system easily withion an area
+    - location: where is the system installed
+    - sys_type: NFT, aeroponic, Ebb and Flow, etc
+    - nb_plants:  *important* number of plants is necessary to track the timing of plantations --> to do list
+    """
+    META = {"table": "tb_system",
+            "id": "system_id",
+            "columns": (
+                        "system_id",  # INTEGER NOT NULL,
+                        "name",  # TEXT NOT NULL,
+                        "location",  # TEXT,
+                        "nb_plants",  # INTEGER NOT NULL DEFAULT(0),
+                        "sys_type"  # TEXT
+                       )
+            }
 
     def __init__(self, db, *args, **kwargs):
-        Ponicwatch_table.__init__(self, db, "tb_system", System._tb_system, *args, **kwargs )
+        super().__init__(db, System.META, *args, **kwargs)
+
+    def __str__(self):
+        return "{} ({})".format(self["name"], self["location"])
 
     @classmethod
     def all_keys(cls, db):
-        return Ponicwatch_table.all_keys(db, "tb_system", "system_id")
+        return super().all_keys(db, System.META)
 
 if __name__ == "__main__":
-    pw_db = Ponicwatch_Model("sqlite3", **{"database": "ponicwatch.db"})
+    from pw_db import Ponicwatch_Db
+    pw_db = Ponicwatch_Db("sqlite3", {"database": "../ponicwatch.db"})
 
-    print(System.all_keys(pw_db))
+    systems = System.all_keys(pw_db)
+    print("All System ids:", systems)
 
-    s = System(pw_db, id=1)
-    print(s["system_id"], s)
-    s = System(pw_db, system_id=2)
-    print(s["system_id"], s)
-    s = System(pw_db, name="Horizon 1")
-    print("by 'id':", s["id"], s)
+    horizon1 = System(pw_db, name="Horizon 1")
+    print(horizon1["id"], horizon1)
 
-    try:
-        s = System(pw_db)
-        s.get_record()
-        print("No arguments:", s["system_id"], s)
-    except ValueError as err:
-        print("Expected ValueError:", err, sep="\n")
+    system_1 = System(pw_db, id=1)
+    print(system_1["id"], system_1)
 
-    try:
-        s = System(pw_db, toilet="paper")
-        print("Useless argument:", s["system_id"], s)
-    except TypeError as err:
-        print("Expected TypeError:", err, sep="\n")
+    system_2 = System(pw_db, system_id=2)
+    print(system_2["id"], system_2, "has", system_2["nb_plants"])
+    system_2.update(nb_plants=system_2["nb_plants"]+1)
+    print("After update:", system_2["nb_plants"])
 
     try:
-        s = System(pw_db, system_id="deux")
-        print("Incorrect arguments:", s["system_id"], s)
-    except ValueError as err:
-        print("Expected ValueError:", err, sep="\n")
-
-    try:
-        s = System(pw_db, system_id=999999)
-        print("Unkown record id:", s["system_id"], s)
+        system_3 = System(pw_db, system_id=99999)
+        print(system_3["id"], system_3)
     except KeyError as err:
-        print(err, sep="\n")
+        print("Negative test is OK:", err)

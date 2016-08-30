@@ -10,46 +10,45 @@
 
     'login' and 'password' must be unique as they are used to query the table.
 """
+from model import Ponicwatch_Table
 
-class User(dict):
+class User(Ponicwatch_Table):
+    """Access the tb_user table to fetch a user's information"""
+    META={"table": "tb_user",
+          "id": "user_id",
+          "columns": (
+                    "user_id",          # INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    "login",            # TEXT NOT NULL,
+                    "email",            # TEXT NOT NULL,
+                    "authorization",    # INTEGER NOT NULL DEFAULT (0),
+                    "password",         # TEXT,
+                    "name"              # TEXT
+                    )
+          }
 
-    _tb_user = (
-        "user_id", # INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        "login", # TEXT NOT NULL,
-        "email", # TEXT NOT NULL,
-        "authorization", # INTEGER NOT NULL DEFAULT (0),
-        "password", # TEXT,
-        "name", # TEXT
-    )
-
-    def __init__(self, db, login=None, password=None, *args,**kwargs):
-        dict.__init__(self, *args,**kwargs)
-        self.db = db
-        for col in User._tb_user:
-            self[col] = None
-        if login and password:
-            self.get_user(login, password)
+    def __init__(self, db, *args, **kwargs):
+        super().__init__(db, User.META, *args, **kwargs)
 
     def get_user(self, login, password):
         """
         Fetch one record in tb_user matching the given parameters
+        Convention: the controller itself must have the user_id = 1 and its login is 'ctrl'  --> secure access to add later
         :param name: tb_user.name
         :param password: tb_user.password --> to do: provide password encryption
         """
-        with self.db.get_connection() as conn:
-            curs = conn.cursor()
-            try:
-                curs.execute("SELECT * from tb_user where login=? and password=?", (login, password))
-                user_row = curs.fetchall()
-                if len(user_row) == 1:
-                    for idx, col in enumerate(User._tb_user):
-                        self[col] = user_row[0][idx]
-            finally:
-                curs.close()
+        self.db.curs.execute("SELECT user_id from tb_user where login=? and password=?", (login, password))
+        user_row = self.db.curs.fetchall()
+        if len(user_row) == 1:
+            self.get_record(id=user_row[0][0])
 
-    def __str__(self):
-        """
-        Returns the user's name.
-        Very important for the controller as its name is used to identify the log entries' origin i.e. must be unique.
-        """
-        return "{}".format(self["name"])
+if __name__ == "__main__":
+    from pw_db import Ponicwatch_Db
+    # test for the database on Sqlite3
+    pw_db = Ponicwatch_Db("sqlite3", {"database": "../ponicwatch.db"})
+    user = User(pw_db)
+    user.get_user("ctrl", "passwd")
+    print("Name: {}   user_id: {}".format(user, user["id"]))
+    assert(user["id"] == 1)
+
+    user.get_user("eric", "test")
+    print("Name: {}   Email: {}".format(user, user["email"]))
