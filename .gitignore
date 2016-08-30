@@ -65,3 +65,5 @@ target/
 Private/
 /ponicwatch/ponicwatch.db
 /drivers
+ponicwatch/ponicwatch (copy).db
+www/
