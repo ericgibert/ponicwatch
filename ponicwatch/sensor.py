@@ -45,8 +45,9 @@ class Sensor(Ponicwatch_Table):
                         )
             }
 
-    def __init__(self, db, *args, **kwargs):
-        super().__init__(db, Sensor.META, *args, **kwargs)
+    def __init__(self, controller, *args, **kwargs):
+        super().__init__(controller.db, Sensor.META, *args, **kwargs)
+        self.controller = controller
 
     def get_record(self, id=None, name=None):
         """
@@ -55,9 +56,21 @@ class Sensor(Ponicwatch_Table):
         :param id: tb_sensor.sensor_id (int)
         """
         super().get_record(id, name)
-        self.hw_components = self["hardware"].split('.')  # example:"AM2302.4.T" --> ['AM2302', '4', 'T']
-        self.IC, self.pins = self.hw_components[0], self.hw_components[1]
-        self.hw_id = self.IC + '.' + self.pins #  like "AM2302.4"  pin 4 on chip AM2302
+        hw_parts = self["hardware"].split('.')  # example:"AM2302.4.T" --> ['AM2302', '4', 'T']
+        self.IC, self.pins, self.hw_param = hw_parts[0], hw_parts[1], hw_parts[2] if len(hw_parts) == 3 else None
+        self.hardware, self.system= None, None  # will be initialized by the controller
+
+
+    def execute(self):
+        """Called by the scheduler to perform the data reading"""
+        try:
+            read_val, calc_val = self.hardware.read(self.hw_param)
+        except AttributeError:
+            print(self.hardware,self.IC, self.pins, self.hw_param)
+        if read_val: # no error else None is returned
+            self.update_values(read_val, calc_val)
+            # self.ctrl.logger()
+
 
     def update_values(self, read_value, calculated_value):
         self.update(read_value=read_value,
@@ -70,7 +83,6 @@ class Sensor(Ponicwatch_Table):
 
     def __str__(self):
         return "{} ({})".format(self["name"], Sensor.MODE[self["mode"]])
-
 
 
 if __name__ == "__main__":

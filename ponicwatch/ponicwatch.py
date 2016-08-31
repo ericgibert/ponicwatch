@@ -15,11 +15,7 @@ from pw_log import Ponicwatch_Log
 from user import User
 from sensor import Sensor
 from switch import Switch
-
-# specific hardware
-from drivers.hardware_dht import Hardware_DHT
-from drivers.hardware_DS18B20 import Hardware_DS18B20
-from drivers.sensor_dht import Sensor_DHT
+from hardware import Hardware
 
 DEBUG = True  # activate the Debug mode or not
 
@@ -34,69 +30,47 @@ class Controller(object):
         # keep a link to the database i.e. M in MVC
         self.db = db
         # finding the Controller User entry --> currently 'hard coded' as 'ctrl'/'passwd' --> to improve later
-        self.user = User(self.db)
+        self.user = User(self)
         self.user.get_user("ctrl", "passwd")
         self.name = self.user["name"]  # this name is used to identify the log messages posted by this controller
 
         # opening the LOGger with the debug level for this application run
-        self.log = Ponicwatch_Log(self.db, debug=DEBUG)
-        self.log["controller_name"] = self.name  # set as default for controller's log entries
+        self.log = Ponicwatch_Log(self, debug=DEBUG)
 
         # Create the background scheduler that will execute the actions (using the APScheduler library)
         self.scheduler = BackgroundScheduler()
 
-        # select all the systems, sensors, switches to monitor
-        self.systems = [System(self.db, id=s) for s in System.all_keys(self.db)]  # to do: link/limit the sensors/switches to the systems
-        self.sensors = [Sensor(self.db, id=s) for s in Sensor.all_keys(self.db)]
-        self.switches = [Switch(self.db, id=s) for s in Switch.all_keys(self.db)]
+        # select all the systems, sensors, switches to monitor and the hardware drivers
+        self.systems   = {}  #s:System(self.db, id=s) for s in System.all_keys(self.db)}
+        self.sensors   = {}  #s:Sensor(self.db, id=s) for s in Sensor.all_keys(self.db)}
+        self.switches  = {}  #s:Switch(self.db, id=s) for s in Switch.all_keys(self.db)}
+        self.hardwares = {}  #h:Hardware(self.db, id=h) for h in Hardware.all_keys(self.db)}
+        self.db.curs.execute("SELECT * from tb_link where system_id>0 order by system_id, sensor_id, switch_id")
+        self.links = self.db.curs.fetchall()
+        for system_id, sensor_id, switch_id, hardware_id in self.links:
+            # (1) create all necessary objects
+            # (2) and register the system and hardware to a sensor/switch
+            new_switch_or_sensor = None
+            if system_id not in self.systems:
+                self.systems[system_id] = System(self, id=system_id)
+            if hardware_id and hardware_id not in self.hardwares:
+                self.hardwares[hardware_id] = Hardware(self, id=hardware_id)
 
-        # create the sensors ans switches with their supporting hardware as a dictionary
-        #   - key: hardware chip
-        #   - value: tuple (_h: hardware driver, _l: list of sensors object containing associated to the hardware)
+            if sensor_id:
+                if sensor_id not in self.sensors:
+                    self.sensors[sensor_id] = Sensor(self, id=sensor_id)
+                    new_switch_or_sensor = self.sensors[sensor_id]
+                self.sensors[sensor_id].system = self.systems[system_id]
+                self.sensors[sensor_id].hardware = self.hardwares[hardware_id]
 
-        # 1) get all IC id
-        self.hw_IC = {}
-        for s in self.sensors + self.switches:
-            if s.IC in self.hw_IC:
-                self.hw_IC[s.IC].append(s)
-            else:
-                self.hw_IC[s.IC] = [s]
+            if switch_id:
+                if switch_id not in self.switches:
+                    self.switches[switch_id] = Switch(self, id=switch_id)
+                    new_switch_or_sensor = self.switches[switch_id]
+                self.switches[switch_id].system = self.systems[system_id]
+                self.switches[switch_id].hardware = self.hardwares[hardware_id]
 
-        # 2) build the hardware dictionary
-        self.hardware = {}
-        for hw_ic in self.hw_IC:
-            new_hw = None
-            if hw_ic in ["DHT11", "DHT22", "AM2302"]:
-                new_hw = Sensor_DHT()
-            # elif hw_ic in ["DS18B20"]:
-            #     new_hw = Hardware_DS18B20()
-            # elif hw_ic in ["MCP2809"]:
-            #     new_hw = "to be defined"
-            else:
-                self.log.add_error("Unknow hardware IC="+hw_ic, 999)
-
-        # create the sensors and their supporting hardware as a dictionary
-        #   - key: hardware chip
-        #   - value: tuple (hardware driver, list of sensors object containing associated to the harware)
-        # self.sensors = {}
-        # for sensor_rec in db_sensor.list_sensors(self.db):
-        #     new_sensor = None
-        #     if sensor_rec.hw_id in self.sensors: # if the hardware has been already defined --> just add the new sensor to its list
-        #         (_h, _l) = self.sensors[sensor_rec.hw_id]
-        #         if sensor_rec.IC in ["DHT11", "DHT22", "AM2302"]:
-        #             new_sensor = Sensor_DHT(_h, sensor_rec)
-        #             _l.append(new_sensor)
-        #     else: # a new hardware needs to be created then that sensor starts its list
-        #         if sensor_rec.IC  in ["DHT11", "DHT22", "AM2302"]:
-        #             assert(len(sensor_rec.hw_components) == 3)
-        #             hw_dht = Hardware_DHT(sensor_rec.IC, sensor_rec.pins)  # model and pin number for the driver
-        #             new_sensor = Sensor_DHT(hw_dht, sensor_rec)
-        #             self.sensors[sensor_rec.hw_id] = ( hw_dht,[ new_sensor ])  # store the hardware object and a singleton sensor
-        #         else:
-        #             print("ERROR: unknown hardware in sensor table:", sensor_rec.hw_id)
-        #             print(sensor_rec)
-
-            # When do we need to read the sensor?
+            # When do we need to read the sensor or activate a switch?
             # ┌───────────── min (0 - 59)
             # │ ┌────────────── hour (0 - 23)
             # │ │ ┌─────────────── day of month (1 - 31)
@@ -106,12 +80,9 @@ class Controller(object):
             # │ │ │ │ │
             # │ │ │ │ │
             # * * * * *
-            # if new_sensor:
-            #     new_sensor.set_controller(self)
-            #     min, hrs, dom, mon, dow = sensor_rec["timer"].split()  # like "*/5 * * * *" --> every 5 minutes
-            #     self.scheduler.add_job(new_sensor.read, 'cron', second=min, hour=hrs, day=dom, month=mon, day_of_week=dow)
-        # print(self.sensors)
-
+            if new_switch_or_sensor:
+                min, hrs, dom, mon, dow = new_switch_or_sensor["timer"].split()  # like "*/5 * * * *" --> every 5 minutes
+                self.scheduler.add_job(new_switch_or_sensor.execute, 'cron', second=min, hour=hrs, day=dom, month=mon, day_of_week=dow)
 
     def run(self):
         """Starts the APScheduler task"""
@@ -142,8 +113,11 @@ if __name__ == "__main__":
     args, unk = parser.parse_known_args()
 
     if args.dbfilename:
-        db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename})
-        ctrl = Controller(db)
-        # ctrl.run()
+        try:
+            db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename})
+            ctrl = Controller(db)
+            ctrl.run()
+        finally:
+            db.close()
     else:
         print("currently: -s dbfilename is mandatory")

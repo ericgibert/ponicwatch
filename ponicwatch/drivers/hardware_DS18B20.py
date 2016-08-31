@@ -33,7 +33,7 @@ class Hardware_DS18B20(object):
         return lines
 
 
-    def read(self):
+    def read(self, param=None):
         lines = self.read_temp_raw()
         tries = 10
         while lines[0].strip()[-3:] != 'YES' and tries > 0:
@@ -47,6 +47,7 @@ class Hardware_DS18B20(object):
                 temp_c = float(temp_string) / 1000.0
                 # temp_f = temp_c * 9.0 / 5.0 + 32.0
                 self.temperature = temp_c
+        return (self.temperature, self.temperature)
 
 
 if __name__ == "__main__":

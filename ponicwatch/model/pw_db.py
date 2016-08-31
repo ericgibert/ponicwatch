@@ -5,7 +5,7 @@
     pw_db.py: the database connection parameters which can be used on both locally Sqlite3 and MySQL (or equivalent like MariaDB) in the Cloud.
 """
 import os
-import atexit
+# import atexit
 import sqlite3
 
 class Ponicwatch_Db():
@@ -36,10 +36,14 @@ class Ponicwatch_Db():
         _curs = self.conn.cursor()
         self.curs = _curs
 
-        @atexit.register
-        def close():
-            _curs.close()
-            _conn.close()
+        # @atexit.register
+        # def _close():
+        #     _curs.close()
+        #     _conn.close()
+
+    def close(self):
+        self.curs.close()
+        self.conn.close()
 
     def __str__(self):
         return "{} on {}".format(self.server_params["database"],self.dbms)

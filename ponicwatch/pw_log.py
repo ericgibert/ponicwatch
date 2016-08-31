@@ -64,19 +64,19 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         )
             }
 
-    def __init__(self, db, debug=False, *args, **kwargs):
-        super().__init__(db, Ponicwatch_Log.META, *args, **kwargs)
+    def __init__(self, controller, debug=False, *args, **kwargs):
+        super().__init__(controller.db, Ponicwatch_Log.META, *args, **kwargs)
         self.debug = debug
+        self.controller_name = controller.name
 
     @staticmethod
     def json_exception(o):
         if isinstance(o, datetime):
             return o.isoformat()
 
-    def add_log(self, controller_name, log_type=None, system_name="", param=None):
+    def add_log(self, log_type=None, system_name="", param=None):
         """
         Add an entry in tb_log.
-        :param controller_name: mandatory
         :param log_type: optional, given for the message type (info, warning, error) else the param type will be used to find it
         :param system_name: optional
         :param param:
@@ -88,7 +88,7 @@ class Ponicwatch_Log(Ponicwatch_Table):
         # log_type is mandatory to know the message level (info/warning/error)
         # param is a dictionary
         if log_type in ["INFO", "WARNING", "ERROR"]:
-            self.insert(controller_name=controller_name,
+            self.insert(controller_name=self.controller_name,
                         log_type=Ponicwatch_Log.LOG_TYPE[log_type],
                         object_id=param["error_code"],
                         system_name=system_name,
@@ -98,7 +98,7 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         )
 
         elif isinstance(param, Switch):
-            self.insert(controller_name=controller_name,
+            self.insert(controller_name=self.controller_name,
                         log_type=Ponicwatch_Log.LOG_TYPE["SWITCH"],
                         object_id=param["switch_id"],
                         system_name=system_name,
@@ -107,7 +107,7 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         created_on=datetime.now(timezone.utc)
                         )
         elif isinstance(param, Sensor):
-            self.insert(controller_name=controller_name,
+            self.insert(controller_name=self.controller_name,
                         log_type=Ponicwatch_Log.LOG_TYPE["SENSOR"],
                         object_id=param["sensor_id"],
                         system_name=system_name,
@@ -118,16 +118,13 @@ class Ponicwatch_Log(Ponicwatch_Table):
 
     def add_info(self, msg, err_code=0, fval=0.0):
         """Helper function for the controller to log an INFO message"""
-        self.add_log(self["controller_name"], "INFO", "controller",
-                     {'error_code': err_code, 'float_value': fval, 'text_value': msg})
+        self.add_log("INFO", "controller", {'error_code': err_code, 'float_value': fval, 'text_value': msg})
     def add_warning(self, msg, err_code=0, fval=0.0):
         """Helper function for the controller to log a WARNING message"""
-        self.add_log(self["controller_name"], "WARNING", "controller",
-                     {'error_code': err_code, 'float_value': fval, 'text_value': msg})
+        self.add_log("WARNING", "controller", {'error_code': err_code, 'float_value': fval, 'text_value': msg})
     def add_error(self, msg, err_code=0, fval=0.0):
         """Helper function for the controller to log an ERROR message"""
-        self.add_log(self["controller_name"], "ERROR", "controller",
-                     {'error_code': err_code, 'float_value': fval, 'text_value': msg})
+        self.add_log("ERROR", "controller", {'error_code': err_code, 'float_value': fval, 'text_value': msg})
 
     def __str__(self):
-        return "[{}] {}".format(self["controller_name"], self["text_value"])
+        return "[{}] {}".format(self.controller_name, self["text_value"])

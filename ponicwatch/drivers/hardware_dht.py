@@ -25,14 +25,19 @@ class Hardware_DHT(object):
         :param pin: the data pin of the IC
         """
         self.model, self.pin = (11 if model=='DHT11' else 22), int(pin)
-        self.temperature = 0.0
-        self.humidity = 0.0
+        self.temperature = -100.0
+        self.humidity = -100.0
 
-    def read(self):
+    def read(self, T_or_H):
         """
         Reads the values from the IC
+        The temprature MUST be called first as it will perform the actual read
         """
-        humidity, temperature = Adafruit_DHT.read_retry(self.model, self.pin)
-        if humidity is not None and temperature is not None:
-            self.humidity, self.temperature = humidity, temperature
+        if T_or_H == "T":
+            humidity, temperature = Adafruit_DHT.read_retry(self.model, self.pin)
+            if humidity is not None and temperature is not None:
+                self.humidity, self.temperature = humidity, temperature
+            return (self.temperature, self.temperature)
+        else:
+            return (self.humidity, self.humidity)
 

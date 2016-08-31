@@ -25,8 +25,8 @@ class System(Ponicwatch_Table):
                        )
             }
 
-    def __init__(self, db, *args, **kwargs):
-        super().__init__(db, System.META, *args, **kwargs)
+    def __init__(self, controller, *args, **kwargs):
+        super().__init__(controller.db, System.META, *args, **kwargs)
 
     def __str__(self):
         return "{} ({})".format(self["name"], self["location"])

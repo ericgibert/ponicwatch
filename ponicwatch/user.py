@@ -26,8 +26,8 @@ class User(Ponicwatch_Table):
                     )
           }
 
-    def __init__(self, db, *args, **kwargs):
-        super().__init__(db, User.META, *args, **kwargs)
+    def __init__(self, controller, *args, **kwargs):
+        super().__init__(controller.db, User.META, *args, **kwargs)
 
     def get_user(self, login, password):
         """
