@@ -6,17 +6,19 @@
 """
 import argparse
 import os.path
-from apscheduler.schedulers.background import BackgroundScheduler
 from time import sleep
-from model.system import System
+from apscheduler.schedulers.background import BackgroundScheduler
+
+from system import System
 from model.pw_db import Ponicwatch_Db
-from model.pw_log import Ponicwatch_Log
-from model.user import User
-from model.sensor import Sensor
-from model.switch import Switch
+from pw_log import Ponicwatch_Log
+from user import User
+from sensor import Sensor
+from switch import Switch
 
 # specific hardware
 from drivers.hardware_dht import Hardware_DHT
+from drivers.hardware_DS18B20 import Hardware_DS18B20
 from drivers.sensor_dht import Sensor_DHT
 
 DEBUG = True  # activate the Debug mode or not
@@ -48,9 +50,9 @@ class Controller(object):
         self.sensors = [Sensor(self.db, id=s) for s in Sensor.all_keys(self.db)]
         self.switches = [Switch(self.db, id=s) for s in Switch.all_keys(self.db)]
 
-        # create the sensors and their supporting hardware as a dictionary
+        # create the sensors ans switches with their supporting hardware as a dictionary
         #   - key: hardware chip
-        #   - value: tuple (_h: hardware driver, _l: list of sensors object containing associated to the harware)
+        #   - value: tuple (_h: hardware driver, _l: list of sensors object containing associated to the hardware)
 
         # 1) get all IC id
         self.hw_IC = {}
@@ -66,27 +68,33 @@ class Controller(object):
             new_hw = None
             if hw_ic in ["DHT11", "DHT22", "AM2302"]:
                 new_hw = Sensor_DHT()
+            # elif hw_ic in ["DS18B20"]:
+            #     new_hw = Hardware_DS18B20()
+            # elif hw_ic in ["MCP2809"]:
+            #     new_hw = "to be defined"
+            else:
+                self.log.add_error("Unknow hardware IC="+hw_ic, 999)
 
         # create the sensors and their supporting hardware as a dictionary
         #   - key: hardware chip
         #   - value: tuple (hardware driver, list of sensors object containing associated to the harware)
-        self.sensors = {}
-        for sensor_rec in db_sensor.list_sensors(self.db):
-            new_sensor = None
-            if sensor_rec.hw_id in self.sensors: # if the hardware has been already defined --> just add the new sensor to its list
-                (_h, _l) = self.sensors[sensor_rec.hw_id]
-                if sensor_rec.IC in ["DHT11", "DHT22", "AM2302"]:
-                    new_sensor = Sensor_DHT(_h, sensor_rec)
-                    _l.append(new_sensor)
-            else: # a new hardware needs to be created then that sensor starts its list
-                if sensor_rec.IC  in ["DHT11", "DHT22", "AM2302"]:
-                    assert(len(sensor_rec.hw_components) == 3)
-                    hw_dht = Hardware_DHT(sensor_rec.IC, sensor_rec.pins)  # model and pin number for the driver
-                    new_sensor = Sensor_DHT(hw_dht, sensor_rec)
-                    self.sensors[sensor_rec.hw_id] = ( hw_dht,[ new_sensor ])  # store the hardware object and a singleton sensor
-                else:
-                    print("ERROR: unknown hardware in sensor table:", sensor_rec.hw_id)
-                    print(sensor_rec)
+        # self.sensors = {}
+        # for sensor_rec in db_sensor.list_sensors(self.db):
+        #     new_sensor = None
+        #     if sensor_rec.hw_id in self.sensors: # if the hardware has been already defined --> just add the new sensor to its list
+        #         (_h, _l) = self.sensors[sensor_rec.hw_id]
+        #         if sensor_rec.IC in ["DHT11", "DHT22", "AM2302"]:
+        #             new_sensor = Sensor_DHT(_h, sensor_rec)
+        #             _l.append(new_sensor)
+        #     else: # a new hardware needs to be created then that sensor starts its list
+        #         if sensor_rec.IC  in ["DHT11", "DHT22", "AM2302"]:
+        #             assert(len(sensor_rec.hw_components) == 3)
+        #             hw_dht = Hardware_DHT(sensor_rec.IC, sensor_rec.pins)  # model and pin number for the driver
+        #             new_sensor = Sensor_DHT(hw_dht, sensor_rec)
+        #             self.sensors[sensor_rec.hw_id] = ( hw_dht,[ new_sensor ])  # store the hardware object and a singleton sensor
+        #         else:
+        #             print("ERROR: unknown hardware in sensor table:", sensor_rec.hw_id)
+        #             print(sensor_rec)
 
             # When do we need to read the sensor?
             # ┌───────────── min (0 - 59)
@@ -98,10 +106,10 @@ class Controller(object):
             # │ │ │ │ │
             # │ │ │ │ │
             # * * * * *
-            if new_sensor:
-                new_sensor.set_controller(self)
-                min, hrs, dom, mon, dow = sensor_rec["timer"].split()  # like "*/5 * * * *" --> every 5 minutes
-                self.scheduler.add_job(new_sensor.read, 'cron', second=min, hour=hrs, day=dom, month=mon, day_of_week=dow)
+            # if new_sensor:
+            #     new_sensor.set_controller(self)
+            #     min, hrs, dom, mon, dow = sensor_rec["timer"].split()  # like "*/5 * * * *" --> every 5 minutes
+            #     self.scheduler.add_job(new_sensor.read, 'cron', second=min, hour=hrs, day=dom, month=mon, day_of_week=dow)
         # print(self.sensors)
 
 
@@ -136,6 +144,6 @@ if __name__ == "__main__":
     if args.dbfilename:
         db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename})
         ctrl = Controller(db)
-        ctrl.run()
+        # ctrl.run()
     else:
         print("currently: -s dbfilename is mandatory")

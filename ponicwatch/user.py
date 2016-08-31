@@ -42,9 +42,9 @@ class User(Ponicwatch_Table):
             self.get_record(id=user_row[0][0])
 
 if __name__ == "__main__":
-    from pw_db import Ponicwatch_Db
+    from model.pw_db import Ponicwatch_Db
     # test for the database on Sqlite3
-    pw_db = Ponicwatch_Db("sqlite3", {"database": "../ponicwatch.db"})
+    pw_db = Ponicwatch_Db("sqlite3", {"database": "ponicwatch.db"})
     user = User(pw_db)
     user.get_user("ctrl", "passwd")
     print("Name: {}   user_id: {}".format(user, user["id"]))
@@ -55,4 +55,4 @@ if __name__ == "__main__":
 
     new_user = User(pw_db)
     new_user.insert(login="new", email="new@new", authorization=0, password="qwertyuiop", name="New User")
-    print(new_user)
+    print(new_user["id"], new_user)

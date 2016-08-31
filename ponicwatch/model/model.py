@@ -75,7 +75,7 @@ class Ponicwatch_Table(dict):
         if col_value:
             sql = "INSERT INTO {0} ({1}) VALUES ({2})".format(self.table,
                                                                 ",".join([c for c, v in col_value]),
-                                                                ",".join(["?" for _ in col_value]))
+                                                                ",".join("?" * len(col_value)))
             self.db.curs.execute(sql, [v for c, v in col_value])
             self.db.conn.commit()
             self.get_record(id=self.db.curs.lastrowid)  # reload data after the update

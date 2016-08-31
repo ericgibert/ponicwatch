@@ -36,8 +36,8 @@ class System(Ponicwatch_Table):
         return super().all_keys(db, System.META)
 
 if __name__ == "__main__":
-    from pw_db import Ponicwatch_Db
-    pw_db = Ponicwatch_Db("sqlite3", {"database": "../ponicwatch.db"})
+    from model.pw_db import Ponicwatch_Db
+    pw_db = Ponicwatch_Db("sqlite3", {"database": "ponicwatch.db"})
 
     systems = System.all_keys(pw_db)
     print("All System ids:", systems)

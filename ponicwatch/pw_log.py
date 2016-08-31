@@ -11,11 +11,13 @@
     - WARNING: log a warning message, action might be required by an operator
     - ERROR: log an error message, an email should be trigger to raise an alarm to an operator
 """
-from datetime import datetime, timezone
 import json
-from .model import Ponicwatch_Table
-from .switch import Switch
-from .sensor import Sensor
+from datetime import datetime, timezone
+
+from model.model import Ponicwatch_Table
+from sensor import Sensor
+from switch import Switch
+
 
 class Ponicwatch_Log(Ponicwatch_Table):
     """
@@ -48,7 +50,7 @@ class Ponicwatch_Log(Ponicwatch_Table):
         "ERROR": 12,
     }
 
-    META = {"table": "b_log",
+    META = {"table": "tb_log",
             "id": "log_id",
             "columns": (
                             "log_id", # INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -87,7 +89,7 @@ class Ponicwatch_Log(Ponicwatch_Table):
         # param is a dictionary
         if log_type in ["INFO", "WARNING", "ERROR"]:
             self.insert(controller_name=controller_name,
-                        log_type=Ponicwatch_log.LOG_TYPE[log_type],
+                        log_type=Ponicwatch_Log.LOG_TYPE[log_type],
                         object_id=param["error_code"],
                         system_name=system_name,
                         float_value=param["float_value"] if "float_value" in param else -1.0,
@@ -97,20 +99,20 @@ class Ponicwatch_Log(Ponicwatch_Table):
 
         elif isinstance(param, Switch):
             self.insert(controller_name=controller_name,
-                        log_type=Ponicwatch_log.LOG_TYPE["SWITCH"],
+                        log_type=Ponicwatch_Log.LOG_TYPE["SWITCH"],
                         object_id=param["switch_id"],
                         system_name=system_name,
                         float_value=float(param["value"]),
-                        text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_log.json_exception),
+                        text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_Log.json_exception),
                         created_on=datetime.now(timezone.utc)
                         )
         elif isinstance(param, Sensor):
             self.insert(controller_name=controller_name,
-                        log_type=Ponicwatch_log.LOG_TYPE["SENSOR"],
+                        log_type=Ponicwatch_Log.LOG_TYPE["SENSOR"],
                         object_id=param["sensor_id"],
                         system_name=system_name,
                         float_value=float(param["calculated_value"]),
-                        text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_log.json_exception),
+                        text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_Log.json_exception),
                         created_on=datetime.now(timezone.utc)
                         )
 
