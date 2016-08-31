@@ -45,8 +45,24 @@ class Switch(Ponicwatch_Table):
     def __init__(self, db, *args, **kwargs):
         super().__init__(db, Switch.META, *args, **kwargs)
 
+    def get_record(self, id=None, name=None):
+        """
+        Fetch one record from tb_switch matching either of the given parameters
+        :param name: tb_switch.name (string)
+        :param id: tb_switch.switch_id (int)
+        """
+        super().get_record(id, name)
+        self.hw_components = self["hardware"].split('.')  # example:"AM2302.4.T" --> ['AM2302', '4', 'T']
+        self.IC, self.pins = self.hw_components[0], self.hw_components[1]
+        self.hw_id = self.IC + '.' + self.pins #  like "AM2302.4"  pin 4 on chip AM2302
+
+
     def update_value(self, value):
         self.update(alue=value, updated_on=datetime.now(timezone.utc))
+
+    @classmethod
+    def all_keys(cls, db):
+        return super().all_keys(db, Switch.META)
 
     def __str__(self):
         return "{} ({})".format(self["name"], Switch.MODE[self["mode"]])

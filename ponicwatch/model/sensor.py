@@ -64,12 +64,14 @@ class Sensor(Ponicwatch_Table):
                     calculated_value=calculated_value,
                     updated_on=datetime.now(timezone.utc))
 
+    @classmethod
+    def all_keys(cls, db):
+        return super().all_keys(db, Sensor.META)
+
     def __str__(self):
         return "{} ({})".format(self["name"], Sensor.MODE[self["mode"]])
 
-    @classmethod
-    def list_sensors(cls, db):
-        return super().all_keys(db, Sensor.META)
+
 
 if __name__ == "__main__":
     from pw_db import Ponicwatch_Db

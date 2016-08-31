@@ -5,7 +5,7 @@
   The atmosphere can be assimilated to a system too in order to montor air temperature and humidity for example.
 """
 
-from model import Ponicwatch_Table
+from model.model import Ponicwatch_Table
 
 class System(Ponicwatch_Table):
     """

@@ -8,10 +8,12 @@ import argparse
 import os.path
 from apscheduler.schedulers.background import BackgroundScheduler
 from time import sleep
+from model.system import System
 from model.pw_db import Ponicwatch_Db
 from model.pw_log import Ponicwatch_Log
 from model.user import User
 from model.sensor import Sensor
+from model.switch import Switch
 
 # specific hardware
 from drivers.hardware_dht import Hardware_DHT
@@ -41,8 +43,29 @@ class Controller(object):
         # Create the background scheduler that will execute the actions (using the APScheduler library)
         self.scheduler = BackgroundScheduler()
 
-        # select all the systems to monitor
-        self.systems = []
+        # select all the systems, sensors, switches to monitor
+        self.systems = [System(self.db, id=s) for s in System.all_keys(self.db)]  # to do: link/limit the sensors/switches to the systems
+        self.sensors = [Sensor(self.db, id=s) for s in Sensor.all_keys(self.db)]
+        self.switches = [Switch(self.db, id=s) for s in Switch.all_keys(self.db)]
+
+        # create the sensors and their supporting hardware as a dictionary
+        #   - key: hardware chip
+        #   - value: tuple (_h: hardware driver, _l: list of sensors object containing associated to the harware)
+
+        # 1) get all IC id
+        self.hw_IC = {}
+        for s in self.sensors + self.switches:
+            if s.IC in self.hw_IC:
+                self.hw_IC[s.IC].append(s)
+            else:
+                self.hw_IC[s.IC] = [s]
+
+        # 2) build the hardware dictionary
+        self.hardware = {}
+        for hw_ic in self.hw_IC:
+            new_hw = None
+            if hw_ic in ["DHT11", "DHT22", "AM2302"]:
+                new_hw = Sensor_DHT()
 
         # create the sensors and their supporting hardware as a dictionary
         #   - key: hardware chip
