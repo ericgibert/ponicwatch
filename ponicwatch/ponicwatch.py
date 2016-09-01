@@ -7,6 +7,7 @@
 import argparse
 import os.path
 from time import sleep
+from threading import BoundedSemaphore
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from system import System
@@ -29,24 +30,26 @@ class Controller(object):
         """
         # keep a link to the database i.e. M in MVC
         self.db = db
+        self.db.exclusive_access = BoundedSemaphore(value=1)
         # finding the Controller User entry --> currently 'hard coded' as 'ctrl'/'passwd' --> to improve later
         self.user = User(self)
         self.user.get_user("ctrl", "passwd")
         self.name = self.user["name"]  # this name is used to identify the log messages posted by this controller
 
         # opening the LOGger with the debug level for this application run
-        self.log = Ponicwatch_Log(self, debug=DEBUG)
+        self.log = Ponicwatch_Log(controller=self, debug=DEBUG)
 
         # Create the background scheduler that will execute the actions (using the APScheduler library)
         self.scheduler = BackgroundScheduler()
 
         # select all the systems, sensors, switches to monitor and the hardware drivers
-        self.systems   = {}  #s:System(self.db, id=s) for s in System.all_keys(self.db)}
-        self.sensors   = {}  #s:Sensor(self.db, id=s) for s in Sensor.all_keys(self.db)}
-        self.switches  = {}  #s:Switch(self.db, id=s) for s in Switch.all_keys(self.db)}
-        self.hardwares = {}  #h:Hardware(self.db, id=h) for h in Hardware.all_keys(self.db)}
-        self.db.curs.execute("SELECT * from tb_link where system_id>0 order by system_id, sensor_id, switch_id")
-        self.links = self.db.curs.fetchall()
+        self.systems, self.sensors, self.switches, self.hardwares = {}, {}, {}, {}
+        self.db.open()
+        try:
+            self.db.curs.execute("SELECT * from tb_link where system_id > 0 order by system_id, sensor_id, switch_id")
+            self.links = self.db.curs.fetchall()
+        finally:
+            self.db.close()
         for system_id, sensor_id, switch_id, hardware_id in self.links:
             # (1) create all necessary objects
             # (2) and register the system and hardware to a sensor/switch
@@ -56,19 +59,16 @@ class Controller(object):
             if hardware_id and hardware_id not in self.hardwares:
                 self.hardwares[hardware_id] = Hardware(self, id=hardware_id)
 
-            if sensor_id:
-                if sensor_id not in self.sensors:
-                    self.sensors[sensor_id] = Sensor(self, id=sensor_id)
-                    new_switch_or_sensor = self.sensors[sensor_id]
-                self.sensors[sensor_id].system = self.systems[system_id]
-                self.sensors[sensor_id].hardware = self.hardwares[hardware_id]
-
-            if switch_id:
-                if switch_id not in self.switches:
-                    self.switches[switch_id] = Switch(self, id=switch_id)
-                    new_switch_or_sensor = self.switches[switch_id]
-                self.switches[switch_id].system = self.systems[system_id]
-                self.switches[switch_id].hardware = self.hardwares[hardware_id]
+            if sensor_id and sensor_id not in self.sensors:
+                    new_switch_or_sensor = self.sensors[sensor_id] = Sensor(controller=self,
+                                                                            id=sensor_id,
+                                                                            system_name=self.systems[system_id]["name"],
+                                                                            hardware=self.hardwares[hardware_id])
+            if switch_id and switch_id not in self.switches:
+                    new_switch_or_sensor = self.switches[switch_id] = Switch(controller=self,
+                                                                             id=switch_id,
+                                                                             system_name=self.systems[system_id]["name"],
+                                                                             hardware=self.hardwares[hardware_id])
 
             # When do we need to read the sensor or activate a switch?
             # ┌───────────── min (0 - 59)
@@ -88,7 +88,7 @@ class Controller(object):
         """Starts the APScheduler task"""
         self.running = True
         self.scheduler.start()
-        self.log.add_info("Controller is now running")
+        self.log.add_info("Controller is now running.")
         try:
             # This is here to simulate application activity (which keeps the main thread alive).
             while self.running :
@@ -96,6 +96,7 @@ class Controller(object):
         except (KeyboardInterrupt, SystemExit):
             # Not strictly necessary if daemonic mode is enabled but should be done if possible
             self.scheduler.shutdown()
+        self.log.add_info("Controller has been stopped.")
 
 
 def exist_file(x):
@@ -113,11 +114,8 @@ if __name__ == "__main__":
     args, unk = parser.parse_known_args()
 
     if args.dbfilename:
-        try:
-            db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename})
-            ctrl = Controller(db)
-            ctrl.run()
-        finally:
-            db.close()
+        db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename})
+        ctrl = Controller(db)
+        ctrl.run()
     else:
         print("currently: -s dbfilename is mandatory")

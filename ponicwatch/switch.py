@@ -42,9 +42,11 @@ class Switch(Ponicwatch_Table):
                         )
             }
 
-    def __init__(self, controller, *args, **kwargs):
+    def __init__(self, controller, system_name, hardware, *args, **kwargs):
         super().__init__(controller.db, Switch.META, *args, **kwargs)
         self.controller = controller
+        self.hardware = hardware
+        self.system_name = system_name + "/" + self["name"]
 
     def get_record(self, id=None, name=None):
         """
@@ -57,6 +59,9 @@ class Switch(Ponicwatch_Table):
         self.IC, self.pins = self.hw_components[0], self.hw_components[1]
         self.hw_id = self.IC + '.' + self.pins #  like "AM2302.4"  pin 4 on chip AM2302
 
+    def execute(self):
+        """on timer/scheduler"""
+        pass
 
     def update_value(self, value):
         self.update(alue=value, updated_on=datetime.now(timezone.utc))

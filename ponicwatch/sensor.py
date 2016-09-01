@@ -45,9 +45,11 @@ class Sensor(Ponicwatch_Table):
                         )
             }
 
-    def __init__(self, controller, *args, **kwargs):
+    def __init__(self, controller, system_name, hardware, *args, **kwargs):
         super().__init__(controller.db, Sensor.META, *args, **kwargs)
         self.controller = controller
+        self.hardware = hardware
+        self.system_name = system_name + "/" + self["name"]
 
     def get_record(self, id=None, name=None):
         """
@@ -58,19 +60,15 @@ class Sensor(Ponicwatch_Table):
         super().get_record(id, name)
         hw_parts = self["hardware"].split('.')  # example:"AM2302.4.T" --> ['AM2302', '4', 'T']
         self.IC, self.pins, self.hw_param = hw_parts[0], hw_parts[1], hw_parts[2] if len(hw_parts) == 3 else None
-        self.hardware, self.system= None, None  # will be initialized by the controller
-
 
     def execute(self):
         """Called by the scheduler to perform the data reading"""
-        try:
-            read_val, calc_val = self.hardware.read(self.hw_param)
-        except AttributeError:
-            print(self.hardware,self.IC, self.pins, self.hw_param)
-        if read_val: # no error else None is returned
+        read_val, calc_val = self.hardware.read(self.hw_param)
+        if read_val:  # no error else None is returned
             self.update_values(read_val, calc_val)
-            # self.ctrl.logger()
-
+            self.controller.log.add_log(system_name=self.system_name, param=self)
+        else:
+            self.controller.log.add_error("Cannot read from " + str(self), self["id"])
 
     def update_values(self, read_value, calculated_value):
         self.update(read_value=read_value,

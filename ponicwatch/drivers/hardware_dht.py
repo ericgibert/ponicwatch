@@ -5,6 +5,7 @@
 """
 # refer to https://learn.adafruit.com/dht-humidity-sensing-on-raspberry-pi-with-gdocs-logging/software-install-updated
 # source at: git clone https://github.com/adafruit/Adafruit_Python_DHT.git
+from datetime import datetime
 try:
     import Adafruit_DHT
 except ImportError:
@@ -25,19 +26,19 @@ class Hardware_DHT(object):
         :param pin: the data pin of the IC
         """
         self.model, self.pin = (11 if model=='DHT11' else 22), int(pin)
-        self.temperature = -100.0
-        self.humidity = -100.0
+        self.temperature = None
+        self.humidity = None
+        self.last_read = datetime.now()
 
     def read(self, T_or_H):
         """
         Reads the values from the IC
-        The temprature MUST be called first as it will perform the actual read
+        3 seconds gap is guarantied between 2 readings
         """
-        if T_or_H == "T":
+        print("T_or_H:", T_or_H)
+        if (datetime.now() - self.last_read).seconds > 3 or self.humidity is None:
             humidity, temperature = Adafruit_DHT.read_retry(self.model, self.pin)
             if humidity is not None and temperature is not None:
                 self.humidity, self.temperature = humidity, temperature
-            return (self.temperature, self.temperature)
-        else:
-            return (self.humidity, self.humidity)
-
+                self.last_read = datetime.now()
+        return (self.temperature, self.temperature) if T_or_H == "T" else (self.humidity, self.humidity)

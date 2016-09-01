@@ -17,8 +17,6 @@ class Hardware_DS18B20(object):
         os.system('modprobe w1-therm')
         return glob(cls.base_dir + '28*')
 
-
-
     def __init__(self, device_folder):
         self.device_file = device_folder + '/w1_slave'
         self.temperature = 0.0  # only the Celcius is kept (F is ignored)
@@ -26,14 +24,13 @@ class Hardware_DS18B20(object):
     def __str__(self):
         return "Probe DS18B20 on {}".format(self.device_file)
 
-
     def read_temp_raw(self):
         with open(self.device_file, 'r') as f:
             lines = f.readlines()
         return lines
 
-
     def read(self, param=None):
+        self.temperature = None
         lines = self.read_temp_raw()
         tries = 10
         while lines[0].strip()[-3:] != 'YES' and tries > 0:

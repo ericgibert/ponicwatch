@@ -36,8 +36,12 @@ class User(Ponicwatch_Table):
         :param name: tb_user.name
         :param password: tb_user.password --> to do: provide password encryption
         """
-        self.db.curs.execute("SELECT user_id from tb_user where login=? and password=?", (login, password))
-        user_row = self.db.curs.fetchall()
+        self.db.open()
+        try:
+            self.db.curs.execute("SELECT user_id from tb_user where login=? and password=?", (login, password))
+            user_row = self.db.curs.fetchall()
+        finally:
+            self.db.close()
         if len(user_row) == 1:
             self.get_record(id=user_row[0][0])
 

@@ -30,20 +30,19 @@ class Ponicwatch_Db():
             #          'host': 'localhost', 'port': '5432',
             #          'user': 'postgres', 'password': 'postgres'}
             pass
+        self.dbms = dbms
+        self.server_params = server_params
+        self.is_open = False
 
-        _conn = self.connect(**server_params)
-        self.conn = _conn
-        _curs = self.conn.cursor()
-        self.curs = _curs
-
-        # @atexit.register
-        # def _close():
-        #     _curs.close()
-        #     _conn.close()
+    def open(self):
+        self.conn = self.connect(**self.server_params)
+        self.curs = self.conn.cursor()
+        self.is_open = True
 
     def close(self):
         self.curs.close()
         self.conn.close()
+        self.is_open = False
 
     def __str__(self):
         return "{} on {}".format(self.server_params["database"],self.dbms)
