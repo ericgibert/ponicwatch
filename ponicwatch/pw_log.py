@@ -96,7 +96,8 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         text_value=param["text_value"],
                         created_on=datetime.now(timezone.utc)
                         )
-
+            if self.debug:
+                print(log_type, param["error_code"], param["text_value"]) 
         elif isinstance(param, Switch):
             self.insert(controller_name=self.controller_name,
                         log_type=Ponicwatch_Log.LOG_TYPE["SWITCH"],
@@ -106,6 +107,8 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_Log.json_exception),
                         created_on=datetime.now(timezone.utc)
                         )
+            if self.debug:
+                print("SWITCH", param["switch_id"], param["name"], param["value"])            
         elif isinstance(param, Sensor):
             self.insert(controller_name=self.controller_name,
                         log_type=Ponicwatch_Log.LOG_TYPE["SENSOR"],
@@ -115,6 +118,8 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_Log.json_exception),
                         created_on=datetime.now(timezone.utc)
                         )
+            if self.debug:
+                print("SENSOR", param["sensor_id"], param["name"], param["calculated_value"])
 
     def add_info(self, msg, err_code=0, fval=0.0):
         """Helper function for the controller to log an INFO message"""
