@@ -105,7 +105,6 @@ class Controller(object):
             # Not strictly necessary if daemonic mode is enabled but should be done if possible
             self.scheduler.shutdown()
         self.log.add_info("Controller has been stopped.")
-        self.pig.stop()
 
 
 def exist_file(x):
