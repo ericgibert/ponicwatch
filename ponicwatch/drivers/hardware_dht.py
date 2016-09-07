@@ -9,14 +9,10 @@ from datetime import datetime
 from time import sleep
 
 try:
-    import pigpio
     from drivers.DHT22 import sensor
-##try:
-##    import Adafruit_DHT
 except ImportError:
     from random import randint
     print("Simulation for DHT22")
-#    class Adafruit_DHT():
     class sensor(*args):
         @staticmethod
         def read_retry(model, pin):
@@ -27,7 +23,7 @@ class Hardware_DHT(object):
     """
         Only expects a GPI pin for dialog
     """
-    def __init__(self, model, pin):
+    def __init__(self, pigpio, model, pin):
         """
         :param model: DHT11|DHT22|AM2302
         :param pin: the data pin of the IC
@@ -36,7 +32,7 @@ class Hardware_DHT(object):
         self.temperature = None
         self.humidity = None
         self.last_read = datetime.now()
-        self.sensor = sensor(pigpio.pi(), 4)
+        self.sensor = sensor(pigpio, 4)
       
 
     def read(self, T_or_H):

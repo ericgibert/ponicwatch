@@ -41,7 +41,7 @@ class Hardware(Ponicwatch_Table):
         super().__init__(controller.db, Hardware.META, *args, **kwargs)
         # based on the "hardware" name, associate the proper driver object
         if self["hardware"] in ["DHT11", "DHT22", "AM2302"]:
-            self._IC = Hardware_DHT(model=self["hardware"], pin=self["init"])
+            self._IC = Hardware_DHT(pigpio=controller.pig, model=self["hardware"], pin=self["init"])
         elif self["hardware"] in ["DS18B20"]:
             self._IC = Hardware_DS18B20(device_folder=self["init"])
         else:

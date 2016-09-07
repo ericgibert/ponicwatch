@@ -8,7 +8,14 @@ import argparse
 import os.path
 from time import sleep
 from threading import BoundedSemaphore
+
 from apscheduler.schedulers.background import BackgroundScheduler
+try:
+    import pigpio
+    _simulation = False
+except ImportError:
+    _simulation = True
+
 
 from system import System
 from model.pw_db import Ponicwatch_Db
@@ -43,6 +50,7 @@ class Controller(object):
         self.scheduler = BackgroundScheduler()
 
         # select all the systems, sensors, switches to monitor and the hardware drivers
+        self.pig = pigpio.pi() if not _simulation else None
         self.systems, self.sensors, self.switches, self.hardwares = {}, {}, {}, {}
         self.db.open()
         try:
@@ -97,6 +105,7 @@ class Controller(object):
             # Not strictly necessary if daemonic mode is enabled but should be done if possible
             self.scheduler.shutdown()
         self.log.add_info("Controller has been stopped.")
+        self.pig.stop()
 
 
 def exist_file(x):
