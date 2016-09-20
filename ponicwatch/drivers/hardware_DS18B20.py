@@ -17,7 +17,7 @@ class Hardware_DS18B20(object):
         os.system('modprobe w1-therm')
         return glob(cls.base_dir + '28*')
 
-    def __init__(self, pigpio, device_folder):
+    def __init__(self, device_folder):
         self.device_file = device_folder + '/w1_slave'
         self.temperature = 0.0  # only the Celcius is kept (F is ignored)
 
