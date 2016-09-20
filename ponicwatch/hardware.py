@@ -43,7 +43,7 @@ class Hardware(Ponicwatch_Table):
         if self["hardware"] in ["DHT11", "DHT22", "AM2302"]:
             self._IC = Hardware_DHT(pigpio=controller.pig, model=self["hardware"], pin=self["init"])
         elif self["hardware"] in ["DS18B20"]:
-            self._IC = Hardware_DS18B20(device_folder=self["init"])
+            self._IC = Hardware_DS18B20(pigpio=controller.pig, device_folder=self["init"])
         else:
             raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], self["hardware"]))
 
