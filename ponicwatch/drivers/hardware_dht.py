@@ -32,7 +32,7 @@ class Hardware_DHT(object):
         self.temperature = None
         self.humidity = None
         self.last_read = datetime.now()
-        self.sensor = sensor(pigpio, 4)
+        self.sensor = sensor(pigpio, self.pin)
       
 
     def read(self, T_or_H):
