@@ -23,8 +23,9 @@ class Hardware_DHT(object):
     """
         Only expects a GPI pin for dialog
     """
-    def __init__(self, pigpio, model, pin):
+    def __init__(self, pig, model, pin):
         """
+        :param pig: instance of a pigpio object cretaed by the controller
         :param model: DHT11|DHT22|AM2302
         :param pin: the data pin of the IC
         """
@@ -32,7 +33,7 @@ class Hardware_DHT(object):
         self.temperature = None
         self.humidity = None
         self.last_read = datetime.now()
-        self.sensor = sensor(pigpio, self.pin)
+        self.sensor = sensor(pig, self.pin)
       
 
     def read(self, T_or_H):

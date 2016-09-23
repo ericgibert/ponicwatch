@@ -9,6 +9,7 @@
 from model.model import Ponicwatch_Table
 from drivers.hardware_dht import Hardware_DHT
 from drivers.hardware_DS18B20 import Hardware_DS18B20
+from drivers.hardware_RPI3 import Hardware_RPI3
 
 class Hardware(Ponicwatch_Table):
     """
@@ -41,9 +42,11 @@ class Hardware(Ponicwatch_Table):
         super().__init__(controller.db, Hardware.META, *args, **kwargs)
         # based on the "hardware" name, associate the proper driver object
         if self["hardware"] in ["DHT11", "DHT22", "AM2302"]:
-            self._IC = Hardware_DHT(pigpio=controller.pig, model=self["hardware"], pin=self["init"])
+            self._IC = Hardware_DHT(pig=controller.pig, model=self["hardware"], pin=self["init"])
         elif self["hardware"] in ["DS18B20"]:
             self._IC = Hardware_DS18B20(device_folder=self["init"])
+        elif self["hardware"] in ["RPI3"]:
+            self._IC = Hardware_RPI3(pig=controller.pig, in_out=self["init"])
         else:
             raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], self["hardware"]))
 

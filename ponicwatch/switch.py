@@ -55,16 +55,18 @@ class Switch(Ponicwatch_Table):
         :param id: tb_switch.switch_id (int)
         """
         super().get_record(id, name)
-        self.hw_components = self["hardware"].split('.')  # example:"AM2302.4.T" --> ['AM2302', '4', 'T']
-        self.IC, self.pins = self.hw_components[0], self.hw_components[1]
-        self.hw_id = self.IC + '.' + self.pins #  like "AM2302.4"  pin 4 on chip AM2302
+        self.hw_components = self["hardware"].split('.')  # example:"RPI3.4.0" --> ['RPI3', '4', '0]
+        self.IC, self.pin, self.set_value_to = self.hw_components[0], int(self.hw_components[1]), int(self.hw_components[2])
+        self.hw_id = self.IC + '.' + self.pins #  like "RPI3.4"  pin 4 on chip AM2302
 
     def execute(self):
         """on timer/scheduler"""
-        pass
+        self.hardware.write(self.pin, self.set_value_to)
+        self.update_values(self.set_value_to)
+        self.controller.log.add_log(system_name=self.system_name, param=self)
 
     def update_value(self, value):
-        self.update(alue=value, updated_on=datetime.now(timezone.utc))
+        self.update(value=value, updated_on=datetime.now(timezone.utc))
 
     @classmethod
     def all_keys(cls, db):

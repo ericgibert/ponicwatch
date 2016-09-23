@@ -192,7 +192,7 @@ class sensor:
 
    def temperature(self):
       """Return current temperature."""
-      return self.temp
+      return int(self.temp * 1000.0) / 1000.0
 
    def humidity(self):
       """Return current relative humidity."""
