@@ -78,19 +78,20 @@ class Controller(object):
                                                                              system_name=self.systems[system_id]["name"],
                                                                              hardware=self.hardwares[hardware_id])
 
-            # When do we need to read the sensor or activate a switch?
-            # ┌───────────── min (0 - 59)
-            # │ ┌────────────── hour (0 - 23)
-            # │ │ ┌─────────────── day of month (1 - 31)
-            # │ │ │ ┌──────────────── month (1 - 12)
-            # │ │ │ │ ┌───────────────── day of week (0 - 6) (0 to 6 are Sunday to
-            # │ │ │ │ │                  Saturday, or use names; 7 is also Sunday)
-            # │ │ │ │ │
-            # │ │ │ │ │
-            # * * * * *
-            if new_switch_or_sensor:
-                min, hrs, dom, mon, dow = new_switch_or_sensor["timer"].split()  # like "*/5 * * * *" --> every 5 minutes
-                self.scheduler.add_job(new_switch_or_sensor.execute, 'cron', second=min, hour=hrs, day=dom, month=mon, day_of_week=dow)
+    def add_cron_job(self, callback, cron_time):
+        # When do we need to read the sensor or activate a switch?
+        # ┌───────────── sec (0 - 59)      
+        # | ┌───────────── min (0 - 59)
+        # | │ ┌────────────── hour (0 - 23)
+        # | │ │ ┌─────────────── day of month (1 - 31)
+        # | │ │ │ ┌──────────────── month (1 - 12)
+        # | │ │ │ │ ┌───────────────── day of week (0 - 6) (0 to 6 are Sunday to
+        # | │ │ │ │ │                  Saturday, or use names; 7 is also Sunday)
+        # | │ │ │ │ │
+        # | │ │ │ │ │
+        # * * * * * *
+        _sec, _min, _hrs, _dom, _mon, _dow = cron_time.split()  # like "*/5 * * * * *" --> every 5 seconds
+        self.scheduler.add_job(callbak, 'cron', second=_sec, minute=_min, hour=_hrs, day=_dom, month=_mon, day_of_week=_dow)
 
     def run(self):
         """Starts the APScheduler task"""
