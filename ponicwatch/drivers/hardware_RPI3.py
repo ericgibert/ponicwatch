@@ -10,12 +10,18 @@
     For switch:
 
 """
-from json import loads
+import json
 try:
     import pigpio
     _simulation = False
 except ImportError:
     _simulation = True
+    class sim_pig(object):
+        def read(self, pin):
+            print("Simulation reading RPI3.%d" % pin)
+            return 1
+        def write(self, pin, value)
+            print("Simulation writing %d to pin RPI3.%d" % (value, pin))
 
 class Hardware_RPI3(object):
     """
@@ -28,12 +34,15 @@ class Hardware_RPI3(object):
         :param in_out: JSON string for a dictionary of IN and OUT pins like {"IN": (1,2,3), "OUT":(4,5,6)}
         """
         self.pig = pig
-        self.in_out = loads(in_out)
-        for i in self.in_out["IN"]:
-            self.pig.set_mode(i, pigpio.INPUT)
-        for o in self.in_out["OUT"]:
-            self.pig.set_mode(o, pigpio.OUTPUT)
-            self.pig.write(o, 0)
+        self.in_out = json.loads(in_out)
+        if _simulation:
+            self.pig = sim_pig()
+        else:
+            for i in self.in_out["IN"]:
+                self.pig.set_mode(i, pigpio.INPUT)
+            for o in self.in_out["OUT"]:
+                self.pig.set_mode(o, pigpio.OUTPUT)
+                self.pig.write(o, 0)
 
 
     def read(self, pin):
