@@ -47,6 +47,7 @@ class Switch(Ponicwatch_Table):
         self.controller = controller
         self.hardware = hardware
         self.system_name = system_name + "/" + self["name"]
+        self.controller.add_cron_job(self.execute, self["timer"])
 
     def get_record(self, id=None, name=None):
         """
