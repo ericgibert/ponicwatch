@@ -91,7 +91,7 @@ class Controller(object):
         # | │ │ │ │ │
         # * * * * * *
         _sec, _min, _hrs, _dom, _mon, _dow = cron_time.split()  # like "*/5 * * * * *" --> every 5 seconds
-        self.scheduler.add_job(callbak, 'cron', second=_sec, minute=_min, hour=_hrs, day=_dom, month=_mon, day_of_week=_dow)
+        self.scheduler.add_job(callback, 'cron', second=_sec, minute=_min, hour=_hrs, day=_dom, month=_mon, day_of_week=_dow)
 
     def run(self):
         """Starts the APScheduler task"""

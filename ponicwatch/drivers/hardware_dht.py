@@ -13,11 +13,17 @@ try:
 except ImportError:
     from random import randint
     print("Simulation for DHT22")
-    class sensor(*args):
-        @staticmethod
-        def read_retry(model, pin):
+    class sensor():
+        def __init__(self, pig, pin):
+            pass
+        def read_retry(self, model, pin):
             print("DHT simulation")
-            return (randint(50, 80), randint(25, 35))
+            self.trigger()
+            return (self._humidity, self._temperature)
+        def humidity(self): return self._humidity
+        def temperature(self): return self._temperature
+        def trigger(self):
+            self._humidity, self._temperature = randint(50, 80), randint(25, 35)
 
 class Hardware_DHT(object):
     """

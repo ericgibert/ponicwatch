@@ -114,6 +114,13 @@ sql_statements = {
     "password" TEXT,
     "name" TEXT
 )
+""",
+'tb_link': """CREATE TABLE "tb_link" (
+    "system_id" INTEGER NOT NULL,
+    "sensor_id" INTEGER,
+    "switch_id" INTEGER,
+    "hardware_id" INTEGER
+)
 """
 }
 

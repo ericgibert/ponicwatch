@@ -75,6 +75,7 @@ class Ponicwatch_Table(dict):
             sql = "UPDATE {0} SET {1} WHERE {2}=?".format(self.table,
                                                           ",".join([c+"=?" for c, v in col_value]),
                                                           self.id)
+            # print("sql =", sql)
             self.execute_sql(sql, [v for c, v in col_value] + [self["id"]])
             self.get_record(id=self["id"]) # reload data after the update
 

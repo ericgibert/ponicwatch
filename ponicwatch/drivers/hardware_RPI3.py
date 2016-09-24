@@ -6,7 +6,7 @@
 
     the tb_hardware.init value is a dictionary identifying the IN and OUT pins
 
-    For sensor:  RPI3._.pin
+    For sensor:  RPI3.pin
     For switch:
 
 """
@@ -20,7 +20,7 @@ except ImportError:
         def read(self, pin):
             print("Simulation reading RPI3.%d" % pin)
             return 1
-        def write(self, pin, value)
+        def write(self, pin, value):
             print("Simulation writing %d to pin RPI3.%d" % (value, pin))
 
 class Hardware_RPI3(object):
