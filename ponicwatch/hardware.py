@@ -54,6 +54,7 @@ class Hardware(Ponicwatch_Table):
         return self._IC.read(param)
 
     def write(self, param):
+        """param is a tuple (pin, value)"""
         return self._IC.write(param)
 
     @classmethod

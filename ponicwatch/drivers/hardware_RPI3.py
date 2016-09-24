@@ -34,7 +34,11 @@ class Hardware_RPI3(object):
         :param in_out: JSON string for a dictionary of IN and OUT pins like {"IN": (1,2,3), "OUT":(4,5,6)}
         """
         self.pig = pig
-        self.in_out = json.loads(in_out)
+        try:
+            self.in_out = json.loads(in_out)
+        except json.decoder.JSONDecodeError:
+            print("Error: cannot decode the RPI3['init'] dictionary:", in_out)
+            exit(-1)
         if _simulation:
             self.pig = sim_pig()
         else:
@@ -49,5 +53,6 @@ class Hardware_RPI3(object):
         return self.pig.read(pin) if pin in self.in_out["IN"] else None
 
 
-    def write(self, pin, value):
+    def write(self, param):
+        pin, value = param
         if pin in self.in_out["OUT"]: self.pig.write(pin, value)
