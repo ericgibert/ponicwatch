@@ -58,7 +58,7 @@ class Controller(object):
             self.links = self.db.curs.fetchall()
         finally:
             self.db.close()
-        for system_id, sensor_id, switch_id, hardware_id in self.links:
+        for system_id, sensor_id, switch_id, hardware_id, order_for_creation in self.links:
             # (1) create all necessary objects
             # (2) and register the system and hardware to a sensor/switch
             new_switch_or_sensor = None
