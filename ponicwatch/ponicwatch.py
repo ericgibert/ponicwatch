@@ -54,7 +54,7 @@ class Controller(object):
         self.systems, self.sensors, self.switches, self.hardwares = {}, {}, {}, {}
         self.db.open()
         try:
-            self.db.curs.execute("SELECT * from tb_link where system_id > 0 order by system_id, sensor_id, switch_id")
+            self.db.curs.execute("SELECT * from tb_link where system_id > 0 order by system_id, order_for_creation")
             self.links = self.db.curs.fetchall()
         finally:
             self.db.close()
