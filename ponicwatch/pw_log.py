@@ -118,7 +118,7 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         )
             self.print_debug("SENSOR", param["sensor_id"], param["name"], param["calculated_value"])
 
-    def print_debug(self, msg, id, name, value=None):
+    def print_debug(self, msg, id, name, value=""):
         """Helper function to print a debug message to console"""
         if self.debug:
             print("{0:15} {1:10} {2:3} {3} {4}".format(datetime.now().strftime("%H:%M:%S.%f"), msg, id, name, value))
