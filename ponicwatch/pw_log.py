@@ -121,7 +121,7 @@ class Ponicwatch_Log(Ponicwatch_Table):
     def print_debug(self, msg, id, name, value=None):
         """Helper function to print a debug message to console"""
         if self.debug:
-            print("{0:15} {1:10} {2:3} {4} {5}".format(datetime.now().strftime("%H:%M:%S.%f"), msg, id, name, value))
+            print("{0:15} {1:10} {2:3} {3} {4}".format(datetime.now().strftime("%H:%M:%S.%f"), msg, id, name, value))
 
     def add_info(self, msg, err_code=0, fval=0.0):
         """Helper function for the controller to log an INFO message"""
