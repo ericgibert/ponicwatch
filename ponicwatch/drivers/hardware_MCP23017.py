@@ -44,5 +44,8 @@ class Hardware_MCP23017(object):
     def cleanup(self):
         self.IC.cleanup()
 
-    def set_pin_mode(self, pin, value):
-        self.IC.set_pin_mode(pin, value)
+    def set_pin_as_input(self, pin):
+        self.IC.set_pin_mode(pin, IC_MCP23017.INPUT)
+
+    def set_pin_as_output(self, pin):
+        self.IC.set_pin_mode(pin, IC_MCP23017.OUTPUT)

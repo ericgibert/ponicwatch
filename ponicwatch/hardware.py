@@ -68,8 +68,11 @@ class Hardware(Ponicwatch_Table):
         """overdefine if needed"""
         pass
 
-    def set_pin_mode(self, pins, value):
-        self._IC.set_pin_mode(eval(pins), value)
+    def set_pin_as_input(self, pins):
+        self._IC.set_pin_as_input(eval(pins))
+
+    def set_pin_as_output(self, pins):
+        self._IC.set_pin_as_output(eval(pins))
 
     @classmethod
     def all_keys(cls, db):

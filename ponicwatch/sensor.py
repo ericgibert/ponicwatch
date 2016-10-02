@@ -50,7 +50,7 @@ class Sensor(Ponicwatch_Table):
         self.controller = controller
         self.hardware = hardware
         if hardware["mode"] == 2:  # R/W
-            self.hardware.set_pin_mode(self.pins, 0)  # OUTPUT == 0
+            self.hardware.set_pin_as_input(self.pins)
         self.system_name = system_name + "/" + self["name"]
         self.controller.add_cron_job(self.execute, self["timer"])
 
