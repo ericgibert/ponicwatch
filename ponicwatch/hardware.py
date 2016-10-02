@@ -41,6 +41,7 @@ class Hardware(Ponicwatch_Table):
 
     def __init__(self, controller, *args, **kwargs):
         super().__init__(controller.db, Hardware.META, *args, **kwargs)
+        self.is_debug = controller.is_debug
         # based on the "hardware" name, associate the proper driver object
         if self["hardware"] in ["DHT11", "DHT22", "AM2302"]:
             self._IC = Hardware_DHT(pig=controller.pig, model=self["hardware"], pin=self["init"])
@@ -55,6 +56,8 @@ class Hardware(Ponicwatch_Table):
             raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], self["hardware"]))
 
     def read(self, param):
+        if self.is_debug:
+            print("Hardware read param =", param)
         return self._IC.read(param)
 
     def write(self, param):

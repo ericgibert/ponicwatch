@@ -35,6 +35,7 @@ class Controller(object):
            - Select all the hardware (sensors/switches) for the systems under its control
            - Launch the scheduler
         """
+        self.is_debug = DEBUG
         # keep a link to the database i.e. M in MVC
         self.db = db
         self.db.exclusive_access = BoundedSemaphore(value=1)
@@ -106,7 +107,7 @@ class Controller(object):
             pass
         finally:
             self.scheduler.shutdown()  # Not strictly necessary if daemonic mode is enabled but should be done if possible
-            for hw in self.hardwares:
+            for hw in self.hardwares.items():
                 hw.cleanup()
         self.log.add_info("Controller has been stopped.")
 
