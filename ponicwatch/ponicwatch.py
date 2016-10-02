@@ -103,8 +103,11 @@ class Controller(object):
             while self.running :
                 sleep(2)
         except (KeyboardInterrupt, SystemExit):
-            # Not strictly necessary if daemonic mode is enabled but should be done if possible
-            self.scheduler.shutdown()
+            pass
+        finally:
+            self.scheduler.shutdown()  # Not strictly necessary if daemonic mode is enabled but should be done if possible
+            for hw in self.hardwares:
+                hw.cleanup()
         self.log.add_info("Controller has been stopped.")
 
 

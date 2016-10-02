@@ -39,3 +39,6 @@ class Hardware_MCP23017(object):
         """
         pin, value = param
         self.IC.output(pin, value)
+
+    def cleanup(self):
+        self.IC.cleanup()
