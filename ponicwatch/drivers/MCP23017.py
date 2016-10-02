@@ -116,7 +116,7 @@ class IC_MCP23017(object):
         # set the single bit that corresponds to the specific pin within the full register value
         newValue = self._changeBit(curValue, pin, value)
         # write and return the full register value
-        self.pig.i2c_write_byte(register, newValue)
+        self.pig.i2c_write_byte_data(self.i2c_handle, register, newValue)
         return newValue
 
     def set_pull_up(self, pin, value):
