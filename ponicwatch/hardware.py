@@ -50,7 +50,7 @@ class Hardware(Ponicwatch_Table):
             self._IC = Hardware_RPI3(pig=controller.pig, in_out=self["init"])
         elif self["hardware"] in ["MCP23017"]:
             busnum, i2c_address = self["init"].split('.')  # example for Raspi 3:   "1.0x20"
-            self._IC = Hardware_MCP23017(pig=controller.pig, i2c_addr=int(i2c_address), bus=int(busnum))
+            self._IC = Hardware_MCP23017(pig=controller.pig, i2c_addr=eval(i2c_address), bus=int(busnum))
         else:
             raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], self["hardware"]))
 
