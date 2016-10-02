@@ -341,7 +341,7 @@ if __name__ == "__main__":
     IN_PIN, OUT_PIN = 0, 8
     test_IC.set_pin_mode(IN_PIN, IC_MCP23017.INPUT)
     test_IC.set_pin_mode(OUT_PIN, IC_MCP23017.OUTPUT)
-    test_IC.set_pull_up(8, IC_MCP23017.LOW)
+    test_IC.set_pull_up(8, IC_MCP23017.HIGH)
     v = 0
     while True:
         nv = test_IC.input(IN_PIN)
