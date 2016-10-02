@@ -47,7 +47,7 @@ class Switch(Ponicwatch_Table):
         self.controller = controller
         self.hardware = hardware
         if hardware["mode"] == 2:  # R/W
-            self.hardware.set_pin_as_output(self.pins)
+            self.hardware.set_pin_as_output(self.pin)
         self.system_name = system_name + "/" + self["name"]
         self.controller.add_cron_job(self.execute, self["timer"])
 
