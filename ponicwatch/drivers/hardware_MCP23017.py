@@ -29,7 +29,9 @@ class Hardware_MCP23017(object):
         :param param: ignored for this chip
         :return: 0.0 or 1.0 for both read_value and calculated_value
         """
+        print("here 1", pin, param)
         value = float(self.IC.input(eval(pin)))
+        print("value =", value)
         return (value, value)
 
     def write(self, param):
