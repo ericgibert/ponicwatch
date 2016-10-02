@@ -69,10 +69,16 @@ class Hardware(Ponicwatch_Table):
         pass
 
     def set_pin_as_input(self, pins):
-        self._IC.set_pin_as_input(eval(pins))
+        try:
+            self._IC.set_pin_as_input(eval(pins))
+        except TypeError:
+            pass
 
     def set_pin_as_output(self, pins):
-        self._IC.set_pin_as_output(eval(pins))
+        try:
+            self._IC.set_pin_as_output(eval(pins))
+        except TypeError:
+            pass
 
     @classmethod
     def all_keys(cls, db):
