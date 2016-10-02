@@ -68,43 +68,50 @@ class IC_MCP23017(object):
         self.pig = pig
 
         # set defaults
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IODIRA, 0xFF)  # all inputs on port A
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IODIRB, 0xFF)  # all inputs on port B
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPIOA, 0x00)  # output register to 0
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPIOB, 0x00)  # output register to 0
+        self._write_byte(IC_MCP23017.IODIRA, 0xFF)  # all inputs on port A
+        self._write_byte(IC_MCP23017.IODIRB, 0xFF)  # all inputs on port B
+        self._write_byte(IC_MCP23017.GPIOA, 0x00)  # output register to 0
+        self._write_byte(IC_MCP23017.GPIOB, 0x00)  # output register to 0
 
         # read the current direction of all pins into instance variable
         # self.direction used for assertions in a few methods methods
-        self.direction = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.IODIRA)
-        self.direction |= self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.IODIRB) << 8
+        self.direction = self._read_byte(IC_MCP23017.IODIRA) | (self._read_byte(IC_MCP23017.IODIRB) << 8)
 
         # disable the pull-ups on all ports
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPPUA, 0x00)
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPPUB, 0x00)
+        self._write_byte(IC_MCP23017.GPPUA, 0x00)
+        self._write_byte(IC_MCP23017.GPPUB, 0x00)
 
         # clear the IOCON configuration register, which is chip default
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IOCON, 0x00)
+        self._write_byte(IC_MCP23017.IOCON, 0x00)
 
         ##### interrupt defaults
         # disable interrupts on all pins by default
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPINTENA, 0x00)
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPINTENB, 0x00)
+        self._write_byte(IC_MCP23017.GPINTENA, 0x00)
+        self._write_byte(IC_MCP23017.GPINTENB, 0x00)
         # interrupt on change register set to compare to previous value by default
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.INTCONA, 0x00)
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.INTCONB, 0x00)
+        self._write_byte(IC_MCP23017.INTCONA, 0x00)
+        self._write_byte(IC_MCP23017.INTCONB, 0x00)
         # interrupt compare value registers
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.DEFVALA, 0x00)
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.DEFVALB, 0x00)
+        self._write_byte(IC_MCP23017.DEFVALA, 0x00)
+        self._write_byte(IC_MCP23017.DEFVALB, 0x00)
         # clear any interrupts to start fresh
-        self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA)
-        self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOB)
+        self._read_byte(IC_MCP23017.GPIOA)
+        self._read_byte(IC_MCP23017.GPIOB)
 
-    def _changeBit(self, bitmap, bit, value):
+    def _write_byte(self, register, value):
+        """helper function"""
+        self.pig.i2c_write_byte_data(self.i2c_handle, register, value)
+        
+    def _read_byte(self, register):
+        """helper function"""
+        return self.pig.i2c_read_byte_data(self.i2c_handle, register)
+
+    def _change_bit(self, bitmap, bit, value):
         """change a specific bit in a byte"""
         assert value in (0,1), "Value is %s must be 0 or 1" % value
         return bitmap & ~(1 << bit) if value == 0 else bitmap | (1 << bit)
 
-    def _readAndChangePin(self, register, pin, value, curValue=None):
+    def _read_and_change_pin(self, register, pin, value, curValue=None):
         """
         set an output pin to a specific value
         pin value is relative to a bank, so must be be between 0 and 7
@@ -112,11 +119,11 @@ class IC_MCP23017(object):
         assert 0 <= pin < 8, "Pin number %s is invalid, only 0-%s are valid" % (pin, 7)
         # if we don't know what the current register's full value is then get it first
         if curValue is None:
-            curValue = self.pig.i2c_read_byte_data(self.i2c_handle, register)
+            curValue = self._read_byte(register)
         # set the single bit that corresponds to the specific pin within the full register value
-        newValue = self._changeBit(curValue, pin, value)
+        newValue = self._change_bit(curValue, pin, value)
         # write and return the full register value
-        self.pig.i2c_write_byte_data(self.i2c_handle, register, newValue)
+        self._write_byte(register, newValue)
         return newValue
 
     def set_pull_up(self, pin, value):
@@ -126,12 +133,7 @@ class IC_MCP23017(object):
         """
         assert 0 <= pin < self.num_gpios, "Pin number %s is invalid, only 0-%s are valid" % (pin, self.num_gpios)
         # if the pin is < 8, use register from first bank else second bank
-        self._readAndChangePin(IC_MCP23017.GPPUA if pin < 8 else IC_MCP23017.GPPUB, pin if pin < 8 else pin - 8, value)
-        # if (pin < 8):
-        #     return self._readAndChangePin(IC_MCP23017.GPPUA, pin, value)
-        # else:
-        #     # otherwise use register from second bank
-        #     return self._readAndChangePin(IC_MCP23017.GPPUB, pin - 8, value) << 8
+        self._read_and_change_pin(IC_MCP23017.GPPUA if pin < 8 else IC_MCP23017.GPPUB, pin if pin < 8 else pin - 8, value)
 
     def set_pin_mode(self, pin, mode):
         """
@@ -147,12 +149,11 @@ class IC_MCP23017(object):
         gpiob = (self.direction >> 8) & 0xff
         # if the pin is < 8, use register from first bank
         if (pin < 8):
-            gpioa = self._readAndChangePin(IC_MCP23017.IODIRA, pin, mode)
+            gpioa = self._read_and_change_pin(IC_MCP23017.IODIRA, pin, mode)
         else:
-            # otherwise use register from second bank
-            # readAndChangePin accepts pin relative to register though, so subtract
-            gpiob = self._readAndChangePin(IC_MCP23017.IODIRB, pin - 8, mode)
-            # re-set the direction variable using the new pin modes
+            # otherwise use register from second bank ; radAndChangePin accepts pin relative to register so subtract 8
+            gpiob = self._read_and_change_pin(IC_MCP23017.IODIRB, pin - 8, mode)
+        # re-set the direction variable using the new pin modes
         self.direction = gpioa + (gpiob << 8)
         return self.direction
 
@@ -162,11 +163,10 @@ class IC_MCP23017(object):
         assert self.direction & (1 << pin) == 0, "Pin %s not set to output" % pin
         # if the pin is < 8, use register from first bank
         if (pin < 8):
-            self.outputvalue = self._readAndChangePin(IC_MCP23017.GPIOA, pin, value, self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.OLATA))
+            self.outputvalue = self._read_and_change_pin(IC_MCP23017.GPIOA, pin, value, self._read_byte(IC_MCP23017.OLATA))
         else:
-            # otherwise use register from second bank
-            # readAndChangePin accepts pin relative to register though, so subtract
-            self.outputvalue = self._readAndChangePin(IC_MCP23017.GPIOB, pin - 8, value, self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.OLATB))
+            # otherwise use register from second bank ; readAndChangePin accepts pin relative to register so subtract 8
+            self.outputvalue = self._read_and_change_pin(IC_MCP23017.GPIOB, pin - 8, value, self._read_byte(IC_MCP23017.OLATB))
         return self.outputvalue
 
     def input(self, pin):
@@ -175,96 +175,69 @@ class IC_MCP23017(object):
         return a 1 or 0
         """
         assert 0 <= pin < self.num_gpios, "Pin number %s is invalid, only 0-%s are valid" % (pin, self.num_gpios)
-        regValue = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA if pin<8 else IC_MCP23017.GPIOB)
+        regValue = self._read_byte(IC_MCP23017.GPIOA if pin < 8 else IC_MCP23017.GPIOB)
         if pin >= 8: pin -= 8
         return int(regValue & (1 << pin) != 0)
-        # value = 0
-        # # reads the whole register then compares the value of the specific pin
-        # if (pin < 8):
-        #     regValue = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA)
-        #     if regValue & (1 << pin) != 0: value = 1
-        # else:
-        #     regValue = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOB)
-        #     if regValue & (1 << pin - 8) != 0: value = 1
-        # # 1 or 0
-        # return value
 
 
-        # configure system interrupt settings
+    ### configure system  - interrupt settings ###
 
-    # mirror - are the int pins mirrored? True=yes, False=INTA associated with PortA, INTB associated with PortB
-    # intpol - polarity of the int pin. 1=active-high, 0=active-low
     def configSystemInterrupt(self, mirror, intpol):
+        """
+        :param mirror: are the int pins mirrored? True=yes, False=INTA associated with PortA, INTB associated with PortB
+        :param intpol: polarity of the int pin. 1=active-high, 0=active-low
+        :return:
+        """
         assert isinstance(mirror, bool), "Valid options for MIRROR: False or True"
         assert intpol in (0,1), "Valid options for INTPOL: 0 or 1"
         # get current register settings
-        registerValue = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.IOCON)
+        registerValue = self._read_byte(IC_MCP23017.IOCON)
         # set mirror bit
-        registerValue = self._changeBit(registerValue, self.IOCONMIRROR, mirror)
+        registerValue = self._change_bit(registerValue, self.IOCONMIRROR, mirror)
         self.mirrorEnabled = mirror
         # set the intpol bit
-        registerValue = self._changeBit(registerValue, self.IOCONINTPOL, intpol)
+        registerValue = self._change_bit(registerValue, self.IOCONINTPOL, intpol)
         # set ODR pin
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IOCON, registerValue)
+        self._write_byte(IC_MCP23017.IOCON, registerValue)
 
-    # configure interrupt setting for a specific pin. set on or off
-    def configPinInterrupt(self, pin, enabled, compareMode=0, defval=0):
+    def config_pin_interrupt(self, pin, enabled, compareMode=0, defval=0):
+        """
+        configure interrupt setting for a specific pin. set on or off
+        :param pin:
+        :param enabled: boolean to enable/disable
+        :param compareMode:
+        :param defval:
+        :return:
+        """
         assert 0 <= pin < self.num_gpios, "Pin number %s is invalid, only 0-%s are valid" % (pin, self.num_gpios)
         assert self.direction & (1 << pin) != 0, "Pin %s not set to input! Must be set to input before you can change interrupt config." % pin
-        assert enabled in (0,1), "Valid options: 0 or 1"
+        assert isinstance(enabled, bool), "enabled must be boolean: True or False"
         is_bank_A = pin < 8
         if not is_bank_A: pin -= 8
         # first, interrupt on change feature
-        self._readAndChangePin(IC_MCP23017.GPINTENA if is_bank_A else IC_MCP23017.GPINTENB, pin, enabled)
+        self._read_and_change_pin(IC_MCP23017.GPINTENA if is_bank_A else IC_MCP23017.GPINTENB, pin, enabled)
         # then, compare mode (previous value or default value?)
-        self._readAndChangePin(IC_MCP23017.INTCONA if is_bank_A else IC_MCP23017.INTCONB, pin, compareMode)
+        self._read_and_change_pin(IC_MCP23017.INTCONA if is_bank_A else IC_MCP23017.INTCONB, pin, compareMode)
         # last, the default value. set it regardless if compareMode requires it, in case the requirement has changed since program start
-        self._readAndChangePin(IC_MCP23017.DEFVALA if is_bank_A else IC_MCP23017.DEFVALB, pin, defval)
-        # if (pin < 8):
-        #     # first, interrupt on change feature
-        #     self._readAndChangePin(IC_MCP23017.GPINTENA, pin, enabled)
-        #     # then, compare mode (previous value or default value?)
-        #     self._readAndChangePin(IC_MCP23017.INTCONA, pin, compareMode)
-        #     # last, the default value. set it regardless if compareMode requires it, in case the requirement has changed since program start
-        #     self._readAndChangePin(IC_MCP23017.DEFVALA, pin, defval)
-        # else:
-        #     self._readAndChangePin(IC_MCP23017.GPINTENB, pin - 8, enabled)
-        #     self._readAndChangePin(IC_MCP23017.INTCONB, pin - 8, compareMode)
-        #     self._readAndChangePin(IC_MCP23017.DEFVALB, pin - 8, defval)
+        self._read_and_change_pin(IC_MCP23017.DEFVALA if is_bank_A else IC_MCP23017.DEFVALB, pin, defval)
 
-    # private function to return pin and value from an interrupt
-    def _readInterruptRegister(self, port):
+    def _read_interrupt_register(self, port):
+        """
+        private function to return pin and value from an interrupt
+        :param port:
+        :return:
+        """
         assert port in (0,1), "Port to get interrupts from must be 0 or 1!"
-        interrupted = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFA if port==0 else IC_MCP23017.INTCAPB)
+        interrupted = self._read_byte(IC_MCP23017.INTFA if port==0 else IC_MCP23017.INTCAPB)
         if interrupted:
             pin = int(math.log(interrupted, 2))  # first non 0 pin having triggered the interrupt
             # get the value of the pin
-            value_register = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTCAPA if port==0 else IC_MCP23017.INTCAPB)
+            value_register = self._read_byte(IC_MCP23017.INTCAPA if port == 0 else IC_MCP23017.INTCAPB)
             return pin if port==0 else pin + 8, int(value_register & (1 << pin) != 0)
         else:
-            return None, 0
+            return None, None
 
-        # value = 0
-        # pin = None
-        # if port == 0:
-        #     interruptedA = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFA)
-        #     if interruptedA != 0:
-        #         pin = int(math.log(interruptedA, 2))
-        #         # get the value of the pin
-        #         valueRegister = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTCAPA)
-        #         if valueRegister & (1 << pin) != 0: value = 1
-        # else:
-        #     interruptedB = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFB)
-        #     if interruptedB != 0:
-        #         pin = int(math.log(interruptedB, 2))
-        #         # get the value of the pin
-        #         valueRegister = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTCAPB)
-        #         if valueRegister & (1 << pin) != 0: value = 1
-        #         # want return 0-15 pin value, so add 8
-        #         pin = pin + 8
-        # return pin, value
-
-    def readInterrupt(self, port=None):
+    def on_interrupt(self, port=None):
         """
         this function should be called when INTA or INTB is triggered to indicate an interrupt occurred
         optionally accepts the bank number that caused the interrupt (0 or 1)
@@ -278,59 +251,64 @@ class IC_MCP23017(object):
         # if the mirror is enabled, we don't know what port caused the interrupt, so read both
         if self.mirrorEnabled:
             # read port 0 first, if no pin, then read and return port 1
-            pin, value = self._readInterruptRegister(0)
-            return pin, value if pin else self._readInterruptRegister(1)
+            pin, value = self._read_interrupt_register(0)
+            return pin, value if pin else self._read_interrupt_register(1)
         else:
-            return self._readInterruptRegister(port)
+            return self._read_interrupt_register(port)
 
-
-    # check to see if there is an interrupt pending 3 times in a row (indicating it's stuck)
-    # and if needed clear the interrupt without reading values
-    # return 0 if everything is ok
-    # return 1 if the interrupts had to be forcefully cleared
-    def clearInterrupts(self):
-        if self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFA) > 0 or self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFB) > 0:
+    def clear_interrupts(self):
+        """
+        check to see if there is an interrupt pending 3 times in a row (indicating it's stuck)
+        and if needed clear the interrupt without reading values
+        return 0 if everything is ok
+        return 1 if the interrupts had to be forcefully cleared
+        :return:
+        """
+        if self._read_byte(IC_MCP23017.INTFA) > 0 or self._read_byte(IC_MCP23017.INTFB) > 0:
             iterations = 3
             count = 1
             # loop to check multiple times to lower chance of false positive
             while count <= iterations:
-                if self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFA) == 0 and self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFB) == 0:
+                if self._read_byte(IC_MCP23017.INTFA) == 0 and self._read_byte(IC_MCP23017.INTFB) == 0:
                     return 0
                 else:
                     time.sleep(.5)
                     count += 1
             # if we made it to the end of the loop, reset
             if count >= iterations:
-                self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA)
-                self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOB)
+                self._read_byte(IC_MCP23017.GPIOA)
+                self._read_byte(IC_MCP23017.GPIOB)
                 return 1
 
-    # cleanup function - set values everything to safe values
-    # should be called when program is exiting
     def cleanup(self):
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IODIRA, 0xFF)  # all inputs on port A
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IODIRB, 0xFF)  # all inputs on port B
+        """
+        cleanup function - set values everything to safe values
+        should be called when program is exiting
+        :return:
+        """
+        self._write_byte(IC_MCP23017.IODIRA, 0xFF)  # all inputs on port A
+        self._write_byte(IC_MCP23017.IODIRB, 0xFF)  # all inputs on port B
         # make sure the output registers are set to off
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPIOA, 0x00)
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPIOB, 0x00)
+        self._write_byte(IC_MCP23017.GPIOA, 0x00)
+        self._write_byte(IC_MCP23017.GPIOB, 0x00)
         # disable the pull-ups on all ports
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPPUA, 0x00)
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPPUB, 0x00)
+        self._write_byte(IC_MCP23017.GPPUA, 0x00)
+        self._write_byte(IC_MCP23017.GPPUB, 0x00)
         # clear the IOCON configuration register, which is chip default
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IOCON, 0x00)
+        self._write_byte(IC_MCP23017.IOCON, 0x00)
 
         # disable interrupts on all pins 
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPINTENA, 0x00)
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPINTENB, 0x00)
+        self._write_byte(IC_MCP23017.GPINTENA, 0x00)
+        self._write_byte(IC_MCP23017.GPINTENB, 0x00)
         # interrupt on change register set to compare to previous value by default
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.INTCONA, 0x00)
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.INTCONB, 0x00)
+        self._write_byte(IC_MCP23017.INTCONA, 0x00)
+        self._write_byte(IC_MCP23017.INTCONB, 0x00)
         # interrupt compare value registers
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.DEFVALA, 0x00)
-        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.DEFVALB, 0x00)
+        self._write_byte(IC_MCP23017.DEFVALA, 0x00)
+        self._write_byte(IC_MCP23017.DEFVALB, 0x00)
         # clear any interrupts to start fresh
-        self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA)
-        self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOB)
+        self._read_byte(IC_MCP23017.GPIOA)
+        self._read_byte(IC_MCP23017.GPIOB)
 
 if __name__ == "__main__":
     import pigpio
