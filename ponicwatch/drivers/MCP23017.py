@@ -330,3 +330,22 @@ class IC_MCP23017(object):
         # clear any interrupts to start fresh
         self.i2c.i2c_read_byte(IC_MCP23017.GPIOA)
         self.i2c.i2c_read_byte(IC_MCP23017.GPIOB)
+
+if __name__ == "__main__":
+    import pigpio
+
+    pig = pigpio.pi()
+    test_IC = IC_MCP23017(pig, 0x20)
+
+    IN_PIN, OUT_PIN = 0, 8
+    test_IC.set_pin_mode(IN_PIN, IC_MCP23017.INPUT)
+    test_IC.set_pin_mode(OUT_PIN, IC_MCP23017.OUTPUT)
+    # test_IC.set_pull_up(8, IC_MCP23017.HIGH)
+    v = 0
+    while True:
+        nv = test_IC.input(IN_PIN)
+        if v != nv:
+            test_IC.output(OUT_PIN, nv)
+            print("new value=", nv)
+            v = nv
+        time.sleep(0.5)
