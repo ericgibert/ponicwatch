@@ -68,6 +68,9 @@ class Hardware(Ponicwatch_Table):
         """overdefine if needed"""
         pass
 
+    def set_pin_mode(self, pins, value):
+        self._IC.set_pin_mode(eval(pins), value)
+
     @classmethod
     def all_keys(cls, db):
         return super().all_keys(db, Hardware.META)
