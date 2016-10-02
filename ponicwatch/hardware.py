@@ -57,7 +57,7 @@ class Hardware(Ponicwatch_Table):
 
     def read(self, pins, param):
         if self.is_debug:
-            print("Hardware read param =", param)
+            print("Hardware read (pins, param) =", (pins, param))
         return self._IC.read(pins, param)
 
     def write(self, param):
