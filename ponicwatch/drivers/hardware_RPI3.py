@@ -56,3 +56,14 @@ class Hardware_RPI3(object):
     def write(self, param):
         pin, value = param
         if pin in self.in_out["OUT"]: self.pig.write(pin, value)
+
+
+    def set_pin_as_input(self, pin):
+        """Already done at __init__"""
+        # self.pig.set_mode(pin, pigpio.INPUT)
+        pass
+
+    def set_pin_as_output(self, pin):
+        """Already done at __init__"""
+        # self.pig.set_mode(pin, pigpio.OUTPUT)
+        pass
