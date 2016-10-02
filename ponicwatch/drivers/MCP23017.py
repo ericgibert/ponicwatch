@@ -352,4 +352,4 @@ if __name__ == "__main__":
                 v = nv
             time.sleep(0.5)
     finally:
-        IC_MCP23017.cleanup()
+        test_IC.cleanup()
