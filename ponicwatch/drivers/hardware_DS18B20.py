@@ -30,7 +30,10 @@ class Hardware_DS18B20(object):
             lines = f.readlines()
         return lines
 
-    def read(self, param=None):
+    def read(self, pin=None, param=None):
+        """Get the temperature.
+        Both params are ignored as the information is provided at __init__ time
+        """
         if self.simulation:
             self.temperature = randint(25, 35)
         else:

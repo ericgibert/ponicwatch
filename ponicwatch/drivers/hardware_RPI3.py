@@ -49,7 +49,7 @@ class Hardware_RPI3(object):
                 self.pig.write(o, 0)
 
 
-    def read(self, pin):
+    def read(self, pin, param=None):
         return self.pig.read(pin) if pin in self.in_out["IN"] else None
 
 

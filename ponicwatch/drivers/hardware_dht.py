@@ -42,10 +42,11 @@ class Hardware_DHT(object):
         self.sensor = sensor(pig, self.pin)
       
 
-    def read(self, T_or_H):
+    def read(self, pins, T_or_H):
         """
         Reads the values from the IC
         3 seconds gap is guarantied between 2 readings
+        Note: param pins is ignored as the reading pin is defined at __init__ time already
         """
         print("T_or_H:", T_or_H)
         if (datetime.now() - self.last_read).seconds > 3 or self.humidity is None:

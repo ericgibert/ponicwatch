@@ -22,13 +22,14 @@ class Hardware_MCP23017(object):
         self.bus, self.i2c_addr = bus, i2c_addr
         self.IC = IC_MCP23017(pig, address=self.i2c_addr, num_gpios=16, busnum=self.bus)
 
-    def read(self, param):
+    def read(self, pin, param=None):
         """
         Read the pin value
-        :param param: pin number 0-15
+        :param pin: pin number 0-15
+        :param param: ignored for this chip
         :return: 0.0 or 1.0 for both read_value and calculated_value
         """
-        value = float(self.IC.input(int(param)))
+        value = float(self.IC.input(int(pin)))
         return (value, value)
 
     def write(self, param):

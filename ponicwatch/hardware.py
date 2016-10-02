@@ -55,10 +55,10 @@ class Hardware(Ponicwatch_Table):
         else:
             raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], self["hardware"]))
 
-    def read(self, param):
+    def read(self, pins, param):
         if self.is_debug:
             print("Hardware read param =", param)
-        return self._IC.read(param)
+        return self._IC.read(pins, param)
 
     def write(self, param):
         """param is a tuple (pin, value)"""

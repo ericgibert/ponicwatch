@@ -64,7 +64,7 @@ class Sensor(Ponicwatch_Table):
 
     def execute(self):
         """Called by the scheduler to perform the data reading"""
-        read_val, calc_val = self.hardware.read(self.hw_param)
+        read_val, calc_val = self.hardware.read(self.pins, self.hw_param)
         if read_val:  # no error else None is returned
             self.update_values(read_val, calc_val)
             self.controller.log.add_log(system_name=self.system_name, param=self)
