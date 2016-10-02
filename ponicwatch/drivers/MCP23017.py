@@ -343,10 +343,13 @@ if __name__ == "__main__":
     test_IC.set_pin_mode(OUT_PIN, IC_MCP23017.OUTPUT)
     test_IC.set_pull_up(8, IC_MCP23017.HIGH)
     v = 0
-    while True:
-        nv = test_IC.input(IN_PIN)
-        if v != nv:
-            test_IC.output(OUT_PIN, nv)
-            print("new value=", nv)
-            v = nv
-        time.sleep(0.5)
+    try:
+        while True:
+            nv = test_IC.input(IN_PIN)
+            if v != nv:
+                test_IC.output(OUT_PIN, nv)
+                print("new value=", nv)
+                v = nv
+            time.sleep(0.5)
+    finally:
+        IC_MCP23017.cleanup()
