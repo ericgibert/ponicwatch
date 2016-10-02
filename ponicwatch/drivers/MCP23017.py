@@ -75,29 +75,29 @@ class IC_MCP23017(object):
 
         # read the current direction of all pins into instance variable
         # self.direction used for assertions in a few methods methods
-        self.direction = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.IODIRA)
-        self.direction |= self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.IODIRB) << 8
+        self.direction = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.IODIRA)
+        self.direction |= self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.IODIRB) << 8
 
         # disable the pull-ups on all ports
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPPUA, 0x00)
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPPUB, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPPUA, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPPUB, 0x00)
 
         # clear the IOCON configuration register, which is chip default
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.IOCON, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IOCON, 0x00)
 
         ##### interrupt defaults
         # disable interrupts on all pins by default
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPINTENA, 0x00)
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPINTENB, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPINTENA, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPINTENB, 0x00)
         # interrupt on change register set to compare to previous value by default
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.INTCONA, 0x00)
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.INTCONB, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.INTCONA, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.INTCONB, 0x00)
         # interrupt compare value registers
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.DEFVALA, 0x00)
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.DEFVALB, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.DEFVALA, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.DEFVALB, 0x00)
         # clear any interrupts to start fresh
-        self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.GPIOA)
-        self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.GPIOB)
+        self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA)
+        self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOB)
 
     def _changeBit(self, bitmap, bit, value):
         """change a specific bit in a byte"""
@@ -162,11 +162,11 @@ class IC_MCP23017(object):
         assert self.direction & (1 << pin) == 0, "Pin %s not set to output" % pin
         # if the pin is < 8, use register from first bank
         if (pin < 8):
-            self.outputvalue = self._readAndChangePin(IC_MCP23017.GPIOA, pin, value, self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.OLATA))
+            self.outputvalue = self._readAndChangePin(IC_MCP23017.GPIOA, pin, value, self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.OLATA))
         else:
             # otherwise use register from second bank
             # readAndChangePin accepts pin relative to register though, so subtract
-            self.outputvalue = self._readAndChangePin(IC_MCP23017.GPIOB, pin - 8, value, self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.OLATB))
+            self.outputvalue = self._readAndChangePin(IC_MCP23017.GPIOB, pin - 8, value, self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.OLATB))
         return self.outputvalue
 
     def input(self, pin):
@@ -175,16 +175,16 @@ class IC_MCP23017(object):
         return a 1 or 0
         """
         assert 0 <= pin < self.num_gpios, "Pin number %s is invalid, only 0-%s are valid" % (pin, self.num_gpios)
-        regValue = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.GPIOA if pin<8 else IC_MCP23017.GPIOB)
+        regValue = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA if pin<8 else IC_MCP23017.GPIOB)
         if pin >= 8: pin -= 8
         return int(regValue & (1 << pin) != 0)
         # value = 0
         # # reads the whole register then compares the value of the specific pin
         # if (pin < 8):
-        #     regValue = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.GPIOA)
+        #     regValue = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA)
         #     if regValue & (1 << pin) != 0: value = 1
         # else:
-        #     regValue = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.GPIOB)
+        #     regValue = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOB)
         #     if regValue & (1 << pin - 8) != 0: value = 1
         # # 1 or 0
         # return value
@@ -198,14 +198,14 @@ class IC_MCP23017(object):
         assert isinstance(mirror, bool), "Valid options for MIRROR: False or True"
         assert intpol in (0,1), "Valid options for INTPOL: 0 or 1"
         # get current register settings
-        registerValue = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.IOCON)
+        registerValue = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.IOCON)
         # set mirror bit
         registerValue = self._changeBit(registerValue, self.IOCONMIRROR, mirror)
         self.mirrorEnabled = mirror
         # set the intpol bit
         registerValue = self._changeBit(registerValue, self.IOCONINTPOL, intpol)
         # set ODR pin
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.IOCON, registerValue)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IOCON, registerValue)
 
     # configure interrupt setting for a specific pin. set on or off
     def configPinInterrupt(self, pin, enabled, compareMode=0, defval=0):
@@ -235,11 +235,11 @@ class IC_MCP23017(object):
     # private function to return pin and value from an interrupt
     def _readInterruptRegister(self, port):
         assert port in (0,1), "Port to get interrupts from must be 0 or 1!"
-        interrupted = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTFA if port==0 else IC_MCP23017.INTCAPB)
+        interrupted = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFA if port==0 else IC_MCP23017.INTCAPB)
         if interrupted:
             pin = int(math.log(interrupted, 2))  # first non 0 pin having triggered the interrupt
             # get the value of the pin
-            value_register = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTCAPA if port==0 else IC_MCP23017.INTCAPB)
+            value_register = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTCAPA if port==0 else IC_MCP23017.INTCAPB)
             return pin if port==0 else pin + 8, int(value_register & (1 << pin) != 0)
         else:
             return None, 0
@@ -247,18 +247,18 @@ class IC_MCP23017(object):
         # value = 0
         # pin = None
         # if port == 0:
-        #     interruptedA = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTFA)
+        #     interruptedA = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFA)
         #     if interruptedA != 0:
         #         pin = int(math.log(interruptedA, 2))
         #         # get the value of the pin
-        #         valueRegister = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTCAPA)
+        #         valueRegister = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTCAPA)
         #         if valueRegister & (1 << pin) != 0: value = 1
         # else:
-        #     interruptedB = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTFB)
+        #     interruptedB = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFB)
         #     if interruptedB != 0:
         #         pin = int(math.log(interruptedB, 2))
         #         # get the value of the pin
-        #         valueRegister = self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTCAPB)
+        #         valueRegister = self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTCAPB)
         #         if valueRegister & (1 << pin) != 0: value = 1
         #         # want return 0-15 pin value, so add 8
         #         pin = pin + 8
@@ -289,48 +289,48 @@ class IC_MCP23017(object):
     # return 0 if everything is ok
     # return 1 if the interrupts had to be forcefully cleared
     def clearInterrupts(self):
-        if self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTFA) > 0 or self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTFB) > 0:
+        if self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFA) > 0 or self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFB) > 0:
             iterations = 3
             count = 1
             # loop to check multiple times to lower chance of false positive
             while count <= iterations:
-                if self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTFA) == 0 and self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.INTFB) == 0:
+                if self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFA) == 0 and self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.INTFB) == 0:
                     return 0
                 else:
                     time.sleep(.5)
                     count += 1
             # if we made it to the end of the loop, reset
             if count >= iterations:
-                self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.GPIOA)
-                self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.GPIOB)
+                self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA)
+                self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOB)
                 return 1
 
     # cleanup function - set values everything to safe values
     # should be called when program is exiting
     def cleanup(self):
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.IODIRA, 0xFF)  # all inputs on port A
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.IODIRB, 0xFF)  # all inputs on port B
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IODIRA, 0xFF)  # all inputs on port A
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IODIRB, 0xFF)  # all inputs on port B
         # make sure the output registers are set to off
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPIOA, 0x00)
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPIOB, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPIOA, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPIOB, 0x00)
         # disable the pull-ups on all ports
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPPUA, 0x00)
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPPUB, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPPUA, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPPUB, 0x00)
         # clear the IOCON configuration register, which is chip default
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.IOCON, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.IOCON, 0x00)
 
         # disable interrupts on all pins 
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPINTENA, 0x00)
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.GPINTENB, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPINTENA, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.GPINTENB, 0x00)
         # interrupt on change register set to compare to previous value by default
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.INTCONA, 0x00)
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.INTCONB, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.INTCONA, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.INTCONB, 0x00)
         # interrupt compare value registers
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.DEFVALA, 0x00)
-        self.pig.i2c_write_byte_date(self.i2c_handle, IC_MCP23017.DEFVALB, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.DEFVALA, 0x00)
+        self.pig.i2c_write_byte_data(self.i2c_handle, IC_MCP23017.DEFVALB, 0x00)
         # clear any interrupts to start fresh
-        self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.GPIOA)
-        self.pig.i2c_read_byte_date(self.i2c_handle, IC_MCP23017.GPIOB)
+        self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOA)
+        self.pig.i2c_read_byte_data(self.i2c_handle, IC_MCP23017.GPIOB)
 
 if __name__ == "__main__":
     import pigpio
