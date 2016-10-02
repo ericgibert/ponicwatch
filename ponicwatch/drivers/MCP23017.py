@@ -112,7 +112,7 @@ class IC_MCP23017(object):
         assert 0 <= pin < 8, "Pin number %s is invalid, only 0-%s are valid" % (pin, 7)
         # if we don't know what the current register's full value is then get it first
         if curValue is None:
-            curValue = self.pig.i2c_read_byte(register)
+            curValue = self.pig.i2c_read_byte_data(self.i2c_handle, register)
         # set the single bit that corresponds to the specific pin within the full register value
         newValue = self._changeBit(curValue, pin, value)
         # write and return the full register value
