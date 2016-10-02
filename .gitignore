@@ -67,3 +67,4 @@ Private/
 /drivers
 ponicwatch/ponicwatch (copy).db
 www/
+drivers/Adafruit_Python_DHT
