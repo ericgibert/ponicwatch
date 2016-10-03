@@ -98,6 +98,10 @@ class IC_MCP23017(object):
         self._read_byte(IC_MCP23017.GPIOA)
         self._read_byte(IC_MCP23017.GPIOB)
 
+        # define interruption
+        self.config_system_interrupt(mirror=False, intpol=1)
+
+
     def _write_byte(self, register, value):
         """helper function"""
         self.pig.i2c_write_byte_data(self.i2c_handle, register, value)
@@ -182,7 +186,7 @@ class IC_MCP23017(object):
 
     ### configure system  - interrupt settings ###
 
-    def configSystemInterrupt(self, mirror, intpol):
+    def config_system_interrupt(self, mirror, intpol):
         """
         :param mirror: are the int pins mirrored? True=yes, False=INTA associated with PortA, INTB associated with PortB
         :param intpol: polarity of the int pin. 1=active-high, 0=active-low
@@ -236,6 +240,14 @@ class IC_MCP23017(object):
             return pin if port==0 else pin + 8, int(value_register & (1 << pin) != 0)
         else:
             return None, None
+
+    @staticmethod
+    def pigpio_callback(gpio, level, tick):
+        """
+        Callback when Raspberry Pi 'gpio' pin receives an interrupt
+        Need to wire the INTA to that pin
+        """
+        print("Interrupt", gpio, level, tick)
 
     def on_interrupt(self, port=None):
         """

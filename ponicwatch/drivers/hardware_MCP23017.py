@@ -32,13 +32,13 @@ class Hardware_MCP23017(object):
         value = float(self.IC.input(eval(pin)))
         return (value, value)
 
-    def write(self, param):
+    def write(self, pin_value):
         """
         Write value (0,1) to the pin
-        :param param: tuple (pin, value)
+        :param pin_value: tuple (pin, value)
         :return:
         """
-        pin, value = param
+        pin, value = pin_value
         self.IC.output(pin, value)
 
     def cleanup(self):
