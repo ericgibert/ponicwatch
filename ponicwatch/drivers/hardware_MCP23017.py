@@ -179,7 +179,7 @@ class Hardware_MCP23017(object):
             self.outputvalue = self._read_and_change_pin(Hardware_MCP23017.GPIOB, pin - 8, value, self._read_byte(Hardware_MCP23017.OLATB))
         return self.outputvalue
 
-    def read(self, pin):
+    def read(self, pin, param=None):
         """
         read the value of a pin - the pin can be either set as INPUT or OUTPUT -
         return a 1 or 0
