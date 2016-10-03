@@ -186,8 +186,8 @@ class Hardware_MCP23017(object):
         """
         assert 0 <= pin < self.num_gpios, "Pin number %s is invalid, only 0-%s are valid" % (pin, self.num_gpios)
         regValue = self._read_byte(Hardware_MCP23017.GPIOA if pin < 8 else Hardware_MCP23017.GPIOB)
-        if pin >= 8: pin -= 8
-        return int(regValue & (1 << pin) != 0)
+        value = int(regValue & (1 << (pin if pin < 8 else pin - 8)) != 0)
+        return (value, value)
 
 
     ### configure system  - interrupt settings ###
