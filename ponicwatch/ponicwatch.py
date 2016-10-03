@@ -15,6 +15,20 @@ try:
     _simulation = False
 except ImportError:
     _simulation = True
+    from random import randint
+    class pigpio_simu():
+        def __init__(self):
+            pass
+        def i2c_open(self, busnum, address):
+            return 1
+        def i2c_read_byte_data(self, handle, register):
+            sim = randint(0, 255)
+            print("Simulation read byte pigpio", sim, "from register", register)
+            return sim
+        def i2c_write_byte_data(self, handle, register, value):
+            print("Simulation write byte pigpio", value, "on register", register)
+        def callback(self, interrupt, func):
+            pass
 
 
 from system import System
@@ -51,7 +65,7 @@ class Controller(object):
         self.scheduler = BackgroundScheduler()
 
         # select all the systems, sensors, switches to monitor and the hardware drivers
-        self.pig = pigpio.pi() if not _simulation else None
+        self.pig = pigpio.pi() if not _simulation else pigpio_simu()
         self.systems, self.sensors, self.switches, self.hardwares = {}, {}, {}, {}
         self.db.open()
         try:
@@ -66,7 +80,7 @@ class Controller(object):
             if system_id not in self.systems:
                 self.systems[system_id] = System(self, id=system_id)
             if hardware_id and hardware_id not in self.hardwares:
-                self.hardwares[hardware_id] = Hardware(self, id=hardware_id)
+                self.hardwares[hardware_id] = Hardware(controller=self, id=hardware_id)
 
             if sensor_id and sensor_id not in self.sensors:
                     new_switch_or_sensor = self.sensors[sensor_id] = Sensor(controller=self,

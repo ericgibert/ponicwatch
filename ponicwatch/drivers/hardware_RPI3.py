@@ -48,15 +48,12 @@ class Hardware_RPI3(object):
                 self.pig.set_mode(o, pigpio.OUTPUT)
                 self.pig.write(o, 0)
 
-
     def read(self, pin, param=None):
         return self.pig.read(pin) if pin in self.in_out["IN"] else None
 
-
-    def write(self, param):
-        pin, value = param
-        if pin in self.in_out["OUT"]: self.pig.write(pin, value)
-
+    def write(self, pin, value):
+        if pin in self.in_out["OUT"]:
+            self.pig.write(pin, value)
 
     def set_pin_as_input(self, pin):
         """Already done at __init__"""

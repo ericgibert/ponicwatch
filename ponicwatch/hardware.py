@@ -7,10 +7,11 @@
     Each hardware will have a driver to interact with defined in the 'drivers' module
 """
 from model.model import Ponicwatch_Table
-from drivers.hardware_dht import Hardware_DHT
+from drivers.hardware_DHT import Hardware_DHT
 from drivers.hardware_DS18B20 import Hardware_DS18B20
 from drivers.hardware_RPI3 import Hardware_RPI3
 from drivers.hardware_MCP23017 import Hardware_MCP23017
+from drivers.hardware_MCP3208 import Hardware_MCP3208
 
 class Hardware(Ponicwatch_Table):
     """
@@ -42,43 +43,40 @@ class Hardware(Ponicwatch_Table):
     def __init__(self, controller, *args, **kwargs):
         super().__init__(controller.db, Hardware.META, *args, **kwargs)
         self.is_debug = controller.is_debug
-        # based on the "hardware" name, associate the proper driver object
-        if self["hardware"] in ["DHT11", "DHT22", "AM2302"]:
-            self._IC = Hardware_DHT(pig=controller.pig, model=self["hardware"], pin=self["init"])
-        elif self["hardware"] in ["DS18B20"]:
-            self._IC = Hardware_DS18B20(device_folder=self["init"])
-        elif self["hardware"] in ["RPI3"]:
-            self._IC = Hardware_RPI3(pig=controller.pig, in_out=self["init"])
-        elif self["hardware"] in ["MCP23017"]:
-            busnum, i2c_address = self["init"].split('.')  # example for Raspi 3:   "1.0x20"
-            self._IC = Hardware_MCP23017(pig=controller.pig, i2c_addr=eval(i2c_address), bus=int(busnum))
+        hardware, hw_init = self["hardware"], self["init"]
+        if hardware in Hardware_DHT.supported_models:  # DHT11|DHT22|AM2302
+            self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=get_pin(hw_init))
+        elif hardware in ["DS18B20"]:
+            self.driver = Hardware_DS18B20(device_folder=hw_init)
+        elif hardware in ["RPI3"]:
+            self.driver = Hardware_RPI3(pig=controller.pig, in_out=hw_init)
+        elif hardware in ["MCP23017"]:
+            self.driver = Hardware_MCP23017(pig=controller.pig, bus_address_inter=hw_init)
+        elif hardware in ["MCP3208"]:
+            self.driver = Hardware_MCP3208(pig=controller.pig, trx_flags=hw_init)
         else:
-            raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], self["hardware"]))
+            raise ValueError("Unknown hardware declared: {0} {1}".format(id, hardware))
 
-    def read(self, pins, param):
+    def read(self, pin, param):
         if self.is_debug:
-            print("Hardware read (pins, param) =", (pins, param))
-        return self._IC.read(pins, param)
+            print("Hardware read (pin, param) =", (pin, param))
+        return self.driver.read(get_pin(pin), param)
 
-    def write(self, param):
+    def write(self, pin, value):
         """param is a tuple (pin, value)"""
-        return self._IC.write(param)
+        return self.driver.write(get_pin(pin), value)
 
     def cleanup(self):
-        """overdefine if needed"""
-        pass
-
-    def set_pin_as_input(self, pins):
         try:
-            self._IC.set_pin_as_input(eval(pins))
-        except TypeError:
+            self.driver.cleanup()
+        except AttributeError:
             pass
 
-    def set_pin_as_output(self, pins):
-        try:
-            self._IC.set_pin_as_output(eval(pins))
-        except TypeError:
-            pass
+    def set_pin_as_input(self, pin):
+        self.driver.set_pin_as_input(get_pin(pin))
+
+    def set_pin_as_output(self, pin):
+        self.driver.set_pin_as_output(get_pin(pin))
 
     @classmethod
     def all_keys(cls, db):
@@ -86,3 +84,17 @@ class Hardware(Ponicwatch_Table):
 
     def __str__(self):
         return "{} ({})".format(self["name"], Hardware.MODE[self["mode"]])
+
+# helper function #
+def get_pin(str_pin):
+    """Accept a string representing an integer (base 10 or Hex) or A0,...,A7,B0,...,B7"""
+    try:
+        pin = int(str_pin)
+    except ValueError:
+        if str_pin.startswith("0x"):
+            pin = eval(str_pin)
+        elif str_pin[0] in ('A', 'B') and '0' <= str_pin[1] <= '7':
+            pin = 8 * (str_pin[0] == 'B') + int(str_pin[1])
+        else:
+            pin = None
+    return pin

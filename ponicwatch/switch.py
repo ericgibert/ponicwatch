@@ -59,12 +59,12 @@ class Switch(Ponicwatch_Table):
         """
         super().get_record(id, name)
         self.hw_components = self["hardware"].split('.')  # example:"RPI3.4.0" --> ['RPI3', '4', '0]
-        self.IC, self.pin, self.set_value_to = self.hw_components[0], int(self.hw_components[1]), int(self.hw_components[2])
+        self.IC, self.pin, self.set_value_to = self.hw_components[0], self.hw_components[1], int(self.hw_components[2])
         self.hw_id = self.IC + '.' + str(self.pin) #  like "RPI3.4"  pin 4 on chip AM2302
 
     def execute(self):
         """on timer/scheduler"""
-        self.hardware.write( (self.pin, self.set_value_to) )
+        self.hardware.write(self.pin, self.set_value_to)
         self.update_value(self.set_value_to)
         self.controller.log.add_log(system_name=self.system_name, param=self)
 

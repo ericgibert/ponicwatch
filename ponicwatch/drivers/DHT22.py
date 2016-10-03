@@ -7,7 +7,7 @@ import atexit
 
 import pigpio
 
-class sensor:
+class dht_sensor:
    """
    A class to read relative humidity and temperature from the
    DHT22 sensor.  The sensor is also known as the AM2302.

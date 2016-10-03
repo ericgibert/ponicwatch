@@ -94,7 +94,6 @@ class Ponicwatch_Table(dict):
             self.execute_sql(sql, [v for c, v in col_value])
             self.get_record(id=self.db.curs.lastrowid)  # reload data after the update
 
-
     @classmethod
     def all_keys(cls, db, META):
         """return all the keys found in the table"""
@@ -105,5 +104,16 @@ class Ponicwatch_Table(dict):
         finally:
             db.close()
         return [r[0] for r in rows]
+
+    @classmethod
+    def get_field_value(cls, db, META, id, field):
+        """return the unique value from the table.field matching the id"""
+        try:
+            db.open()
+            db.curs.execute("SELECT {0} from {1} where {2}={3}".format(field, META["table"], META["id"], id))
+            row = db.curs.fetchone()
+        finally:
+            db.close()
+        return row
 
 
