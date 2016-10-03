@@ -9,11 +9,11 @@ from datetime import datetime
 from time import sleep
 
 try:
-    from drivers.DHT22 import sensor
+    from drivers.DHT22 import dht_sensor
 except ImportError:
     from random import randint
     print("Simulation for DHT22")
-    class sensor():
+    class dht_sensor():
         def __init__(self, pig, pin):
             pass
         def read_retry(self, model, pin):
@@ -29,17 +29,18 @@ class Hardware_DHT(object):
     """
         Only expects a GPI pin for dialog
     """
+    supported_models = ("DHT11", "DHT22", "AM2302")
     def __init__(self, pig, model, pin):
         """
         :param pig: instance of a pigpio object cretaed by the controller
         :param model: DHT11|DHT22|AM2302
-        :param pin: the data pin of the IC
+        :param pin: the IC data pin on the Raspberry Pi
         """
-        self.model, self.pin = (11 if model=='DHT11' else 22), int(pin)
+        self.model, self.pin = (11 if model=='DHT11' else 22), pin
         self.temperature = None
         self.humidity = None
         self.last_read = datetime.now()
-        self.sensor = sensor(pig, self.pin)
+        self.sensor = dht_sensor(pig, self.pin)
       
 
     def read(self, pins, T_or_H):
