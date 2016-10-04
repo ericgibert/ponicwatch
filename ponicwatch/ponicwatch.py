@@ -44,7 +44,7 @@ DEBUG = True  # activate the Debug mode or not
 class Controller(object):
     """The Controller in a MVC model"""
 
-    def __init__(self, db):
+    def __init__(self, db, host=""):
         """- Create the controller, its Viewer and connect to database (Model)
            - Select all the hardware (sensors/switches) for the systems under its control
            - Launch the scheduler
@@ -65,7 +65,7 @@ class Controller(object):
         self.scheduler = BackgroundScheduler()
 
         # select all the systems, sensors, switches to monitor and the hardware drivers
-        self.pig = pigpio.pi() if not _simulation else pigpio_simu()
+        self.pig = pigpio.pi(host) if not _simulation else pigpio_simu()
         self.systems, self.sensors, self.switches, self.hardwares = {}, {}, {}, {}
         self.db.open()
         try:
@@ -137,12 +137,13 @@ def exist_file(x):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--sqlite", dest="dbfilename", help="Path of a Sqlite3 database.")  # type=exist_file, # required=False,
+    parser.add_argument("-r", "--raspi", dest="host", help="Optional: remote Raspberry Pi IP address", required=False, default="")
     # parser.add_argument('config_file', nargs='?', default='')
     args, unk = parser.parse_known_args()
 
     if args.dbfilename:
         db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename})
-        ctrl = Controller(db)
+        ctrl = Controller(db, host=args.host)
         ctrl.run()
     else:
         print("currently: -s dbfilename is mandatory")
