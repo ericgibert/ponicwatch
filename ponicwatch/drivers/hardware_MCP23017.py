@@ -100,7 +100,6 @@ class Hardware_MCP23017(object):
         # define interruption
         if interrupt:
             self.config_system_interrupt(mirror=Hardware_MCP23017.INTMIRROROFF, intpol=Hardware_MCP23017.INTPOLACTIVEHIGH)
-            self.pig.callback(interrupt, self.pigpio_callback)
 
     def _write_byte(self, register, value):
         """helper function"""
