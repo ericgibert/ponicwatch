@@ -3,6 +3,7 @@
     Manage the GPIO port of a Raspberry Pi model 3B and other compatible
     - write on Output pins
     - read input pins
+    - catch interruption
 
     the tb_hardware.init value is a dictionary identifying the IN and OUT pins
 
@@ -44,9 +45,16 @@ class Hardware_RPI3(object):
         else:
             for i in self.in_out["IN"]:
                 self.pig.set_mode(i, pigpio.INPUT)
+                self.pig.set_pull_up_down(i, pigpio.PUD_DOWN)
             for o in self.in_out["OUT"]:
                 self.pig.set_mode(o, pigpio.OUTPUT)
                 self.pig.write(o, 0)
+            try:
+                for i in self.in_out["INTER"]:
+                    self.pig.callback(i, pigpio.RISING_EDGE, self.pigpio_callback)
+            except KeyError:
+                # no interruptions
+                pass
 
     def read(self, pin, param=None):
         return self.pig.read(pin) if pin in self.in_out["IN"] else None
@@ -64,3 +72,11 @@ class Hardware_RPI3(object):
         """Already done at __init__"""
         # self.pig.set_mode(pin, pigpio.OUTPUT)
         pass
+
+    @staticmethod
+    def pigpio_callback(gpio, level, tick):
+        """
+        Callback when Raspberry Pi 'gpio' pin receives an interrupt
+        Need to wire the INTA to that pin
+        """
+        print("PGPIO Interrupt", gpio, level, tick)

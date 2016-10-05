@@ -246,14 +246,6 @@ class Hardware_MCP23017(object):
         else:
             return None, None
 
-    @staticmethod
-    def pigpio_callback(gpio, level, tick):
-        """
-        Callback when Raspberry Pi 'gpio' pin receives an interrupt
-        Need to wire the INTA to that pin
-        """
-        print("Interrupt", gpio, level, tick)
-
     def on_interrupt(self, port=None):
         """
         this function should be called when INTA or INTB is triggered to indicate an interrupt occurred
