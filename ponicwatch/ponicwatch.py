@@ -8,6 +8,7 @@ import argparse
 import os.path
 from time import sleep
 from threading import BoundedSemaphore
+from random import randint
 
 from apscheduler.schedulers.background import BackgroundScheduler
 try:
@@ -107,6 +108,11 @@ class Controller(object):
             # This is here to simulate application activity (which keeps the main thread alive).
             while self.running :
                 sleep(2)
+                # simulate the generation of an interrupt
+                if _simulation and self.pig.inter_pin:
+                    value = randint(0, 2)
+                    if value == 0:
+                        self.pig.func(self.pig.inter_pin, 1, 30000)
         except (KeyboardInterrupt, SystemExit):
             pass
         finally:

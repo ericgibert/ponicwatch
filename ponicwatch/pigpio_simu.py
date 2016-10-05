@@ -4,8 +4,10 @@
 from random import randint
 
 class pi():
+    connected = False
     def __init__(self):
         print("INFO --> PIGPIO simulation activated")
+        self.inter_pin = None
 
     def i2c_open(self, busnum, address):
         return 1
@@ -18,12 +20,10 @@ class pi():
     def i2c_write_byte_data(self, handle, register, value):
         print("Simulation write byte pigpio", value, "on register", register)
 
-    def callback(self, interrupt, func):
-        pass
-
-    def read(self, pin):
-        print("Simulation reading RPI3.%d" % pin)
-        return randint(0, 1)
+    def read(self, pin, param=None):
+        data = randint(0, 1)
+        print("Simulation reading RPI3.%d [%d]" % (pin, data))
+        return data
 
     def write(self, pin, value):
         print("Simulation writing %d to pin RPI3.%d" % (value, pin))
@@ -35,7 +35,8 @@ class pi():
         pass
 
     def callback(self, pin, edge, func):
-        pass
+        self.inter_pin = pin
+        self.func = func
 
     def set_mode(self, pin, value):
         pass

@@ -3,7 +3,7 @@
     Created by Eric Gibert on 29 Apr 2016
     model.py: the database model which can be used on both locally Sqlite3 and MySQL (or equivalent like MAriaDB) in the Cloud.
 """
-
+from sqlite3 import InterfaceError
 class Ponicwatch_Table(dict):
     """associates a dictionary object to a table record"""
     def __init__(self, db, META, *args, **kwargs):
@@ -33,6 +33,10 @@ class Ponicwatch_Table(dict):
             try:
                 self.db.curs.execute(sql, params)
                 self.db.conn.commit()
+            except InterfaceError as err:
+                print('*'*30, err)
+                print(sql)
+                print(params)
             finally:
                 self.db.close()
 

@@ -58,13 +58,19 @@ class Hardware(Ponicwatch_Table):
             raise ValueError("Unknown hardware declared: {0} {1}".format(id, hardware))
 
     def read(self, pin, param):
+        """
+        Fetch a two values tuple from the driver
+        :param pin: pin number on the driver
+        :param param: optional
+        :return: (read raw value, calculated value) must be returned by the driver
+        """
         if self.is_debug:
             print("Hardware read (pin, param) =", (pin, param))
         return self.driver.read(get_pin(pin), param)
 
     def write(self, pin, value):
         """param is a tuple (pin, value)"""
-        return self.driver.write(get_pin(pin), value)
+        self.driver.write(get_pin(pin), value)
 
     def cleanup(self):
         try:

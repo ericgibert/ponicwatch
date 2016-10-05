@@ -8,6 +8,7 @@
 """
 from datetime import datetime, timezone
 from model.model import Ponicwatch_Table
+from drivers.hardware_RPI3 import CALLBACKS
 
 class Sensor(Ponicwatch_Table):
     """
@@ -53,30 +54,50 @@ class Sensor(Ponicwatch_Table):
             self.hardware.set_pin_as_input(self.pins)
         self.system_name = system_name + "/" + self["name"]
         self.controller.add_cron_job(self.execute, self["timer"])
+        # attach the Interrupt on the Raspi pin if requested
+        if self.IC == "RPI3" and self.hw_param:
+            pin = int(self.hw_param)
+            if pin in CALLBACKS:
+                CALLBACKS[pin].append(self.on_interrupt)
+            else:
+                CALLBACKS[pin] = [self.on_interrupt]
 
     def get_record(self, id=None, name=None):
         """
         Fetch one record from tb_sensor matching either of the given parameters
         :param name: tb_sensor.name (string)
         :param id: tb_sensor.sensor_id (int)
+
+        example:
+        "AM2302.4.T" --> ['AM2302', '4', 'T'] --> 'T' for temperature, 'H' for humidity
+        "RPI3.4" --> ['RPI3', '4', None] --> Simply reads pin 4 from the Raspi
+        "RPI3.4.16" --> ['RPI3', '4', '16'] --> Read pin 4 and declare an interrupt on pin 16
         """
         super().get_record(id, name)
-        hw_parts = self["hardware"].split('.')  # example:"AM2302.4.T" --> ['AM2302', '4', 'T']
+        hw_parts = self["hardware"].split('.')
         self.IC, self.pins, self.hw_param = hw_parts[0], hw_parts[1], hw_parts[2] if len(hw_parts) == 3 else None
 
     def execute(self):
         """Called by the scheduler to perform the data reading"""
-        read_val, calc_val = self.hardware.read(self.pins, self.hw_param)
-        if read_val is None:
-            self.controller.log.add_error("Cannot read from " + str(self), self["id"])
+        try:
+            read_val, calc_val = self.hardware.read(self.pins, self.hw_param)
+        except TypeError as err:
+            print('*'*30, err)
+            print(self.hardware, self.pins, self.hw_param)
         else:
-            self.update_values(read_val, calc_val)
-            self.controller.log.add_log(system_name=self.system_name, param=self)
+            if read_val is None:
+                self.controller.log.add_error("Cannot read from " + str(self), self["id"])
+            else:
+                self.update_values(read_val, calc_val)
+                self.controller.log.add_log(system_name=self.system_name, param=self)
 
     def update_values(self, read_value, calculated_value):
         self.update(read_value=read_value,
                     calculated_value=calculated_value,
                     updated_on=datetime.now(timezone.utc))
+
+    def on_interrupt(self):
+        print("Ready to take care of the interrupt", self)
 
     @classmethod
     def all_keys(cls, db):

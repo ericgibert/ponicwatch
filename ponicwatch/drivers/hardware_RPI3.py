@@ -17,8 +17,13 @@ try:
     _simulation = False
 except ImportError:
     _simulation = True
-    import pigpio_simu
+    class pigpio():
+        INPUT=1
+        OUTPUT=0
+        PUD_DOWN=0
+        RISING_EDGE=1
 
+CALLBACKS = {}   # dictionary keeping the functions to callback (value list) when an interrupt is received on the pin (key)
 
 class Hardware_RPI3(object):
     """
@@ -30,11 +35,13 @@ class Hardware_RPI3(object):
         :param pig: instance of a pigpio object cretaed by the controller
         :param in_out: JSON string for a dictionary of IN and OUT pins like {"IN": (1,2,3), "OUT":(4,5,6)}
         """
+        global CALLBACKS
         self.pig = pig
         try:
             self.in_out = json.loads(in_out)
-        except json.decoder.JSONDecodeError:
+        except ValueError as err:
             print("Error: cannot decode the RPI3['init'] dictionary:", in_out)
+            print(err)
             exit(-1)
         else:
             for i in self.in_out["IN"]:
@@ -51,7 +58,8 @@ class Hardware_RPI3(object):
                 pass
 
     def read(self, pin, param=None):
-        return self.pig.read(pin) if pin in self.in_out["IN"] else None
+        data = float(self.pig.read(pin)) if pin in self.in_out["IN"] else None
+        return data, data
 
     def write(self, pin, value):
         if pin in self.in_out["OUT"]:
@@ -73,4 +81,7 @@ class Hardware_RPI3(object):
         Callback when Raspberry Pi 'gpio' pin receives an interrupt
         Need to wire the INTA to that pin
         """
-        print("PGPIO Interrupt", gpio, level, tick)
+        print("****  PGPIO Interrupt   ****", gpio, level, tick)
+        if gpio in CALLBACKS:
+            for func in CALLBACKS[gpio]:
+                func()
