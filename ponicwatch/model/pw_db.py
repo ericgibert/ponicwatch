@@ -117,13 +117,24 @@ sql_statements = {
     "name" TEXT
 )
 """,
-'tb_link': """CREATE TABLE "tb_link" (
+'tb_link': """CREATE TABLE tb_link (
     "system_id" INTEGER NOT NULL,
     "sensor_id" INTEGER,
     "switch_id" INTEGER,
-    "hardware_id" INTEGER
+    "hardware_id" INTEGER,
+    "order_for_creation" INTEGER  NOT NULL  DEFAULT (0),
+    "interrupt_id" INTEGER)
+""",
+ 'tb_interrupt': """CREATE TABLE tb_interrupt (
+    "interrupt_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "hardware" TEXT NOT NULL,
+    "init" TEXT,
+    "threshold" INTEGER NOT NULL DEFAULT (0),
+    "updated_on" TIMESTAMP,
+    "synchro_on" TIMESTAMP
 )
-"""
+    """
 }
 
 
