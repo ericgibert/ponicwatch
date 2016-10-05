@@ -8,7 +8,6 @@ import argparse
 import os.path
 from time import sleep
 from threading import BoundedSemaphore
-from random import randint
 
 from apscheduler.schedulers.background import BackgroundScheduler
 try:
@@ -32,11 +31,12 @@ DEBUG = True  # activate the Debug mode or not
 class Controller(object):
     """The Controller in a MVC model"""
 
-    def __init__(self, db, host=""):
+    def __init__(self, db, host="", port=8888):
         """- Create the controller, its Viewer and connect to database (Model)
            - Select all the hardware (sensors/switches) for the systems under its control
            - Launch the scheduler
         """
+        global _simulation
         self.is_debug = DEBUG
         # keep a link to the database i.e. M in MVC
         self.db = db
@@ -53,10 +53,11 @@ class Controller(object):
         self.scheduler = BackgroundScheduler()
 
         # select all the systems, sensors, switches to monitor and the hardware drivers
-        self.pig = pigpio.pi(host, '8888') if not _simulation else pigpio_simu.pi()
+        self.pig = pigpio.pi(host, port) if not _simulation else pigpio_simu.pi()
         if not self.pig.connected:
             print("WARNING: not connected to a RasPi")
             self.pig = pigpio_simu.pi()
+            _simulation = True
         self.systems, self.sensors, self.switches, self.hardwares = {}, {}, {}, {}
         self.db.open()
         try:
@@ -86,7 +87,7 @@ class Controller(object):
 
     def add_cron_job(self, callback, cron_time):
         # When do we need to read the sensor or activate a switch?
-        # ┌───────────── sec (0 - 59)      
+        # ┌───────────── sec (0 - 59)
         # | ┌───────────── min (0 - 59)
         # | │ ┌────────────── hour (0 - 23)
         # | │ │ ┌─────────────── day of month (1 - 31)
@@ -108,11 +109,6 @@ class Controller(object):
             # This is here to simulate application activity (which keeps the main thread alive).
             while self.running :
                 sleep(2)
-                # simulate the generation of an interrupt
-                if _simulation and self.pig.inter_pin:
-                    value = randint(0, 2)
-                    if value == 0:
-                        self.pig.func(self.pig.inter_pin, 1, 30000)
         except (KeyboardInterrupt, SystemExit):
             pass
         finally:

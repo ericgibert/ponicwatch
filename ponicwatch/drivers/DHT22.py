@@ -4,7 +4,6 @@
 
 import time
 import atexit
-
 import pigpio
 
 class dht_sensor:

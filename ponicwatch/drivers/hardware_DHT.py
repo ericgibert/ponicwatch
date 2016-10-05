@@ -11,19 +11,20 @@ from time import sleep
 try:
     from drivers.DHT22 import dht_sensor
 except ImportError:
-    from random import randint
     print("Simulation for DHT22")
-    class dht_sensor():
-        def __init__(self, pig, pin):
-            pass
-        def read_retry(self, model, pin):
-            print("DHT simulation")
-            self.trigger()
-            return (self._humidity, self._temperature)
-        def humidity(self): return self._humidity
-        def temperature(self): return self._temperature
-        def trigger(self):
-            self._humidity, self._temperature = randint(50, 80), randint(25, 35)
+
+from random import randint
+class dht_sensor_simu():
+    def __init__(self, pig, pin):
+        pass
+    def read_retry(self, model, pin):
+        print("DHT simulation")
+        self.trigger()
+        return (self._humidity, self._temperature)
+    def humidity(self): return self._humidity
+    def temperature(self): return self._temperature
+    def trigger(self):
+        self._humidity, self._temperature = randint(50, 80), randint(25, 35)
 
 class Hardware_DHT(object):
     """
@@ -40,7 +41,7 @@ class Hardware_DHT(object):
         self.temperature = None
         self.humidity = None
         self.last_read = datetime.now()
-        self.sensor = dht_sensor(pig, self.pin)
+        self.sensor = dht_sensor(pig, self.pin) if pig.connected else dht_sensor_simu(pig, self.pin)
       
 
     def read(self, pins, T_or_H):
