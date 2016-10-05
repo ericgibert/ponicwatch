@@ -9,7 +9,7 @@
 from model.model import Ponicwatch_Table
 from drivers.hardware_DHT import Hardware_DHT
 from drivers.hardware_DS18B20 import Hardware_DS18B20
-from drivers.hardware_RPI3 import Hardware_RPI3
+from drivers.hardware_RPI3 import Hardware_RPI3, CALLBACKS as RPI3_CALLBACKS
 from drivers.hardware_MCP23017 import Hardware_MCP23017
 from drivers.hardware_MCP3208 import Hardware_MCP3208
 
@@ -83,6 +83,24 @@ class Hardware(Ponicwatch_Table):
 
     def set_pin_as_output(self, pin):
         self.driver.set_pin_as_output(get_pin(pin))
+
+    def register_interrupt(self, pin, callback):
+        # attach the Interrupt on the IC pin if requested
+        pin = get_pin(pin)
+        if pin in RPI3_CALLBACKS:
+            RPI3_CALLBACKS[pin].append(callback)
+        else:
+            RPI3_CALLBACKS[pin] = [callback]
+        # if self.is_debug:
+        #     print("Add to RPI3_CALLBACKS:")
+        #     print(RPI3_CALLBACKS)
+
+    def get_callbacks(self):
+        try:
+            callbacks = self.driver.get_callbacks()
+        except AttributeError:
+            callbacks = {}
+        return callbacks
 
     @classmethod
     def all_keys(cls, db):

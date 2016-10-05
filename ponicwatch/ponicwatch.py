@@ -8,6 +8,7 @@ import argparse
 import os.path
 from time import sleep
 from threading import BoundedSemaphore
+from random import choice
 
 from apscheduler.schedulers.background import BackgroundScheduler
 try:
@@ -25,6 +26,7 @@ from user import User
 from sensor import Sensor
 from switch import Switch
 from hardware import Hardware
+from interrupt import Interrupt
 
 DEBUG = True  # activate the Debug mode or not
 
@@ -59,28 +61,37 @@ class Controller(object):
             print("WARNING: not connected to a RasPi")
             self.pig = pigpio_simu.pi()
             _simulation = True
-        self.systems, self.sensors, self.switches, self.hardwares = {}, {}, {}, {}
+        self.systems, self.sensors, self.switches, self.hardwares, self.interrupts = {}, {}, {}, {}, {}
         self.db.curs.execute("SELECT * from tb_link where system_id > 0 order by system_id, order_for_creation")
         self.links = self.db.curs.fetchall()
         for system_id, sensor_id, switch_id, hardware_id, order_for_creation, interrupt_id in self.links:
             # (1) create all necessary objects
             # (2) and register the system and hardware to a sensor/switch
-            new_switch_or_sensor = None
             if system_id not in self.systems:
                 self.systems[system_id] = System(self, id=system_id)
             if hardware_id and hardware_id not in self.hardwares:
                 self.hardwares[hardware_id] = Hardware(controller=self, id=hardware_id)
+                if self.hardwares[hardware_id]["hardware"] == 'RPI3':
+                    self.RPI3 = self.hardwares[hardware_id]
 
             if sensor_id and sensor_id not in self.sensors:
-                    new_switch_or_sensor = self.sensors[sensor_id] = Sensor(controller=self,
-                                                                            id=sensor_id,
-                                                                            system_name=self.systems[system_id]["name"],
-                                                                            hardware=self.hardwares[hardware_id])
+                    self.sensors[sensor_id] = Sensor(controller=self,
+                                                     id=sensor_id,
+                                                     system_name=self.systems[system_id]["name"],
+                                                     hardware=self.hardwares[hardware_id])
             if switch_id and switch_id not in self.switches:
-                    new_switch_or_sensor = self.switches[switch_id] = Switch(controller=self,
-                                                                             id=switch_id,
-                                                                             system_name=self.systems[system_id]["name"],
-                                                                             hardware=self.hardwares[hardware_id])
+                    self.switches[switch_id] = Switch(controller=self,
+                                                      id=switch_id,
+                                                      system_name=self.systems[system_id]["name"],
+                                                      hardware=self.hardwares[hardware_id])
+
+            if interrupt_id and interrupt_id not in self.interrupts:
+                self.interrupts[interrupt_id] = Interrupt(controller=self,
+                                                          id=interrupt_id,
+                                                          system_name=self.systems[system_id]["name"],
+                                                          hardware=self.hardwares[hardware_id])
+
+
         self.db.allow_close = True
         self.db.close()
 
@@ -108,6 +119,14 @@ class Controller(object):
             # This is here to simulate application activity (which keeps the main thread alive).
             while self.running :
                 sleep(2)
+                # simulate the generation of an interrupt
+                if _simulation:
+                    try:
+                        pin = choice(list(self.RPI3.get_callbacks()))
+                        self.RPI3.driver.pigpio_callback(pin, 1, 30000)
+                    except IndexError:
+                        print("No choice possible in empty callbacks")
+
         except (KeyboardInterrupt, SystemExit):
             pass
         finally:

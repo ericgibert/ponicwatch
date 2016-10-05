@@ -28,8 +28,17 @@ class Interrupt(Ponicwatch_Table):
                 )
             }
 
-    def __init__(self, controller, *args, **kwargs):
+    def __init__(self, controller, system_name, hardware, *args, **kwargs):
         super().__init__(controller.db, Interrupt.META, *args, **kwargs)
+        self.controller = controller
+        self.hardware = hardware
+        self.system_name = system_name + "/" + self["name"]
+        self.hw_name, self.pin = self["hardware"].split('.')
+        self.hardware.register_interrupt(self.pin, self.on_interrupt)
+
+    def on_interrupt(self):
+        """Callback function"""
+        print("Call back on interrupt:", self)
 
     def __str__(self):
         return "{} ({})".format(self["name"], self["hardware"])

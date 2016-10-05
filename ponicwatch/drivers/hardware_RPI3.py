@@ -85,3 +85,6 @@ class Hardware_RPI3(object):
         if gpio in CALLBACKS:
             for func in CALLBACKS[gpio]:
                 func()
+
+    def get_callbacks(self):
+        return CALLBACKS

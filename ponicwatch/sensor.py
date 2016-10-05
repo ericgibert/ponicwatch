@@ -8,7 +8,6 @@
 """
 from datetime import datetime, timezone
 from model.model import Ponicwatch_Table
-from drivers.hardware_RPI3 import CALLBACKS as RPI3_CALLBACKS
 
 class Sensor(Ponicwatch_Table):
     """
@@ -54,13 +53,10 @@ class Sensor(Ponicwatch_Table):
             self.hardware.set_pin_as_input(self.pins)
         self.system_name = system_name + "/" + self["name"]
         self.controller.add_cron_job(self.execute, self["timer"])
-        # attach the Interrupt on the Raspi pin if requested
+        # attach the interruption if present
         if self.IC == "RPI3" and self.hw_param:
-            pin = int(self.hw_param)
-            if pin in RPI3_CALLBACKS:
-                RPI3_CALLBACKS[pin].append(self.on_interrupt)
-            else:
-                RPI3_CALLBACKS[pin] = [self.on_interrupt]
+            hardware.register_interrupt(int(self.hw_param), self.on_interrupt)
+
 
     def get_record(self, id=None, name=None):
         """
