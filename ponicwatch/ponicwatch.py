@@ -135,6 +135,18 @@ class Controller(object):
                 hw.cleanup()
         self.log.add_info("Controller has been stopped.")
 
+    def print_list(self):
+        """Print the list of all created objects in the __init__ phase"""
+        print("--- System ---")
+        for k,v in self.systems.items(): print(k,v)
+        print("--- Hardware ---")
+        for k,v in self.hardwares.items(): print(k,v)
+        print("--- Sensors ---")
+        for k,v in self.sensors.items(): print(k,v)
+        print("--- Switches ---")
+        for k,v in self.switches.items(): print(k,v)
+        print("--- Interruptions ---")
+        for k,v in self.interrupts.items(): print(k,v)
 
 def exist_file(x):
     """
@@ -148,12 +160,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--sqlite", dest="dbfilename", help="Path of a Sqlite3 database.")  # type=exist_file, # required=False,
     parser.add_argument("-r", "--raspi", dest="host", help="Optional: remote Raspberry Pi IP address", required=False, default="")
+    parser.add_argument("-l", "--list", dest="print_list", help="List all created objects - no running -", action='store_true')
     # parser.add_argument('config_file', nargs='?', default='')
     args, unk = parser.parse_known_args()
 
     if args.dbfilename:
         db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename})
         ctrl = Controller(db, host=args.host)
-        ctrl.run()
+        if args.print_list:
+            ctrl.print_list()
+        else:
+            ctrl.run()
     else:
         print("currently: -s dbfilename is mandatory")
