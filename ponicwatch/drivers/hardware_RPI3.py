@@ -17,12 +17,8 @@ try:
     _simulation = False
 except ImportError:
     _simulation = True
-    class sim_pig(object):
-        def read(self, pin):
-            print("Simulation reading RPI3.%d" % pin)
-            return 1
-        def write(self, pin, value):
-            print("Simulation writing %d to pin RPI3.%d" % (value, pin))
+    import pigpio_simu
+
 
 class Hardware_RPI3(object):
     """
@@ -40,8 +36,6 @@ class Hardware_RPI3(object):
         except json.decoder.JSONDecodeError:
             print("Error: cannot decode the RPI3['init'] dictionary:", in_out)
             exit(-1)
-        if _simulation:
-            self.pig = sim_pig()
         else:
             for i in self.in_out["IN"]:
                 self.pig.set_mode(i, pigpio.INPUT)

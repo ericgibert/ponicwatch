@@ -15,20 +15,7 @@ try:
     _simulation = False
 except ImportError:
     _simulation = True
-    from random import randint
-    class pigpio_simu():
-        def __init__(self):
-            pass
-        def i2c_open(self, busnum, address):
-            return 1
-        def i2c_read_byte_data(self, handle, register):
-            sim = randint(0, 255)
-            print("Simulation read byte pigpio", sim, "from register", register)
-            return sim
-        def i2c_write_byte_data(self, handle, register, value):
-            print("Simulation write byte pigpio", value, "on register", register)
-        def callback(self, interrupt, func):
-            pass
+import pigpio_simu
 
 
 from system import System
@@ -65,7 +52,10 @@ class Controller(object):
         self.scheduler = BackgroundScheduler()
 
         # select all the systems, sensors, switches to monitor and the hardware drivers
-        self.pig = pigpio.pi(host) if not _simulation else pigpio_simu()
+        self.pig = pigpio.pi(host, '8888') if not _simulation else pigpio_simu.pi()
+        if not self.pig.connected:
+            print("WARNING: not connected to a RasPi")
+            self.pig = pigpio_simu.pi()
         self.systems, self.sensors, self.switches, self.hardwares = {}, {}, {}, {}
         self.db.open()
         try:
