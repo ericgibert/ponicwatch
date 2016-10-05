@@ -24,6 +24,7 @@ class Ponicwatch_Db():
             if not os.path.isfile(server_params["database"]):
                 self.create_tables(server_params["database"])
             self.connect = sqlite3.connect
+            self.allow_close = True
         else:
             # refer to: http://www.philvarner.com/test/ng-python3-db-api/
             # server_params = {'database': 'mydb',
@@ -40,9 +41,10 @@ class Ponicwatch_Db():
         self.is_open = True
 
     def close(self):
-        self.curs.close()
-        self.conn.close()
-        self.is_open = False
+        if self.allow_close:
+            self.curs.close()
+            self.conn.close()
+            self.is_open = False
 
     def __str__(self):
         return "{} on {}".format(self.server_params["database"],self.dbms)

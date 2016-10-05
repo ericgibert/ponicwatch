@@ -41,6 +41,7 @@ class Controller(object):
         # keep a link to the database i.e. M in MVC
         self.db = db
         self.db.exclusive_access = BoundedSemaphore(value=1)
+        self.db.allow_close = False
         # finding the Controller User entry --> currently 'hard coded' as 'ctrl'/'passwd' --> to improve later
         self.user = User(self)
         self.user.get_user("ctrl", "passwd")
@@ -59,12 +60,8 @@ class Controller(object):
             self.pig = pigpio_simu.pi()
             _simulation = True
         self.systems, self.sensors, self.switches, self.hardwares = {}, {}, {}, {}
-        self.db.open()
-        try:
-            self.db.curs.execute("SELECT * from tb_link where system_id > 0 order by system_id, order_for_creation")
-            self.links = self.db.curs.fetchall()
-        finally:
-            self.db.close()
+        self.db.curs.execute("SELECT * from tb_link where system_id > 0 order by system_id, order_for_creation")
+        self.links = self.db.curs.fetchall()
         for system_id, sensor_id, switch_id, hardware_id, order_for_creation in self.links:
             # (1) create all necessary objects
             # (2) and register the system and hardware to a sensor/switch
@@ -84,6 +81,8 @@ class Controller(object):
                                                                              id=switch_id,
                                                                              system_name=self.systems[system_id]["name"],
                                                                              hardware=self.hardwares[hardware_id])
+        self.db.allow_close = True
+        self.db.close()
 
     def add_cron_job(self, callback, cron_time):
         # When do we need to read the sensor or activate a switch?
