@@ -161,11 +161,12 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--sqlite", dest="dbfilename", help="Path of a Sqlite3 database.")  # type=exist_file, # required=False,
     parser.add_argument("-r", "--raspi", dest="host", help="Optional: remote Raspberry Pi IP address", required=False, default="")
     parser.add_argument("-l", "--list", dest="print_list", help="List all created objects - no running -", action='store_true')
+    parser.add_argument("-c", "--clean", dest="cleandb", help="Clean dayabase tables/logs", action='store_true', default=False)
     # parser.add_argument('config_file', nargs='?', default='')
     args, unk = parser.parse_known_args()
 
     if args.dbfilename:
-        db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename})
+        db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename}, args.cleandb)
         ctrl = Controller(db, host=args.host)
         if args.print_list:
             ctrl.print_list()

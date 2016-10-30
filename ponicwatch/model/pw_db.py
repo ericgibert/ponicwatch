@@ -12,7 +12,7 @@ class Ponicwatch_Db():
     """
     Common 'interface' to be used to access the database layer with a specific DBMS
     """
-    def __init__(self, dbms, server_params):
+    def __init__(self, dbms, server_params, clean_tables=False):
         """Connects to a database and create a cursor. Ensure the db closing at exit"""
         assert(dbms in ["sqlite3", "mysql"])
         assert(type(server_params) is dict)
@@ -34,6 +34,8 @@ class Ponicwatch_Db():
         self.dbms = dbms
         self.server_params = server_params
         self.is_open = False
+        if clean_tables:
+            self.clean()
 
     def open(self):
         self.conn = self.connect(**self.server_params)
@@ -45,6 +47,17 @@ class Ponicwatch_Db():
             self.curs.close()
             self.conn.close()
             self.is_open = False
+
+    def clean(self):
+        self.open()
+        try:
+            for sql in ("delete from tb_log",):
+                self.curs.execute(sql)
+            self.conn.commit()
+        except sqlite3.InterfaceError as err:
+            print('*' * 30, err)
+        finally:
+            self.close()
 
     def __str__(self):
         return "{} on {}".format(self.server_params["database"],self.dbms)
