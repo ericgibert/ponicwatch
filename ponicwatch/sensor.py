@@ -15,7 +15,8 @@ class Sensor(Ponicwatch_Table):
     - 'mode': analog or digital
     - 'init': identification of the hardware underlying the sensor. Usually a pin number within an IC.
         * RPI3.4: GPIO 4 of the RPI3 --> declare it as 'Analog Input' to read 0/1 for on/off
-        * AM2302.4.T and AM2302.4.H --> IC to read both temperature and humidity, hence the need to add extra 3rd param
+        * { "IC": "AM2302", "pin": 4, "hw_param": "T"} and { "IC": "AM2302", "pin": 4, "hw_param": "H"}
+            --> IC to read both temperature and humidity, hence the need to add extra 3rd param
         * MCP3208.4 --> reads the voltage on the chip's Channel 4
         * MCP23017/MCP23S17.4 --> analog input on channel 4 of the I/O Expander
         * DS18B20.4 --> read temperature given by the DS18B20 probe on pin 4
@@ -89,6 +90,12 @@ class Sensor(Ponicwatch_Table):
             else:
                 self.update_values(read_val, calc_val)
                 self.controller.log.add_log(system_name=self.system_name, param=self)
+                try:
+                    if calc_val >= self.init_dict["threshold"]:
+                        getattr(self, self.init_dict["action"])()
+                except KeyError:
+                    pass
+
 
     def update_values(self, read_value, calculated_value):
         self.update(read_value=read_value,
@@ -97,6 +104,9 @@ class Sensor(Ponicwatch_Table):
 
     def on_interrupt(self):
         print("Ready to take care of the interrupt", self)
+
+    def send_mail(self):
+        print("sending email from", self, "as threshold has been reached", self["calculated_value"])
 
     @classmethod
     def all_keys(cls, db):

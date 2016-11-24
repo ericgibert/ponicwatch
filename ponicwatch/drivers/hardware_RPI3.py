@@ -11,7 +11,6 @@
     For switch:
 
 """
-import json
 try:
     import pigpio
     _simulation = False
@@ -33,29 +32,23 @@ class Hardware_RPI3(object):
     def __init__(self, pig, in_out):
         """
         :param pig: instance of a pigpio object cretaed by the controller
-        :param in_out: JSON string for a dictionary of IN and OUT pins like {"IN": (1,2,3), "OUT":(4,5,6)}
+        :param in_out: dictionary of IN and OUT pins like {"IN": (1,2,3), "OUT":(4,5,6)}
         """
         global CALLBACKS
         self.pig = pig
+        self.in_out = in_out
+        for i in self.in_out["IN"]:
+            self.pig.set_mode(i, pigpio.INPUT)
+            self.pig.set_pull_up_down(i, pigpio.PUD_DOWN)
+        for o in self.in_out["OUT"]:
+            self.pig.set_mode(o, pigpio.OUTPUT)
+            self.pig.write(o, 0)
         try:
-            self.in_out = json.loads(in_out)
-        except ValueError as err:
-            print("Error: cannot decode the RPI3['init'] dictionary:", in_out)
-            print(err)
-            exit(-1)
-        else:
-            for i in self.in_out["IN"]:
-                self.pig.set_mode(i, pigpio.INPUT)
-                self.pig.set_pull_up_down(i, pigpio.PUD_DOWN)
-            for o in self.in_out["OUT"]:
-                self.pig.set_mode(o, pigpio.OUTPUT)
-                self.pig.write(o, 0)
-            try:
-                for i in self.in_out["INTER"]:
-                    self.pig.callback(i, pigpio.RISING_EDGE, self.pigpio_callback)
-            except KeyError:
-                # no interruptions
-                pass
+            for i in self.in_out["INTER"]:
+                self.pig.callback(i, pigpio.RISING_EDGE, self.pigpio_callback)
+        except KeyError:
+            # no interruptions
+            pass
 
     def read(self, pin, param=None):
         data = float(self.pig.read(pin)) if pin in self.in_out["IN"] else None

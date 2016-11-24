@@ -70,7 +70,7 @@ class Ponicwatch_Table(dict):
                         print("Warning: init is not a JSON string for", self)
                         print("init=", self["init"])
                 else:
-                    print("---> no init field for", self)
+                    # print("---> no init field for", self)
                     try:
                         print("-->", self["init"])
                     except:
