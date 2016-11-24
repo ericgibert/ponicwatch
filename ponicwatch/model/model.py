@@ -66,7 +66,7 @@ class Ponicwatch_Table(dict):
                 if "init" in self:
                     try:
                         self.init_dict = json.loads(self["init"]) if self["init"] else {}
-                    except json.JSONDecodeError:
+                    except : #json.JSONDecodeError:
                         print("Warning: init is not a JSON string for", self)
                         print("init=", self["init"])
                 else:
