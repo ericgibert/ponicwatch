@@ -3,6 +3,7 @@
     Created by Eric Gibert on 29 Apr 2016
     model.py: the database model which can be used on both locally Sqlite3 and MySQL (or equivalent like MAriaDB) in the Cloud.
 """
+import json
 from sqlite3 import InterfaceError
 class Ponicwatch_Table(dict):
     """associates a dictionary object to a table record"""
@@ -62,6 +63,18 @@ class Ponicwatch_Table(dict):
                 else: # not a key: more than one record found ?1?
                     raise KeyError("Too many records found ?!? Not a key on id/name: " + str(name or id))
             finally:
+                if "init" in self:
+                    try:
+                        self.init_dict = json.loads(self["init"]) if self["init"] else {}
+                    except json.decoder.JSONDecodeError:
+                        print("Warning: init is not a JSON string for", self)
+                        print("init=", self["init"])
+                else:
+                    print("---> no init field for", self)
+                    try:
+                        print("-->", self["init"])
+                    except:
+                        pass
                 self.db.close()
 
     def __str__(self):

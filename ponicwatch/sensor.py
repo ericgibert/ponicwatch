@@ -13,7 +13,7 @@ class Sensor(Ponicwatch_Table):
     """
     - 'sensor_id' and 'name' identify uniquely a sensor within a Controller database.
     - 'mode': analog or digital
-    - 'hardware': identification of the hardware underlying the sensor. Usually a pin number within an IC.
+    - 'init': identification of the hardware underlying the sensor. Usually a pin number within an IC.
         * RPI3.4: GPIO 4 of the RPI3 --> declare it as 'Analog Input' to read 0/1 for on/off
         * AM2302.4.T and AM2302.4.H --> IC to read both temperature and humidity, hence the need to add extra 3rd param
         * MCP3208.4 --> reads the voltage on the chip's Channel 4
@@ -35,7 +35,7 @@ class Sensor(Ponicwatch_Table):
                           "sensor_id",          # INTEGER NOT NULL,
                           "name",               # TEXT NOT NULL,
                           "mode",               # INTEGER NOT NULL DEFAULT (0),
-                          "hardware",           # TEXT NOT NULL,
+                          "init",           # TEXT NOT NULL,
                           "timer",              # TEXT,
                           "read_value",         # FLOAT NOT NULL DEFAULT (0.0),
                           "calculated_value",   # REAL NOT NULL DEFAULT (0.0)
@@ -50,36 +50,39 @@ class Sensor(Ponicwatch_Table):
         self.controller = controller
         self.hardware = hardware
         if hardware["mode"] == 2:  # R/W
-            self.hardware.set_pin_as_input(self.pins)
+            self.hardware.set_pin_as_input(self.init_dict["pin"])
         self.system_name = system_name + "/" + self["name"]
         self.controller.add_cron_job(self.execute, self["timer"])
         # attach the interruption if present
-        if self.IC == "RPI3" and self.hw_param:
-            hardware.register_interrupt(int(self.hw_param), self.on_interrupt)
+        try:
+            if self.init_dict["IC"] == "RPI3" and self.init_dict["hw_param"]:
+                hardware.register_interrupt(int(self.init_dict["hw_param"]), self.on_interrupt)
+        except KeyError as err:
+            print("warning:", err, "on", self)
 
 
-    def get_record(self, id=None, name=None):
-        """
-        Fetch one record from tb_sensor matching either of the given parameters
-        :param name: tb_sensor.name (string)
-        :param id: tb_sensor.sensor_id (int)
-
-        example:
-        "AM2302.4.T" --> ['AM2302', '4', 'T'] --> 'T' for temperature, 'H' for humidity
-        "RPI3.4" --> ['RPI3', '4', None] --> Simply reads pin 4 from the Raspi
-        "RPI3.4.16" --> ['RPI3', '4', '16'] --> Read pin 4 and declare an interrupt on pin 16
-        """
-        super().get_record(id, name)
-        hw_parts = self["hardware"].split('.')
-        self.IC, self.pins, self.hw_param = hw_parts[0], hw_parts[1], hw_parts[2] if len(hw_parts) == 3 else None
+    # def get_record(self, id=None, name=None):
+    #     """
+    #     Fetch one record from tb_sensor matching either of the given parameters
+    #     :param name: tb_sensor.name (string)
+    #     :param id: tb_sensor.sensor_id (int)
+    #
+    #     example:
+    #     "AM2302.4.T" --> ['AM2302', '4', 'T'] --> 'T' for temperature, 'H' for humidity
+    #     "RPI3.4" --> ['RPI3', '4', None] --> Simply reads pin 4 from the Raspi
+    #     "RPI3.4.16" --> ['RPI3', '4', '16'] --> Read pin 4 and declare an interrupt on pin 16
+    #     """
+    #     super().get_record(id, name)
+    #     hw_parts = self["hardware"].split('.')
+    #     self.IC, self.pins, self.hw_param = hw_parts[0], hw_parts[1], hw_parts[2] if len(hw_parts) == 3 else None
 
     def execute(self):
         """Called by the scheduler to perform the data reading"""
         try:
-            read_val, calc_val = self.hardware.read(self.pins, self.hw_param)
+            read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
         except TypeError as err:
             print('*'*30, err)
-            print(self.hardware, self.pins, self.hw_param)
+            print(self.hardware, self.init_dict["pin"], self.init_dict["hw_param"])
         else:
             if read_val is None:
                 self.controller.log.add_error("Cannot read from " + str(self), self["id"])

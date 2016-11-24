@@ -24,7 +24,6 @@ class Ponicwatch_Db():
             if not os.path.isfile(server_params["database"]):
                 self.create_tables(server_params["database"])
             self.connect = sqlite3.connect
-            self.allow_close = True
         else:
             # refer to: http://www.philvarner.com/test/ng-python3-db-api/
             # server_params = {'database': 'mydb',
@@ -33,17 +32,19 @@ class Ponicwatch_Db():
             pass
         self.dbms = dbms
         self.server_params = server_params
+        self.allow_close = True
         self.is_open = False
         if clean_tables:
             self.clean()
 
     def open(self):
-        self.conn = self.connect(**self.server_params)
-        self.curs = self.conn.cursor()
-        self.is_open = True
+        if not self.is_open:
+            self.conn = self.connect(**self.server_params)
+            self.curs = self.conn.cursor()
+            self.is_open = True
 
     def close(self):
-        if self.allow_close:
+        if self.allow_close and self.is_open:
             self.curs.close()
             self.conn.close()
             self.is_open = False
@@ -93,7 +94,7 @@ sql_statements = {
     "sensor_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "mode" INTEGER NOT NULL DEFAULT (0),
-    "hardware" TEXT NOT NULL
+    "init" TEXT NOT NULL
   , "timer" TEXT,
     "read_value" FLOAT NOT NULL DEFAULT (0.0),
     "calculated_value" REAL NOT NULL DEFAULT (0.0),
@@ -105,7 +106,7 @@ sql_statements = {
     "switch_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "mode" INTEGER NOT NULL DEFAULT (0),
-    "hardware" TEXT NOT NULL,
+    "init" TEXT NOT NULL,
     "timer" TEXT NOT NULL,
     "value" INTEGER NOT NULL DEFAULT (0),
     "timer_interval" INTEGER NOT NULL DEFAULT (15),
@@ -141,8 +142,7 @@ sql_statements = {
  'tb_interrupt': """CREATE TABLE tb_interrupt (
     "interrupt_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
-    "hardware" TEXT NOT NULL,
-    "init" TEXT,
+    "init" TEXT NOT NULL,
     "threshold" INTEGER NOT NULL DEFAULT (0),
     "updated_on" TIMESTAMP,
     "synchro_on" TIMESTAMP

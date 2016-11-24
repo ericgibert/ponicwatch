@@ -20,7 +20,6 @@ class Interrupt(Ponicwatch_Table):
             "columns": (
                 "interrupt_id", # INTEGER NOT NULL,
                 "name", # TEXT NOT NULL,
-                "hardware", # TEXT NOT NULL,
                 "init" , #TEXT,
                 "threshold", # INTEGER NOT NULL DEFAULT (0),
                 "updated_on", # TIMESTAMP,
@@ -33,12 +32,12 @@ class Interrupt(Ponicwatch_Table):
         self.controller = controller
         self.hardware = hardware
         self.system_name = system_name + "/" + self["name"]
-        self.hw_name, self.pin = self["hardware"].split('.')
-        self.hardware.register_interrupt(self.pin, self.on_interrupt)
+        # self.hw_name, self.pin = self["hardware"].split('.')
+        self.hardware.register_interrupt(self.init_dict["pin"], self.on_interrupt)
 
     def on_interrupt(self):
         """Callback function"""
         print("Call back on interrupt:", self)
 
     def __str__(self):
-        return "{} ({})".format(self["name"], self["hardware"])
+        return "{}".format(self["name"])

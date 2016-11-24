@@ -43,13 +43,13 @@ class Hardware(Ponicwatch_Table):
     def __init__(self, controller, *args, **kwargs):
         super().__init__(controller.db, Hardware.META, *args, **kwargs)
         self.is_debug = controller.is_debug
-        hardware, hw_init = self["hardware"], self["init"]
+        hardware, hw_init = self["hardware"], self.init_dict
         if hardware in Hardware_DHT.supported_models:  # DHT11|DHT22|AM2302
-            self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=get_pin(hw_init))
+            self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=get_pin(hw_init["pin"]))
         elif hardware in ["DS18B20"]:
-            self.driver = Hardware_DS18B20(device_folder=hw_init)
+            self.driver = Hardware_DS18B20(device_folder=hw_init["path"])
         elif hardware in ["RPI3"]:
-            self.driver = Hardware_RPI3(pig=controller.pig, in_out=hw_init)
+            self.driver = Hardware_RPI3(pig=controller.pig, in_out=self["init"])
         elif hardware in ["MCP23017"]:
             self.driver = Hardware_MCP23017(pig=controller.pig, bus_address_inter=hw_init)
         elif hardware in ["MCP3208"]:

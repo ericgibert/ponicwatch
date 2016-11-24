@@ -17,7 +17,7 @@ class Switch(Ponicwatch_Table):
         * at starting time, a switch of mode 'ON' will be set on, 'OFF' will be turn off (default)
         * in 'AUTO' mode, the state of the switch is define by the current time tabulated in the 'timer' sting --> 0 = OFF, 1 = OFF
     - 'value': current state of the switch ( 0 = OFF, 1 = OFF )
-    - 'hardware': identification of the hardware undelying the switch. Usually a pin number within an IC.
+    - 'init': identification of the hardware undelying the switch. Usually a pin number within an IC.
     - 'timer': list of 0 (OFF) and 1 (ON), each representing a position for a given time.
     - 'timer_interval': duration in  minutes of one timer unit, usually 15 minutes.
     """
@@ -33,7 +33,7 @@ class Switch(Ponicwatch_Table):
                          "switch_id", # INTEGER NOT NULL,
                          "name", #  TEXT NOT NULL,
                          "mode", #  INTEGER NOT NULL DEFAULT (0),
-                         "hardware", #  TEXT NOT NULL,
+                         "init", #  TEXT NOT NULL,
                          "timer", #  TEXT NOT NULL,
                          "value", #  INTEGER NOT NULL DEFAULT (0),
                          "timer_interval", #  INTEGER NOT NULL DEFAULT (15),
@@ -47,25 +47,25 @@ class Switch(Ponicwatch_Table):
         self.controller = controller
         self.hardware = hardware
         if hardware["mode"] == 2:  # R/W
-            self.hardware.set_pin_as_output(self.pin)
+            self.hardware.set_pin_as_output(self.init_dict["pin"])
         self.system_name = system_name + "/" + self["name"]
         self.controller.add_cron_job(self.execute, self["timer"])
 
-    def get_record(self, id=None, name=None):
-        """
-        Fetch one record from tb_switch matching either of the given parameters
-        :param name: tb_switch.name (string)
-        :param id: tb_switch.switch_id (int)
-        """
-        super().get_record(id, name)
-        self.hw_components = self["hardware"].split('.')  # example:"RPI3.4.0" --> ['RPI3', '4', '0]
-        self.IC, self.pin, self.set_value_to = self.hw_components[0], self.hw_components[1], int(self.hw_components[2])
-        self.hw_id = self.IC + '.' + str(self.pin) #  like "RPI3.4"  pin 4 on chip AM2302
+    # def get_record(self, id=None, name=None):
+    #     """
+    #     Fetch one record from tb_switch matching either of the given parameters
+    #     :param name: tb_switch.name (string)
+    #     :param id: tb_switch.switch_id (int)
+    #     """
+    #     super().get_record(id, name)
+    #     self.hw_components = self["hardware"].split('.')  # example:"RPI3.4.0" --> ['RPI3', '4', '0]
+    #     self.IC, self.pin, self.set_value_to = self.hw_components[0], self.hw_components[1], int(self.hw_components[2])
+    #     self.hw_id = self.IC + '.' + str(self.pin) #  like "RPI3.4"  pin 4 on chip AM2302
 
     def execute(self):
         """on timer/scheduler"""
-        self.hardware.write(self.pin, self.set_value_to)
-        self.update_value(self.set_value_to)
+        self.hardware.write(self.init_dict["pin"], self.init_dict["set_value_to"])
+        self.update_value(self.init_dict["set_value_to"])
         self.controller.log.add_log(system_name=self.system_name, param=self)
 
     def update_value(self, value):
