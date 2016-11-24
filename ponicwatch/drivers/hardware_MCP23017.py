@@ -61,8 +61,7 @@ class Hardware_MCP23017(object):
         """
         assert 0 <= num_gpios <= 16, "Number of GPIOs must be between 0 and 16"
         self.pig = pig
-        params = bus_address_inter.split('.')
-        busnum, self.address, interrupt = int(params[0]), eval(params[1]), int(params[2]) if len(params) == 3 else None
+        busnum, self.address, interrupt = bus_address_inter["bus"], bus_address_inter["address"], bus_address_inter["interrupt"]
         self.i2c_handle = self.pig.i2c_open(busnum, self.address)
         self.num_gpios = num_gpios
 
