@@ -64,6 +64,7 @@ target/
 .idea/
 Private/
 /ponicwatch/ponicwatch.db
+*.db
 /drivers
 ponicwatch/ponicwatch (copy).db
 www/
