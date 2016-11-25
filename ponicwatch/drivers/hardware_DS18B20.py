@@ -1,5 +1,6 @@
 # reference: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware
 import os
+from time import sleep
 from glob import glob
 from random import randint
 from pigpio import FILE_READ
@@ -34,6 +35,22 @@ class Hardware_DS18B20(object):
         return "Probe DS18B20 on {}".format(self.device_file)
 
     def read_temp_raw(self):
+        """
+        A file may only be opened if permission is granted by an entry in
+      /opt/pigpio/access.  This is intended to allow remote access to files
+      in a more or less controlled manner.
+
+      Each entry in /opt/pigpio/access takes the form of a file path
+      which may contain wildcards followed by a single letter permission.
+      The permission may be R for read, W for write, U for read/write,
+      and N for no access.
+
+
+      /sys/bus/w1/devices/* r
+
+
+        :return:
+        """
         if os.path.isfile(self.device_file):
             with open(self.device_file, 'r') as f:
                 lines = f.readlines()
@@ -42,10 +59,7 @@ class Hardware_DS18B20(object):
             h = self.pig.file_open(self.device_file, FILE_READ)
             c, data = self.pig.file_read(h, 1000)  # 1000 is plenty to read full file.
             self.pig.file_close(h)
-            return data.decode("utf-8").split()
-
-
-
+            return data.decode("utf-8").split('\n')
 
     def read(self, pin=None, param=None):
         """Get the temperature.
@@ -56,9 +70,10 @@ class Hardware_DS18B20(object):
         else:
             self.temperature = None
             lines = self.read_temp_raw()
+            # print(lines)
             tries = 10
             while lines[0].strip()[-3:] != 'YES' and tries > 0:
-                time.sleep(0.2)
+                sleep(0.2)
                 lines = self.read_temp_raw()
                 tries -= 1
             if tries > 0:
