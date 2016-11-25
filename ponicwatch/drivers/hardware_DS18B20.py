@@ -2,6 +2,7 @@
 import os
 from glob import glob
 from random import randint
+from pigpio import FILE_READ
 
 class Hardware_DS18B20(object):
     """
@@ -16,19 +17,31 @@ class Hardware_DS18B20(object):
         os.system('modprobe w1-therm')
         return glob(cls.base_dir + '28*')
 
-    def __init__(self, device_folder):
+    def __init__(self, pig, device_folder):
+        self.pig = pig
         self.device_file = device_folder + '/w1_slave'
         self.simulation = not os.path.isfile(self.device_file)
-        if self.simulation: print("Simulation on", self)
+        if self.pig.connected:
+            self.simulation = False
+            print("Remote read of", self.device_file)
+        else:
+            self.simulation = not os.path.isfile(self.device_file)
+            if self.simulation:
+                print("Simulation on", self)
         self.temperature = 0.0  # only the Celcius is kept (F is ignored)
 
     def __str__(self):
         return "Probe DS18B20 on {}".format(self.device_file)
 
     def read_temp_raw(self):
-        with open(self.device_file, 'r') as f:
-            lines = f.readlines()
-        return lines
+        # # with open(self.device_file, 'r') as f:
+        # with self.pig.file_open(self.device_file, 'r') as f:
+        #     lines = f.readlines()
+        # return lines
+        h = self.pig.file_open(self.device_file, FILE_READ)
+        c, data = self.pig.file_read(h, 1000)  # 1000 is plenty to read full file.
+        self.pig.file_close(h)
+        return data
 
     def read(self, pin=None, param=None):
         """Get the temperature.
