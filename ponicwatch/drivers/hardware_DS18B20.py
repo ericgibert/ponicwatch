@@ -34,14 +34,16 @@ class Hardware_DS18B20(object):
         return "Probe DS18B20 on {}".format(self.device_file)
 
     def read_temp_raw(self):
-        # # with open(self.device_file, 'r') as f:
-        # with self.pig.file_open(self.device_file, 'r') as f:
-        #     lines = f.readlines()
-        # return lines
-        h = self.pig.file_open(self.device_file, FILE_READ)
-        c, data = self.pig.file_read(h, 1000)  # 1000 is plenty to read full file.
-        self.pig.file_close(h)
-        return data
+        if self.pig.connected:
+            h = self.pig.file_open(self.device_file, FILE_READ)
+            c, data = self.pig.file_read(h, 1000)  # 1000 is plenty to read full file.
+            self.pig.file_close(h)
+            return data.decode("utf-8").split()
+        else:
+            with open(self.device_file, 'r') as f:
+                lines = f.readlines()
+        return lines
+
 
     def read(self, pin=None, param=None):
         """Get the temperature.
