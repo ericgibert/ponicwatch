@@ -20,14 +20,14 @@ class Hardware_DS18B20(object):
     def __init__(self, pig, device_folder):
         self.pig = pig
         self.device_file = device_folder + '/w1_slave'
-        self.simulation = not os.path.isfile(self.device_file)
-        if self.pig.connected:
+        if os.path.isfile(self.device_file):
+            self.simulation = False
+        elif self.pig.connected:
             self.simulation = False
             print("Remote read of", self.device_file)
         else:
-            self.simulation = not os.path.isfile(self.device_file)
-            if self.simulation:
-                print("Simulation on", self)
+            self.simulation = True
+            print("Simulation on", self)
         self.temperature = 0.0  # only the Celcius is kept (F is ignored)
 
     def __str__(self):
