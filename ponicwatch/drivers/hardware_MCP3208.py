@@ -24,8 +24,10 @@ class Hardware_MCP3208(object):
     """
     def __init__(self, pig, trx_flags):
         self.pig = pig
-        flags = trx_flags.split('.')  # like 0.50000.0  with the last .0 optional
-        spi_channel, baud, spi_flags = int(flags[0]), int(flags[1]), int(flags[2]) if len(flags)==3 else 0
+        # flags = trx_flags.split('.')  # like 0.50000.0  with the last .0 optional
+        # spi_channel, baud, spi_flags = int(flags[0]), int(flags[1]), int(flags[2]) if len(flags)==3 else 0
+        # { "channel": 0, "baud": 50000, "flags":0 }
+        spi_channel, baud, spi_flags = trx_flags["channel"], trx_flags["baud"], trx_flags["flags"]
         self.spi_handle = self.pig.spi_open(spi_channel, baud, spi_flags)
 
     def read(self, channel, param=None):

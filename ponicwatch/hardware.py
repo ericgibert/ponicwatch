@@ -30,7 +30,7 @@ class Hardware(Ponicwatch_Table):
     META = {"table": "tb_hardware",
             "id": "hardware_id",
             "columns": (
-                         "hardwareid", # INTEGER NOT NULL,
+                         "hardware_id", # INTEGER NOT NULL,
                          "name", #  TEXT NOT NULL,
                          "mode", #  INTEGER NOT NULL DEFAULT (0),
                          "hardware", #  TEXT NOT NULL,
