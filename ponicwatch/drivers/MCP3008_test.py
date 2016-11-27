@@ -1,72 +1,18 @@
-#!/usr/bin/python
+import spidev, time
 
-import spidev
-import time
-import os
-
-# Open SPI bus
 spi = spidev.SpiDev()
-spi.open(0, 0)
 
+spi.open(0,0)
 
-# Function to read SPI data from MCP3008 chip
-# Channel must be an integer 0-7
-def ReadChannel(channel):
-    adc = spi.xfer2([1, (8 + channel) << 4, 0])
-    data = ((adc[1] & 3) << 8) + adc[2]
-    return data
+def analog_read(channel):
+    r = spi.xfer2([4 | 2 |(channel>>2), (channel &3) << 6,0])
+    adc_out = ((r[1]&15) << 8) + r[2]
+    return adc_out
 
-
-# Function to convert data to voltage level,
-# rounded to specified number of decimal places.
-def ConvertVolts(data, places):
-    volts = (data * 3.3) / float(1023)
-    volts = round(volts, places)
-    return volts
-
-
-# Function to calculate temperature from
-# TMP36 data, rounded to specified
-# number of decimal places.
-def ConvertTemp(data, places):
-    # ADC Value
-    # (approx)  Temp  Volts
-    #    0      -50    0.00
-    #   78      -25    0.25
-    #  155        0    0.50
-    #  233       25    0.75
-    #  310       50    1.00
-    #  465      100    1.50
-    #  775      200    2.50
-    # 1023      280    3.30
-
-    temp = ((data * 330) / float(1023)) - 50
-    temp = round(temp, places)
-    return temp
-
-
-# Define sensor channels
-light_channel = 0
-temp_channel = 1
-
-# Define delay between readings
-delay = 5
 
 while True:
-    # Read the light sensor data
-    light_level = ReadChannel(light_channel)
-    light_volts = ConvertVolts(light_level, 2)
-
-    # Read the temperature sensor data
-    temp_level = ReadChannel(temp_channel)
-    temp_volts = ConvertVolts(temp_level, 2)
-    temp = ConvertTemp(temp_level, 2)
-
-    # Print out results
-    print
-    "--------------------------------------------"
-    print("Light: {} ({}V)".format(light_level, light_volts))
-    print("Temp : {} ({}V) {} deg C".format(temp_level, temp_volts, temp))
-
-    # Wait before repeating loop
-    time.sleep(delay)
+    reading = analog_read(0)
+    voltage = reading * 3.3 / 4096
+    Temp = voltage * 99.5
+    print("Reading=%d\tVoltage=%f\tTemp=%2.2f" % (reading, voltage,Temp))
+    time.sleep(1)
