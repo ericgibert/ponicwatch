@@ -30,7 +30,7 @@ class Hardware_MCP3208(object):
         spi_channel, baud, spi_flags = trx_flags["channel"], trx_flags["baud"], trx_flags["flags"]
         self.spi_handle = self.pig.spi_open(spi_channel, baud, spi_flags)
 
-    def read(self, channel, param=None):
+    def read(self, channel, param=3.3):
         """
         First send three bytes
         - byte 0 has 7 zeros and a start bit
@@ -42,14 +42,19 @@ class Hardware_MCP3208(object):
         - byte 0 is ignored
         - byte 1 contains the high 4 bits
         - byte 2 contains the low 8 bits
-        :param channel: channel corresponds to pins 1 (ch0) to 8 (ch7)
-        :param param: N/A
+        :param channel: channel corresponds to pins 0 (ch0 for pin=0) to 7 (ch7 for pin=7)
+        :param param: 3.3V or 5.0V as the max Volt given on Vref (float)
         :return:
+
+            r = spi.xfer2([4 | 2 |(channel>>2), (channel &3) << 6,0])
+            adc_out = ((r[1]&15) << 8) + r[2]
+
         """
-        count, adc = self.pig.spi_xfer(self.spi_handle, [6 + ((4 & channel) >> 2), (3 & channel) << 6, 0])  # for 10 bits: [1,(8 + channel) << 4,0]
+        # count, adc = self.pig.spi_xfer(self.spi_handle, [6 + ((4 & channel) >> 2), (3 & channel) << 6, 0])  # for 10 bits: [1,(8 + channel) << 4,0]
+        count, adc = self.pig.spi_xfer(self.spi_handle, [4 | 2 |(channel>>2), (channel &3) << 6,0])
         print("read from MCP3208:", (count, adc))
         data = ((adc[1] & 15) << 8) + adc[2]
-        volts12bits = (data * 3.3) / 4095.0
+        volts12bits = (data * param) / 4095.0
         return (data, volts12bits)
 
     def cleanup(self):
