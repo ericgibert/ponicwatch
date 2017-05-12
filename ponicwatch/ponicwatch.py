@@ -27,6 +27,7 @@ from sensor import Sensor
 from switch import Switch
 from hardware import Hardware
 from interrupt import Interrupt
+from http_view import app
 
 DEBUG = True  # activate the Debug mode or not
 
@@ -115,17 +116,19 @@ class Controller(object):
         self.running = True
         self.scheduler.start()
         self.log.add_info("Controller is now running.")
+        self.httpv = app
         try:
-            # This is here to simulate application activity (which keeps the main thread alive).
-            while self.running :
-                sleep(2)
-                # simulate the generation of an interrupt
-                if _simulation:
-                    try:
-                        pin = choice(list(self.RPI3.get_callbacks()))
-                        self.RPI3.driver.pigpio_callback(pin, 1, 30000)
-                    except IndexError:
-                        print("No choice possible in empty callbacks")
+            self.httpv.run()
+            # # This is here to simulate application activity (which keeps the main thread alive).
+            # while self.running :
+            #     sleep(2)
+            #     # simulate the generation of an interrupt
+            #     if _simulation:
+            #         try:
+            #             pin = choice(list(self.RPI3.get_callbacks()))
+            #             self.RPI3.driver.pigpio_callback(pin, 1, 30000)
+            #         except IndexError:
+            #             print("No choice possible in empty callbacks")
 
         except (KeyboardInterrupt, SystemExit):
             pass
@@ -161,7 +164,7 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--sqlite", dest="dbfilename", help="Path of a Sqlite3 database.")  # type=exist_file, # required=False,
     parser.add_argument("-r", "--raspi", dest="host", help="Optional: remote Raspberry Pi IP address", required=False, default="")
     parser.add_argument("-l", "--list", dest="print_list", help="List all created objects - no running -", action='store_true')
-    parser.add_argument("-c", "--clean", dest="cleandb", help="Clean dayabase tables/logs", action='store_true', default=False)
+    parser.add_argument("-c", "--clean", dest="cleandb", help="Clean database tables/logs", action='store_true', default=False)
     # parser.add_argument('config_file', nargs='?', default='')
     args, unk = parser.parse_known_args()
 
