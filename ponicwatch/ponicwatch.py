@@ -27,7 +27,7 @@ from sensor import Sensor
 from switch import Switch
 from hardware import Hardware
 from interrupt import Interrupt
-from http_view import app
+from http_view import http_view
 
 DEBUG = True  # activate the Debug mode or not
 
@@ -116,9 +116,8 @@ class Controller(object):
         self.running = True
         self.scheduler.start()
         self.log.add_info("Controller is now running.")
-        self.httpv = app
         try:
-            self.httpv.run()
+            http_view.run()
             # # This is here to simulate application activity (which keeps the main thread alive).
             # while self.running :
             #     sleep(2)

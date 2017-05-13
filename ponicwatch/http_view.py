@@ -1,20 +1,7 @@
-from bottle import Bottle, run
-app = Bottle()
+from bottle import Bottle, template
+http_view = Bottle()
 
-class HTTP_View(object):
-    """
-    Handle the View part of the MVC model
-    Provide the HTTP server to deliver pages
-    """
-
-    def __init__(self, controller):
-        """Creation of the HTTP server"""
-        self.controller = controller
-
-    def run(self):
-        self.app.run()
-
-@app.route('/')
+@http_view.route('/')
 def default():
-    return "Hello World!"
+    return template("default")
 
