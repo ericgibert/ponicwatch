@@ -77,6 +77,26 @@ class Ponicwatch_Table(dict):
                         pass
                 self.db.close()
 
+    def get_all_records(self, page_len=20, from_page=0, where_clause=None, order_by=None):
+        """return a list of all the table records starting from the right page"""
+        sql = "SELECT * FROM {} ".format(self.table)
+        if where_clause:
+            sql += "WHERE " + where_clause
+        if order_by:
+            sql += "ORDER BY " + order_by
+        sql += "LIMIT {} OFFSET {}".format(page_len, from_page * page_len)
+        with self.db.exclusive_access:
+            self.db.open()
+            try:
+                self.db.curs.execute(sql)
+                rows = self.db.curs.fetchall()
+            except InterfaceError as err:
+                print('*'*30, err)
+                print(sql)
+            finally:
+                self.db.close()
+        return rows
+
     def __str__(self):
         return self["name"]
 

@@ -116,6 +116,7 @@ class Controller(object):
         self.running = True
         self.scheduler.start()
         self.log.add_info("Controller is now running.")
+        http_view.controller = self
         try:
             http_view.run()
             # # This is here to simulate application activity (which keeps the main thread alive).
