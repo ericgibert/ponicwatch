@@ -18,5 +18,6 @@ def sensors(sensor_id=0):
         sensor = http_view.controller.sensors[sensor_id]
         return template("one_sensor", sensor=sensor)
     else:
-        rows = http_view.controller.sensors.values[0].get_all_records()
+        first_sensor = list(http_view.controller.sensors.values())[0]
+        rows = first_sensor.get_all_records()
         return template("sensors", rows=rows)
