@@ -84,7 +84,7 @@ class Ponicwatch_Table(dict):
             sql += "WHERE " + where_clause
         if order_by:
             sql += "ORDER BY " + order_by
-        sql += "LIMIT {} OFFSET {}".format(page_len, from_page * page_len)
+        sql += " LIMIT {} OFFSET {}".format(page_len, from_page * page_len)
         with self.db.exclusive_access:
             self.db.open()
             try:
