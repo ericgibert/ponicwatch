@@ -54,7 +54,11 @@ class Hardware_MCP3208(object):
 
         """
         # count, adc = self.pig.spi_xfer(self.spi_handle, [6 + ((4 & channel) >> 2), (3 & channel) << 6, 0])  # for 10 bits: [1,(8 + channel) << 4,0]
-        count, adc = self.pig.spi_xfer(self.spi_handle, [4 | 2 |(channel>>2), (channel &3) << 6,0])
+        try:
+            count, adc = self.pig.spi_xfer(self.spi_handle, [4 | 2 |(channel>>2), (channel &3) << 6,0])
+        except AttributeError:
+            # REPLACE BY SIMULATION
+            count, adc = 0, [0,0,0,0]
         print("read from MCP3208:", (count, adc))
         data = ((adc[1] & 15) << 8) + adc[2]
         volts12bits = (data * param) / 4095.0
