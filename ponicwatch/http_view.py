@@ -1,4 +1,7 @@
+from os import path
+from glob import glob
 from bottle import Bottle, template
+from markdown import markdown
 http_view = Bottle()
 
 @http_view.route('/')
@@ -21,3 +24,16 @@ def sensors(sensor_id=0):
         first_sensor = list(http_view.controller.sensors.values())[0]
         rows = first_sensor.get_all_records()
         return template("sensors", rows=rows)
+
+@http_view.route('/docs')
+@http_view.route('/docs/<doc_name>')
+def docs(doc_name=""):
+    if doc_name:
+        with open(path.join('views', doc_name), "rt") as doc:
+            http_rendered = markdown("".join(doc.readlines()))
+        return template("docs", text=http_rendered)
+    else:
+        text = "<h1>List of Documents</h1>"
+        for _file in glob("views/*.md"):
+            text += "<a href='/docs/{f}'>{f}</a><br />".format(f=path.basename(_file))
+        return template("docs", text=text)
