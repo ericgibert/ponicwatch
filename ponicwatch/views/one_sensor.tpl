@@ -12,5 +12,6 @@
     <tr><td>{{k}}:</td><td>{{sensor[k]}}</td></tr>
 % end
 </table>
+<p><img src="{{image}}" border="1"/></p>
 </body>
 </html>
