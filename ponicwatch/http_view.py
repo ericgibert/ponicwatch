@@ -61,25 +61,27 @@ def make_image(data_object):
     image_file = "images/{}_{}.png".format(obj_class_name, data_object["id"])  # images/sensor_id_1.png
     log_type = http_view.controller.log.LOG_TYPE[obj_class_name.upper()]
     yesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(1)
-    where = "log_type={} and object_id={} and created_on>='{}'".format(log_type, data_object["id"], yesterday.strftime('%Y-%m-%d %H:%M:%S'))
+    where = "log_type={} and object_id={} and created_on>=?".format(log_type, data_object["id"])  #, yesterday.strftime('%Y-%m-%d %H:%M:%S'))
     # print(obj_class_name, log_type, image_file)
-    print("where ==>", where)
-    rows = http_view.controller.log.get_all_records(page_len=0, where_clause=where, order_by="created_on asc")
+    print("where ==>", where, yesterday)
+    rows = http_view.controller.log.get_all_records(page_len=0, where_clause=where, order_by="created_on asc", args=(yesterday,))
+    # for row in rows: print(row)
     x = [row[-1].utcnow() for row in rows]
     y = [row[5] for row in rows]
-    print("x ==>",x)
-    print("y ==>", y)
+    print(len(x), "log entries:")
+    print("x ==>",min(x), max(x))
+    print("y ==>", min(y), max(y))
     fig = Figure()
     canvas = FigureCanvas(fig)
     ax = fig.add_subplot(111)
     ax.plot(x, y)
+    # ax.scatter(x, y)
     ax.set_title(data_object["name"])
     ax.grid(True)
     ax.set_xlabel('time')
     ax.format_xdata = mdates.DateFormatter('%H:%M:%S')  # .strftime("%y-%m-%d %H:%M:%S")
     ax.set_ylabel('measure')
     canvas.print_figure(image_file)
-
     return '/' + image_file
 
 

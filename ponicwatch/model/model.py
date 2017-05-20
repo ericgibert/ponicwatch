@@ -77,7 +77,7 @@ class Ponicwatch_Table(dict):
                         pass
                 self.db.close()
 
-    def get_all_records(self, page_len=20, from_page=0, where_clause=None, order_by=None):
+    def get_all_records(self, page_len=20, from_page=0, where_clause=None, order_by=None, args=[]):
         """
         Return a list of all the table records starting from the right page
             page_len: number of rows in one page. If given as 0 then no LIMIT set in the SELECT statement 
@@ -92,7 +92,7 @@ class Ponicwatch_Table(dict):
         with self.db.exclusive_access:
             self.db.open()
             try:
-                self.db.curs.execute(sql)
+                self.db.curs.execute(sql, args)
                 rows = self.db.curs.fetchall()
             except InterfaceError as err:
                 print('*'*30, err)
