@@ -36,7 +36,7 @@ class Sensor(Ponicwatch_Table):
                           "sensor_id",          # INTEGER NOT NULL,
                           "name",               # TEXT NOT NULL,
                           "mode",               # INTEGER NOT NULL DEFAULT (0),
-                          "init",           # TEXT NOT NULL,
+                          "init",               # TEXT NOT NULL,
                           "timer",              # TEXT,
                           "read_value",         # FLOAT NOT NULL DEFAULT (0.0),
                           "calculated_value",   # REAL NOT NULL DEFAULT (0.0)

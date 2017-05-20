@@ -2,7 +2,7 @@ from os import path
 from glob import glob
 import datetime
 from markdown import markdown
-from bottle import Bottle, template, static_file
+from bottle import Bottle, template, static_file, request
 
 http_view = Bottle()
 
@@ -13,7 +13,13 @@ def default():
 @http_view.route('/log')
 @http_view.route('/log/<page:int>')
 def log(page=0):
-    rows = http_view.controller.log.get_all_records(from_page=page, order_by="created_on desc")
+    try:
+        system = int(request.query["system"])
+        log_type, object_id = system // 1000, system % 1000
+        where = "log_type={} and object_id={}".format(log_type, object_id)
+    except (KeyError, ValueError):
+        where = ""
+    rows = http_view.controller.log.get_all_records(from_page=page, order_by="created_on desc", where_clause=where)
     return template("log", rows=rows, current_page=page)
 
 @http_view.route('/sensors')
@@ -67,11 +73,11 @@ def make_image(data_object):
     canvas = FigureCanvas(fig)
     ax = fig.add_subplot(111)
     ax.plot(x, y)
-    ax.set_title('hi mom')
+    ax.set_title(data_object["name"])
     ax.grid(True)
     ax.set_xlabel('time')
     ax.format_xdata = mdates.DateFormatter('%H:%M:%S')  # .strftime("%y-%m-%d %H:%M:%S")
-    ax.set_ylabel('volts')
+    ax.set_ylabel('measure')
     canvas.print_figure(image_file)
 
     return '/' + image_file

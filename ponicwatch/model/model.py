@@ -82,11 +82,11 @@ class Ponicwatch_Table(dict):
         Return a list of all the table records starting from the right page
             page_len: number of rows in one page. If given as 0 then no LIMIT set in the SELECT statement 
         """
-        sql = "SELECT * FROM {} ".format(self.table)
+        sql = "SELECT * FROM {}".format(self.table)
         if where_clause:
-            sql += "WHERE " + where_clause
+            sql += " WHERE " + where_clause
         if order_by:
-            sql += "ORDER BY " + order_by
+            sql += " ORDER BY " + order_by
         if page_len:
             sql += " LIMIT {} OFFSET {}".format(page_len, from_page * page_len)
         with self.db.exclusive_access:

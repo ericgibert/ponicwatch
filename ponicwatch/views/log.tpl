@@ -11,7 +11,7 @@
 % for row in rows:
 <tr><td>{{row[0]}}</td>
     <td>{{row[1]}}</td>
-    <td>{{row[4]}}</td>
+    <td><a href="/log?system={{int(row[2])*1000+int(row[3])}}">{{row[4]}}</a></td>
     <td>{{row[5]}}</td>
     <td>{{row[7]}}</td></tr>
 % end
