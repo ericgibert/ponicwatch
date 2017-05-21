@@ -66,7 +66,7 @@ def make_image(data_object):
     print("where ==>", where, yesterday)
     rows = http_view.controller.log.get_all_records(page_len=0, where_clause=where, order_by="created_on asc", args=(yesterday,))
     # for row in rows: print(row)
-    x = [row[-1].utcnow() for row in rows]
+    x = [row[-1] for row in rows]
     y = [row[5] for row in rows]
     print(len(x), "log entries:")
     print("x ==>",min(x), max(x))
@@ -79,7 +79,10 @@ def make_image(data_object):
     ax.set_title(data_object["name"])
     ax.grid(True)
     ax.set_xlabel('time')
-    ax.format_xdata = mdates.DateFormatter('%H:%M:%S')  # .strftime("%y-%m-%d %H:%M:%S")
+    xax = ax.get_xaxis()  # get the x-axis
+    adf = xax.get_major_formatter()  # the the auto-formatter
+    adf.scaled[1. / 24] = '%H:%M'  # set the < 1d scale to H:M
+    # ax.format_xdata = mdates.DateFormatter('%H:%M:%S')  # .strftime("%y-%m-%d %H:%M:%S")
     ax.set_ylabel('measure')
     canvas.print_figure(image_file)
     return '/' + image_file

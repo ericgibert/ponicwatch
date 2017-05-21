@@ -5,6 +5,7 @@
     pw_db.py: the database connection parameters which can be used on both locally Sqlite3 and MySQL (or equivalent like MariaDB) in the Cloud.
 """
 import os
+from threading import BoundedSemaphore
 # import atexit
 import sqlite3
 
@@ -16,6 +17,7 @@ class Ponicwatch_Db():
         """Connects to a database and create a cursor. Ensure the db closing at exit"""
         assert(dbms in ["sqlite3", "mysql"])
         assert(type(server_params) is dict)
+        self.exclusive_access = BoundedSemaphore(value=1)
         if dbms == "sqlite3" and "database" in server_params:
             # server_params = {'database': 'path to the file', "detect_types": sqlite3.PARSE_DECLTYPES}
             # to allow datetime conversion for timestamps

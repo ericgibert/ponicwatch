@@ -6,9 +6,6 @@
 """
 import argparse
 import os.path
-from time import sleep
-from threading import BoundedSemaphore
-from random import choice
 
 from apscheduler.schedulers.background import BackgroundScheduler
 try:
@@ -43,7 +40,6 @@ class Controller(object):
         self.is_debug = DEBUG
         # keep a link to the database i.e. M in MVC
         self.db = db
-        self.db.exclusive_access = BoundedSemaphore(value=1)
         self.db.allow_close = False
         # finding the Controller User entry --> currently 'hard coded' as 'ctrl'/'passwd' --> to improve later
         self.user = User(self)

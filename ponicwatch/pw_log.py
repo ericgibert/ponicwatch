@@ -12,7 +12,7 @@
     - ERROR: log an error message, an email should be trigger to raise an alarm to an operator
 """
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from model.model import Ponicwatch_Table
 from sensor import Sensor
@@ -135,3 +135,31 @@ class Ponicwatch_Log(Ponicwatch_Table):
 
     def __str__(self):
         return "[{}] {}".format(self.controller_name, self["text_value"])
+
+if __name__ == "__main__":
+    # generates LOG entries to help testing the application
+    import sys
+    from random import randint
+    from model.pw_db import Ponicwatch_Db
+    db = Ponicwatch_Db("sqlite3", {'database': sys.argv[1]})
+    db.allow_close = False
+
+    class simulation(object):
+        def __init__(self, db):
+            self.db = db
+            self.name = "Controller SIMULATION"
+
+    simu = simulation(db)
+    logger = Ponicwatch_Log(simu)
+    # add an entry for the last 24h, every 10 minutes
+    created_on, end_time = datetime.now(timezone.utc) - timedelta(1), datetime.now(timezone.utc)
+    delta = timedelta(minutes=10)
+    while created_on <= end_time:
+        logger.insert(controller_name=simu.name,
+                      log_type=1, object_id=3,
+                      system_name="Atmosphere/Water Temperature",
+                      float_value= randint(20, 30),
+                      text_value="reading simulation",
+                      created_on=created_on)
+        created_on += delta
+    db.close()
