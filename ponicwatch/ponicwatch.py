@@ -14,10 +14,8 @@ try:
 except ImportError:
     _simulation = True
 import pigpio_simu
-
-
-from system import System
 from model.pw_db import Ponicwatch_Db
+from system import System
 from pw_log import Ponicwatch_Log
 from user import User
 from sensor import Sensor
@@ -26,7 +24,7 @@ from hardware import Hardware
 from interrupt import Interrupt
 from http_view import http_view
 
-DEBUG = True  # activate the Debug mode or not
+DEBUG = True  # activate the Debug mode or not --> messages on the screen with print() functions
 
 class Controller(object):
     """The Controller in a MVC model"""
@@ -36,7 +34,7 @@ class Controller(object):
            - Select all the hardware (sensors/switches) for the systems under its control
            - Launch the scheduler
         """
-        global _simulation
+        global _simulation # if no PGIO port as we are not running on a Raspberry Pi
         self.is_debug = DEBUG
         # keep a link to the database i.e. M in MVC
         self.db = db
@@ -52,7 +50,7 @@ class Controller(object):
         # Create the background scheduler that will execute the actions (using the APScheduler library)
         self.scheduler = BackgroundScheduler()
 
-        # select all the systems, sensors, switches to monitor and the hardware drivers
+        # select all the systems, sensors, switches to monitor and the necessary hardware drivers
         self.pig = pigpio.pi(host, port) if not _simulation else pigpio_simu.pi()
         if not self.pig.connected:
             print("WARNING: not connected to a RasPi")
@@ -108,7 +106,7 @@ class Controller(object):
         self.scheduler.add_job(callback, 'cron', second=_sec, minute=_min, hour=_hrs, day=_dom, month=_mon, day_of_week=_dow)
 
     def run(self):
-        """Starts the APScheduler task"""
+        """Starts the APScheduler task and the Bottle HTTP server"""
         self.running = True
         self.scheduler.start()
         self.log.add_info("Controller is now running.")

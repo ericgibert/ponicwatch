@@ -6,8 +6,9 @@ from random import randint
 class pi():
     connected = False
     def __init__(self):
-        print("INFO --> PIGPIO simulation activated")
+        print("INFO --> *** PIGPIO simulation activated  ***")
         self.inter_pin = None
+        self.connected = False
 
     def i2c_open(self, busnum, address):
         return 1
