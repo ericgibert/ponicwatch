@@ -7,6 +7,7 @@
     They belong to one Controller.
 """
 from datetime import datetime, timezone
+from time import sleep
 from model.model import Ponicwatch_Table
 
 class Sensor(Ponicwatch_Table):
@@ -60,7 +61,15 @@ class Sensor(Ponicwatch_Table):
                 hardware.register_interrupt(int(self.init_dict["hw_param"]), self.on_interrupt)
         except KeyError as err:
             print("warning:", err, "on", self)
-
+        # if the sensor needs to be power ON before reading / OFF after reading: { "POWER": "I/O_IC.pin" }
+        try:
+            pwr_ic_name, self.pwr_pin = self.init_dict["POWER"].split('.')
+            for ic in self.controller.hardware.vaues():
+                if ic["hardware"] == pwr_ic_name:
+                    self.pwr_ic = ic
+                    break
+        except KeyError:
+            self.pwr_ic, self.pwr_pin = None, None
 
     # def get_record(self, id=None, name=None):
     #     """
@@ -80,7 +89,14 @@ class Sensor(Ponicwatch_Table):
     def execute(self):
         """Called by the scheduler to perform the data reading"""
         try:
+            # need to power on the sensor if a power pin is given   { "POWER": "I/O_IC.pin" }
+            if self.pwr_ic:
+                self.pwr_ic.write(1)
+                sleep(0.5)
             read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
+            # power off the sensor if necessary
+            if self.pwr_ic:
+                self.pwr_ic.write(0)
         except TypeError as err:
             print('*'*30, err)
             print(self.hardware, self.init_dict["pin"], self.init_dict["hw_param"])
