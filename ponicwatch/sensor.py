@@ -64,8 +64,8 @@ class Sensor(Ponicwatch_Table):
         # if the sensor needs to be power ON before reading / OFF after reading: { "POWER": "I/O_IC.pin" }
         try:
             pwr_ic_name, self.pwr_pin = self.init_dict["POWER"].split('.')
-            for ic in self.controller.hardware.vaues():
-                if ic["hardware"] == pwr_ic_name:
+            for ic in self.controller.hardware.values():
+                if ic["name"] == pwr_ic_name:
                     self.pwr_ic = ic
                     break
         except KeyError:
