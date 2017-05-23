@@ -63,11 +63,15 @@ class Sensor(Ponicwatch_Table):
             print("warning:", err, "on", self)
         # if the sensor needs to be power ON before reading / OFF after reading: { "POWER": "I/O_IC.pin" }
         try:
-            pwr_ic_name, self.pwr_pin = self.init_dict["POWER"].split('.')
+            pwr_ic_hw, self.pwr_pin = self.init_dict["POWER"].split('.')
             for ic in self.controller.hardware.values():
-                if ic["name"] == pwr_ic_name:
+                if ic["hardware"] == pwr_ic_hw:   # for example: RPI3 or MCP3208
                     self.pwr_ic = ic
                     break
+            else:
+                self.pwr_ic = None
+                # need to add ERROR on the LOG as the IC is not found!
+                self.controller.log.add_error("Unknown POWER IC {} for Sensor {}.".format(pwr_ic_hw, self["name"]), err_code=1000)
         except KeyError:
             self.pwr_ic, self.pwr_pin = None, None
 
