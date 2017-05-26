@@ -3,6 +3,9 @@ from glob import glob
 import datetime
 from markdown import markdown
 from bottle import Bottle, template, static_file, request, BaseTemplate
+from bottlesession import CookieSession, authenticator
+session_manager = CookieSession()    #  NOTE: you should specify a secret
+valid_user = authenticator(session_manager)
 
 http_view = Bottle()
 BaseTemplate.defaults['login_logout'] = "Login"
@@ -34,6 +37,20 @@ def sensors(sensor_id=0):
         rows = first_sensor.get_all_records()
         return template("sensors", rows=rows)
 
+@http_view.post('/sensors')
+def post_sensor():
+    """Update a sensor record from FORM"""
+    id = request.forms.get('_id')
+    sensor = http_view.controller.sensors[id]
+    upd_fields = []
+    for k, v in request.forms:
+        if k!="id" and k in sensor.columns:
+            upd_fields[k] = v
+    if upd_fields:
+        sensor.update(**upd_fields)
+    redirect('/sensors/{}'.format(id))    
+    
+    
 @http_view.route('/docs')
 @http_view.route('/docs/<doc_name>')
 def docs(doc_name=""):
@@ -87,10 +104,6 @@ def make_image(data_object):
     ax.set_ylabel('measure')
     canvas.print_figure(image_file)
     return '/' + image_file
-
-from bottlesession import CookieSession, authenticator
-session_manager = CookieSession()    #  NOTE: you should specify a secret
-valid_user = authenticator(session_manager)
 
 @http_view.route('/Login')
 def login():
