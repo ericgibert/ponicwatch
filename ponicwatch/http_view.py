@@ -49,7 +49,30 @@ def post_sensor():
     if upd_fields:
         sensor.update(**upd_fields)
     redirect('/sensors/{}'.format(id))    
-    
+
+@http_view.route('/switches')
+@http_view.route('/switches/<switch_id:int>')
+def switches(switch_id=0):
+    if switch_id:
+        switch = http_view.controller.switches[switch_id]
+        return template("one_switch", switch=switch, image=make_image(switch))
+    else:
+        first_switch = list(http_view.controller.switches.values())[0]
+        rows = first_switch.get_all_records()
+        return template("switches", rows=rows)
+
+@http_view.post('/switches')
+def post_switch():
+    """Update a switch record from FORM"""
+    id = int(request.forms.get('id'))
+    switch = http_view.controller.switches[id]
+    upd_fields = {}
+    for k, v in request.forms.items():
+        if k!="id" and k in switch.columns:
+            upd_fields[k] = v
+    if upd_fields:
+        switch.update(**upd_fields)
+    redirect('/switches/{}'.format(id))
     
 @http_view.route('/docs')
 @http_view.route('/docs/<doc_name>')
