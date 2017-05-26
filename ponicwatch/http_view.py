@@ -2,7 +2,7 @@ from os import path
 from glob import glob
 import datetime
 from markdown import markdown
-from bottle import Bottle, template, static_file, request, BaseTemplate
+from bottle import Bottle, template, static_file, request, BaseTemplate, redirect
 from bottlesession import CookieSession, authenticator
 session_manager = CookieSession()    #  NOTE: you should specify a secret
 valid_user = authenticator(session_manager)
@@ -40,10 +40,10 @@ def sensors(sensor_id=0):
 @http_view.post('/sensors')
 def post_sensor():
     """Update a sensor record from FORM"""
-    id = request.forms.get('_id')
+    id = int(request.forms.get('id'))
     sensor = http_view.controller.sensors[id]
-    upd_fields = []
-    for k, v in request.forms:
+    upd_fields = {}
+    for k, v in request.forms.items():
         if k!="id" and k in sensor.columns:
             upd_fields[k] = v
     if upd_fields:
@@ -64,7 +64,48 @@ def docs(doc_name=""):
             text += "<a href='/docs/{f}'>{f}</a><br />".format(f=path.basename(_file))
         return template("docs", text=text)
 
+#
+### Login/Logout form & process
+#
+@http_view.route('/Login')
+def login():
+    return template('login.tpl', error="")
 
+@http_view.post('/Login')
+def do_login():
+    passwds = { 'guest' : 'guest' }
+
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+
+    if not username or not password:
+      return template('login.tpl', error='Please specify username and password')
+
+    session = session_manager.get_session()
+    session['valid'] = False
+
+    if password and passwds.get(username) == password:
+      session['valid'] = True
+      session['name'] = username
+
+    session_manager.save(session)
+    if not session['valid']:
+       return template('login.tpl', error='Username or password is invalid')
+
+    BaseTemplate.defaults['login_logout'] = "Logout"
+    redirect(request.get_cookie('validuserloginredirect', '/'))
+
+@http_view.route('/Logout')
+def logout():
+    session = session_manager.get_session()
+    session['valid'] = False
+    session_manager.save(session)
+    BaseTemplate.defaults['login_logout'] = "Login"
+    redirect('/')
+
+#
+### Generation of the PNG to display the data as a plot
+#
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.dates as mdates
@@ -100,46 +141,10 @@ def make_image(data_object):
     xax = ax.get_xaxis()  # get the x-axis
     adf = xax.get_major_formatter()  # the the auto-formatter
     adf.scaled[1. / 24] = '%H:%M'  # set the < 1d scale to H:M
-    # ax.format_xdata = mdates.DateFormatter('%H:%M:%S')  # .strftime("%y-%m-%d %H:%M:%S")
+    ax.format_xdata = mdates.DateFormatter('%H:%M:%S')  # .strftime("%y-%m-%d %H:%M:%S")
     ax.set_ylabel('measure')
     canvas.print_figure(image_file)
     return '/' + image_file
-
-@http_view.route('/Login')
-def login():
-    return template('login.tpl', error="")
-@http_view.post('/Login')
-# @http_view.view('login.tpl')
-def do_login():
-    passwds = { 'guest' : 'guest' }
-
-    username = request.forms.get('username')
-    password = request.forms.get('password')
-
-    if not username or not password:
-      return template('login.tpl', error='Please specify username and password')
-
-    session = session_manager.get_session()
-    session['valid'] = False
-
-    if password and passwds.get(username) == password:
-      session['valid'] = True
-      session['name'] = username
-
-    session_manager.save(session)
-    if not session['valid']:
-       return template('login.tpl', error='Username or password is invalid')
-
-    BaseTemplate.defaults['login_logout'] = "Logout"
-    redirect(request.get_cookie('validuserloginredirect', '/'))
-
-@http_view.route('/Logout')
-def logout():
-    session = session_manager.get_session()
-    session['valid'] = False
-    session_manager.save(session)
-    BaseTemplate.defaults['login_logout'] = "Login"
-    redirect('/')
 
 
 if __name__ == "__main__":

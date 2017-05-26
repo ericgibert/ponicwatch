@@ -14,7 +14,6 @@
 % end
 </table>
 % if login_logout=="Logout":
-    <input type="hidden" value='{{sensor["id"]}}' name="_id"/>
     <input type="submit" value="Update" name="submit" />
 %end
 </form>
