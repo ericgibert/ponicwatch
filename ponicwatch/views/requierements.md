@@ -26,3 +26,9 @@ Note: images will be .PNG generated in the /images/ sub-folder
 bottlesession
 -------------
 https://github.com/linsomniac/bottlesession
+Atttention:
+
+                #  save off a secret to a tmp file
+                secret = ''.join([
+                    random.choice(string.ascii_letters)   #  <-- modification on line 172
+                    for x in range(32)])
