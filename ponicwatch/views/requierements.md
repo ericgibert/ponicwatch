@@ -22,3 +22,7 @@ MatPlotLib
 http://matplotlib.org/
 To create the plots/graphics images embeded in the HTML pages.
 Note: images will be .PNG generated in the /images/ sub-folder
+
+bottlesession
+-------------
+https://github.com/linsomniac/bottlesession
