@@ -26,53 +26,63 @@ def log(page=0):
     rows = http_view.controller.log.get_all_records(from_page=page, order_by="created_on desc", where_clause=where)
     return template("log", rows=rows, current_page=page)
 
-@http_view.route('/sensors')
-@http_view.route('/sensors/<sensor_id:int>')
-def sensors(sensor_id=0):
-    if sensor_id:
-        sensor = http_view.controller.sensors[sensor_id]
-        return template("one_sensor", sensor=sensor, image=make_image(sensor))
+def get_pw_list(pw_object_type):
+    if pw_object_type == "switches":
+        pw_list = http_view.controller.switches
+    elif pw_object_type == "sensors":
+        pw_list = http_view.controller.sensors
+    elif pw_object_type == "hardware":
+        pw_list = http_view.controller.hardwares
+    elif pw_object_type == "interrupts":
+        pw_list = http_view.controller.interrupts
+    elif pw_object_type == "systems":
+        pw_list = http_view.controller.systems
     else:
-        first_sensor = list(http_view.controller.sensors.values())[0]
-        rows = first_sensor.get_all_records()
-        return template("sensors", rows=rows)
-
-@http_view.post('/sensors')
-def post_sensor():
-    """Update a sensor record from FORM"""
-    id = int(request.forms.get('id'))
-    sensor = http_view.controller.sensors[id]
-    upd_fields = {}
-    for k, v in request.forms.items():
-        if k!="id" and k in sensor.columns:
-            upd_fields[k] = v
-    if upd_fields:
-        sensor.update(**upd_fields)
-    redirect('/sensors/{}'.format(id))    
+        pw_list = None
+    return pw_list
 
 @http_view.route('/switches')
-@http_view.route('/switches/<switch_id:int>')
-def switches(switch_id=0):
-    if switch_id:
-        switch = http_view.controller.switches[switch_id]
-        return template("one_switch", switch=switch, image=make_image(switch))
+@http_view.route('/switches/<object_id:int>')
+@http_view.route('/sensors')
+@http_view.route('/sensors/<object_id:int>')
+@http_view.route('/hardware')
+@http_view.route('/hardware/<object_id:int>')
+@http_view.route('/interrupts')
+@http_view.route('/interrupts/<object_id:int>')
+@http_view.route('/systems')
+@http_view.route('/systems/<object_id:int>')
+def pw_object(object_id=0):
+    pw_object_type = (request['bottle.route'].rule[1:].split('/'))[0]
+    pw_list = get_pw_list(pw_object_type)
+    if object_id:
+        pw_object = pw_list[object_id]
+        return template("one_pw_object", pw_object=pw_object, image=make_image(pw_object), pw_object_type=pw_object_type)
     else:
-        first_switch = list(http_view.controller.switches.values())[0]
-        rows = first_switch.get_all_records()
-        return template("switches", rows=rows)
+        try:
+            pw_object = list(pw_list.values())[0]
+            rows = pw_object.get_all_records()
+        except IndexError:
+            pw_object, rows = None, []
+        return template("pw_objects", pw_object=pw_object, rows=rows, pw_object_type=pw_object_type)
 
 @http_view.post('/switches')
-def post_switch():
+@http_view.post('/sensors')
+@http_view.post('/hardware')
+@http_view.post('/interrupts')
+@http_view.post('/systems')
+def post_pw_object():
     """Update a switch record from FORM"""
     id = int(request.forms.get('id'))
-    switch = http_view.controller.switches[id]
+    pw_object_type = request.forms.get('pw_object_type')
+    pw_list = get_pw_list(pw_object_type)
+    pw_object = pw_list[id]
     upd_fields = {}
     for k, v in request.forms.items():
-        if k!="id" and k in switch.columns:
+        if not(k.endswith("_id")) and k in pw_object.columns and v != pw_object[k]:
             upd_fields[k] = v
     if upd_fields:
-        switch.update(**upd_fields)
-    redirect('/switches/{}'.format(id))
+        pw_object.update(**upd_fields)
+    redirect('/{}/{}'.format(pw_object_type, id))
     
 @http_view.route('/docs')
 @http_view.route('/docs/<doc_name>')
@@ -139,7 +149,9 @@ def img(filepath):
 
 def make_image(data_object):
     """Creates an image for the reading of the given obkect (sensor, switch)"""
-    obj_class_name = data_object.__class__.__name__ # Senor / Switch
+    obj_class_name = data_object.__class__.__name__ # Sensor / Switch
+    if obj_class_name not in ("Sensor", "Switch"):
+        return ""
     image_file = "images/{}_{}.png".format(obj_class_name, data_object["id"])  # images/sensor_id_1.png
     log_type = http_view.controller.log.LOG_TYPE[obj_class_name.upper()]
     yesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(1)
@@ -150,9 +162,9 @@ def make_image(data_object):
     # for row in rows: print(row)
     x = [row[-1] for row in rows]
     y = [row[5] for row in rows]
-    print(len(x), "log entries:")
-    print("x ==>",min(x), max(x))
-    print("y ==>", min(y), max(y))
+    # print(len(x), "log entries:")
+    # print("x ==>",min(x), max(x))
+    # print("y ==>", min(y), max(y))
     fig = Figure()
     canvas = FigureCanvas(fig)
     ax = fig.add_subplot(111)
