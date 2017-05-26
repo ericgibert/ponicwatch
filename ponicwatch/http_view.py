@@ -2,9 +2,10 @@ from os import path
 from glob import glob
 import datetime
 from markdown import markdown
-from bottle import Bottle, template, static_file, request
+from bottle import Bottle, template, static_file, request, BaseTemplate
 
 http_view = Bottle()
+BaseTemplate.defaults['login_logout'] = "Login"
 
 @http_view.route('/')
 def default():
@@ -87,4 +88,46 @@ def make_image(data_object):
     canvas.print_figure(image_file)
     return '/' + image_file
 
+from bottlesession import CookieSession, authenticator
+session_manager = CookieSession()    #  NOTE: you should specify a secret
+valid_user = authenticator(session_manager)
 
+@http_view.route('/Login')
+def login():
+    return template('login.tpl', error="")
+@http_view.post('/Login')
+# @http_view.view('login.tpl')
+def do_login():
+    passwds = { 'guest' : 'guest' }
+
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+
+    if not username or not password:
+      return template('login.tpl', error='Please specify username and password')
+
+    session = session_manager.get_session()
+    session['valid'] = False
+
+    if password and passwds.get(username) == password:
+      session['valid'] = True
+      session['name'] = username
+
+    session_manager.save(session)
+    if not session['valid']:
+       return template('login.tpl', error='Username or password is invalid')
+
+    BaseTemplate.defaults['login_logout'] = "Logout"
+    redirect(request.get_cookie('validuserloginredirect', '/'))
+
+@http_view.route('/Logout')
+def logout():
+    session = session_manager.get_session()
+    session['valid'] = False
+    session_manager.save(session)
+    BaseTemplate.defaults['login_logout'] = "Login"
+    redirect('/')
+
+
+if __name__ == "__main__":
+    http_view.run()
