@@ -26,10 +26,12 @@ class Sensor(Ponicwatch_Table):
     Note: if the physical sensor already provides a converted value then 'read_value' = 'calculated_value'
     """
     MODE = {
+       -1: "INACTIVE",    # sensor to be ignored
         0: "DIGITIAL",    # sensor mode is digital 0/1 i.e. pin input reflecting a ON/OFF or True/False i.e. contactor
         1: "ANALOG",      # sensor is connected to an ADC reading the current of a probe. Float between 0.0 and 1.0 to be converted.
         2: "DIRECT",      # sensor provides a direct reading of the true value i.e. usually specific IC connected by i2c or 1-wire protocols
     }
+    INACTIVE = -1
 
     META = {"table": "tb_sensor",
             "id": "sensor_id",
@@ -51,29 +53,31 @@ class Sensor(Ponicwatch_Table):
         super().__init__(controller.db, Sensor.META, *args, **kwargs)
         self.controller = controller
         self.hardware = hardware
-        if hardware["mode"] == 2:  # R/W
-            self.hardware.set_pin_as_input(self.init_dict["pin"])
-        self.system_name = system_name + "/" + self["name"]
-        self.controller.add_cron_job(self.execute, self["timer"])
-        # attach the interruption if present
-        try:
-            if self.init_dict["IC"] == "RPI3" and self.init_dict["hw_param"]:
-                hardware.register_interrupt(int(self.init_dict["hw_param"]), self.on_interrupt)
-        except KeyError as err:
-            print("warning:", err, "on", self)
-        # if the sensor needs to be power ON before reading / OFF after reading: { "POWER": "I/O_IC.pin" }
-        try:
-            pwr_ic_hw, self.pwr_pin = self.init_dict["POWER"].split('.')
-            for ic in self.controller.hardware.values():
-                if ic["hardware"] == pwr_ic_hw:   # for example: RPI3 or MCP3208
-                    self.pwr_ic = ic
-                    break
-            else:
-                self.pwr_ic = None
-                # need to add ERROR on the LOG as the IC is not found!
-                self.controller.log.add_error("Unknown POWER IC {} for Sensor {}.".format(pwr_ic_hw, self["name"]), err_code=1000)
-        except KeyError:
-            self.pwr_ic, self.pwr_pin = None, None
+        if self["mode"] > self.INACTIVE:
+            if hardware["mode"] == 2:  # R/W
+                self.hardware.set_pin_as_input(self.init_dict["pin"])
+            self.system_name = system_name + "/" + self["name"]
+            self.controller.add_cron_job(self.execute, self["timer"])
+            # attach the interruption if present
+            try:
+                if self.init_dict["IC"] == "RPI3" and self.init_dict["hw_param"]:
+                    hardware.register_interrupt(int(self.init_dict["hw_param"]), self.on_interrupt)
+            except KeyError as err:
+                print("warning:", err, "on", self)
+            # if the sensor needs to be power ON before reading / OFF after reading: { "POWER": "I/O_IC.pin" }
+            try:
+                pwr_ic_hw, self.pwr_pin = self.init_dict["POWER"].split('.')
+                for ic in self.controller.hardwares.values():
+                    if ic["hardware"] == pwr_ic_hw:   # for example: RPI3 or MCP3208
+                        self.pwr_ic = ic
+                        break
+                else:
+                    self.pwr_ic = None
+                    # need to add ERROR on the LOG as the IC is not found!
+                    self.controller.log.add_error("Unknown POWER IC {} for Sensor {}.".format(pwr_ic_hw, self["name"]), err_code=1000)
+                    print(self.controller.hardwares)
+            except KeyError:
+                self.pwr_ic, self.pwr_pin = None, None
 
     # def get_record(self, id=None, name=None):
     #     """
@@ -96,11 +100,13 @@ class Sensor(Ponicwatch_Table):
             # need to power on the sensor if a power pin is given   { "POWER": "I/O_IC.pin" }
             if self.pwr_ic:
                 self.pwr_ic.write(1)
+                self.controller.log.add_info("Switch {}.{} ON before reading sensor {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
                 sleep(0.5)
             read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
             # power off the sensor if necessary
             if self.pwr_ic:
                 self.pwr_ic.write(0)
+                self.controller.log.add_info("Switch {}.{} OFF after reading sensor {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
         except TypeError as err:
             print('*'*30, err)
             print(self.hardware, self.init_dict["pin"], self.init_dict["hw_param"])

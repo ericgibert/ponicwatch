@@ -72,6 +72,7 @@ def pw_object(object_id=0):
 @http_view.post('/systems')
 def post_pw_object():
     """Update a switch record from FORM"""
+
     id = int(request.forms.get('id'))
     pw_object_type = request.forms.get('pw_object_type')
     pw_list = get_pw_list(pw_object_type)
