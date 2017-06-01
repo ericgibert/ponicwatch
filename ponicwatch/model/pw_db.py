@@ -39,12 +39,18 @@ class Ponicwatch_Db():
         if clean_tables:
             self.clean()
 
+    def __enter__(self):
+        self.open()
+            
     def open(self):
         if not self.is_open:
             self.conn = self.connect(**self.server_params)
             self.curs = self.conn.cursor()
             self.is_open = True
 
+    def __exit__(self, type, value, traceback):
+        self.close()
+            
     def close(self):
         if self.allow_close and self.is_open:
             self.curs.close()
