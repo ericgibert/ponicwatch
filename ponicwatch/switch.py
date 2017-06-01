@@ -22,6 +22,7 @@ class Switch(Ponicwatch_Table):
     - 'timer_interval': duration in  minutes of one timer unit, usually 15 minutes.
     """
     MODE = {
+       -1: "INACTIVE",    # switch to be ignored
         0: "OFF",    # either the switch mode or the timer off
         1: "ON",     # either the switch mode or the timer on
         2: "AUTO",   # switch mode to automatic i.e. relies on current time & 'timer' to know the current value
@@ -47,10 +48,11 @@ class Switch(Ponicwatch_Table):
         self.controller = controller
         self.hardware = hardware
         #if hardware["mode"] == 2:  # R/W
-        self.hardware.set_pin_as_output(self.init_dict["pin"])
-        self.system_name = system_name + "/" + self["name"]
-        if self["timer"]:
-            self.controller.add_cron_job(self.execute, self["timer"])
+        if self["mode"] > self.INACTIVE:
+            self.hardware.set_pin_as_output(self.init_dict["pin"])
+            self.system_name = system_name + "/" + self["name"]
+            if self["timer"]:
+                self.controller.add_cron_job(self.execute, self["timer"])
 
     # def get_record(self, id=None, name=None):
     #     """
