@@ -15,10 +15,10 @@ class Switch(Ponicwatch_Table):
     - 'switch_id' and 'name' identify uniquely a switch within a Controller database.
     - 'mode': indicates if the switch should be 'ON' or 'OFF' or 'AUTO'
         * at starting time, a switch of mode 'ON' will be set on, 'OFF' will be turn off (default)
-        * in 'AUTO' mode, the state of the switch is define by the current time tabulated in the 'timer' sting --> 0 = OFF, 1 = OFF
+        * in 'AUTO' mode, the scheduler assign the 'set_value_to' given in the 'init' dictionary to the pin
     - 'value': current state of the switch ( 0 = OFF, 1 = OFF )
     - 'init': identification of the hardware undelying the switch. Usually a pin number within an IC.
-    - 'timer': list of 0 (OFF) and 1 (ON), each representing a position for a given time.
+    - 'timer': cron like string to define the execution timing patterns
     - 'timer_interval': duration in  minutes of one timer unit, usually 15 minutes.
     """
     MODE = {
@@ -64,7 +64,10 @@ class Switch(Ponicwatch_Table):
     #     self.hw_id = self.IC + '.' + str(self.pin) #  like "RPI3.4"  pin 4 on chip AM2302
 
     def execute(self, given_value=None):
-        """on timer/scheduler"""
+        """
+        On timer/scheduler: no 'given_value' hence set the pin to the 'set_value"to' found in the 'init' dictionary
+        Else direct call: the pin is set to the 'given_value' if provided else the 'set_value'to' is used
+        """
         self.hardware.write(self.init_dict["pin"], given_value or self.init_dict["set_value_to"])
         #self.update_value(self.init_dict["set_value_to"])
         self.update(value=given_value or self.init_dict["set_value_to"])
