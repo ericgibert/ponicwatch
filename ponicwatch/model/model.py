@@ -112,6 +112,10 @@ class Ponicwatch_Table(dict):
                 col_value.append( (col, val) )
             else:
                 raise KeyError(col, ": column cannot be updated. Is it properly spelled?")
+        # update_on timestamp managenemt
+        if 'updated_on' in self.columns and 'updated_on' not in kwargs:
+            col_value.append( ('updated_on', datetime.now(timezone.utc)) )
+        # SQL statement build and execution
         if col_value:
             sql = "UPDATE {0} SET {1} WHERE {2}=?".format(self.table,
                                                           ",".join([c+"=?" for c, v in col_value]),
