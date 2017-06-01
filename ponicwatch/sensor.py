@@ -8,7 +8,7 @@
 """
 from datetime import datetime, timezone
 from time import sleep
-from model.model import Ponicwatch_Table
+from model.model import Ponicwatch_Table, INACTIVE
 
 class Sensor(Ponicwatch_Table):
     """
@@ -31,7 +31,6 @@ class Sensor(Ponicwatch_Table):
         1: "ANALOG",      # sensor is connected to an ADC reading the current of a probe. Float between 0.0 and 1.0 to be converted.
         2: "DIRECT",      # sensor provides a direct reading of the true value i.e. usually specific IC connected by i2c or 1-wire protocols
     }
-    INACTIVE = -1
 
     META = {"table": "tb_sensor",
             "id": "sensor_id",
