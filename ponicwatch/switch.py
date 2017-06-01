@@ -49,7 +49,8 @@ class Switch(Ponicwatch_Table):
         #if hardware["mode"] == 2:  # R/W
         self.hardware.set_pin_as_output(self.init_dict["pin"])
         self.system_name = system_name + "/" + self["name"]
-        self.controller.add_cron_job(self.execute, self["timer"])
+        if self["timer"]:
+            self.controller.add_cron_job(self.execute, self["timer"])
 
     # def get_record(self, id=None, name=None):
     #     """
