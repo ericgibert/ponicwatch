@@ -7,6 +7,7 @@ import json
 from sqlite3 import InterfaceError
 class Ponicwatch_Table(dict):
     """associates a dictionary object to a table record"""
+    INACTIVE = -1
     def __init__(self, db, META, *args, **kwargs):
         """
         Select one record from the given table
