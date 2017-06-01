@@ -7,7 +7,7 @@
     They belong to one Controller that controls their state.
     A switch is either set manually ON/OFF while in AUTO mode,the controler will tabulate the current time on the 'timer' string.
 """
-from datetime import datetime, timezone
+# from datetime import datetime, timezone
 from model.model import Ponicwatch_Table
 
 class Switch(Ponicwatch_Table):
@@ -46,8 +46,8 @@ class Switch(Ponicwatch_Table):
         super().__init__(controller.db, Switch.META, *args, **kwargs)
         self.controller = controller
         self.hardware = hardware
-        if hardware["mode"] == 2:  # R/W
-            self.hardware.set_pin_as_output(self.init_dict["pin"])
+        #if hardware["mode"] == 2:  # R/W
+        self.hardware.set_pin_as_output(self.init_dict["pin"])
         self.system_name = system_name + "/" + self["name"]
         self.controller.add_cron_job(self.execute, self["timer"])
 
@@ -62,10 +62,11 @@ class Switch(Ponicwatch_Table):
     #     self.IC, self.pin, self.set_value_to = self.hw_components[0], self.hw_components[1], int(self.hw_components[2])
     #     self.hw_id = self.IC + '.' + str(self.pin) #  like "RPI3.4"  pin 4 on chip AM2302
 
-    def execute(self):
+    def execute(self, given_value=None):
         """on timer/scheduler"""
-        self.hardware.write(self.init_dict["pin"], self.init_dict["set_value_to"])
-        self.update_value(self.init_dict["set_value_to"])
+        self.hardware.write(self.init_dict["pin"], given_value or self.init_dict["set_value_to"])
+        #self.update_value(self.init_dict["set_value_to"])
+        self.update(value=given_value or self.init_dict["set_value_to"])
         self.controller.log.add_log(system_name=self.system_name, param=self)
 
     def update_value(self, value):
