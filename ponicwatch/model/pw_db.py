@@ -45,6 +45,7 @@ class Ponicwatch_Db():
     def open(self):
         if not self.is_open:
             self.conn = self.connect(**self.server_params)
+            self.conn.row_factory = sqlite3.Row
             self.curs = self.conn.cursor()
             self.is_open = True
 
