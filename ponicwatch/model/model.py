@@ -17,10 +17,10 @@ class Ponicwatch_Table(dict):
         self.db = db
         self.table = META["table"]
         self.columns = META["columns"]
-        self.id = META["id"]
+        self.id_column = META["id"]
         # is a record already requested? i.e one of the possible key argument is given as parameter
-        if "id" in kwargs or self.id in kwargs:
-            self.get_record(id=kwargs["id"] if "id" in kwargs else kwargs[self.id])
+        if "id" in kwargs or self.id_column in kwargs:
+            self.get_record(id=kwargs["id"] if "id" in kwargs else kwargs[self.id_column])
         elif "name" in kwargs:
             self.get_record(name=kwargs["name"])
         else:
@@ -48,17 +48,21 @@ class Ponicwatch_Table(dict):
             self.db.open()
             try:
                 if type(id) is int:
-                    self.db.curs.execute("SELECT * FROM {0} WHERE {1}=?".format(self.table, self.id), (id,))
+                    self.db.curs.execute("SELECT * FROM {0} WHERE {1}=?".format(self.table, self.id_column), (id,))
                 elif type(name) is str:
                     self.db.curs.execute("SELECT * FROM {0} WHERE name=?".format(self.table), (name,))
                 else:
                     raise ValueError("Missing or incorrect argument: id or name")
                 rows = self.db.curs.fetchall()
                 if len(rows) == 1:
-                    for idx, col in enumerate(self.columns):
-                        self[col] = rows[0][idx]
-                        if col == self.id:
-                            self["id"] = rows[0][idx]
+                    r = row[0]
+                    for col in r.keys():
+                        self[col] = r[col]
+                    self["id"] = r[self.id_column]
+                    #for idx, col in enumerate(self.columns):
+                    #    self[col] = rows[0][idx]
+                    #    if col == self.id:
+                    #        self["id"] = rows[0][idx]
                 elif len(rows) == 0: # unknown key
                     raise KeyError("Unkown record key on id/name: " + str(name or id))
                 else: # not a key: more than one record found ?1?
@@ -120,7 +124,7 @@ class Ponicwatch_Table(dict):
         if col_value:
             sql = "UPDATE {0} SET {1} WHERE {2}=?".format(self.table,
                                                           ",".join([c+"=?" for c, v in col_value]),
-                                                          self.id)
+                                                          self.id_column)
             # print("sql =", sql)
             self.execute_sql(sql, [v for c, v in col_value] + [self["id"]])
             self.get_record(id=self["id"]) # reload data after the update
