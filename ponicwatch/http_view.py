@@ -27,6 +27,7 @@ def log(page=0):
     return template("log", rows=rows, current_page=page)
 
 def get_pw_list(pw_object_type):
+    """ to do: Try using getattr within a try/except """
     if pw_object_type == "switches":
         pw_list = http_view.controller.switches
     elif pw_object_type == "sensors":
