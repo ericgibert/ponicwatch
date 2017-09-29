@@ -1,4 +1,9 @@
-# reference: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware
+"""
+    DS18B20 Temperature Sensing - used for reading water temperature
+    Measure temperature with your Raspberry Pi using the DS18B20
+
+    reference: https://learn.adafruit.com/adafruits-raspberry-pi-lesson-11-ds18b20-temperature-sensing/hardware
+"""
 import os
 from time import sleep
 from glob import glob

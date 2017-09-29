@@ -1,6 +1,10 @@
 #/bin/python3
 """
 MCP3008/ MCP3208
+
+12 Bit Analog to Digital Converter 4, 8 Input 1 SAR 16-PDIP
+
+
 Pin Signal  Description                 GPIO        RPI Pin
 1   CH0     10K NTC Sensor              -           -
 2   CH1     10K POT-                    -           -
@@ -66,3 +70,6 @@ class Hardware_MCP3208(object):
 
     def cleanup(self):
         self.pig.spi_close(self.spi_handle)
+
+    def write(self):
+        raise NotImplementedError("MCP3208 is 12bits ADC: read only IC i.e. cannot write")

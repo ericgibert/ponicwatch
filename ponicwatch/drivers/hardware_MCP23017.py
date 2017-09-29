@@ -1,6 +1,12 @@
 #!/usr/bin/python3
 """
-Original dvelopment from Dan Woodruff
+MCP23017 - i2c 16 input/output port expander
+
+The MCP23017 uses two i2c pins (these can be shared with other i2c devices), and in exchange gives you 16 general purpose pins.
+You can set each of 16 pins to be input, output, or input with a pullup. There's even the ability to get an interrupt
+via an external pin when any of the inputs change so you don't have to keep polling the chip.
+
+Original development from Dan Woodruff
 https://bitbucket.org/dewoodruff/mcp23017-python-3-library-with-interrupts
 
 Adapted to work with pigpio and python3 by Eric Gibert

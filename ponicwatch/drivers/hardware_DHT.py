@@ -1,10 +1,13 @@
 #/bin/python3
 """
     Manage the IC DHT11, DHT22 or AM3202
-    This IC can read ambiant temperature and humidity
+    This IC can read ambient temperature and humidity
+
+    Wrapper around the DHT22.py driver provided below:
+
+    refer to https://learn.adafruit.com/dht-humidity-sensing-on-raspberry-pi-with-gdocs-logging/software-install-updated
+    source at: git clone https://github.com/adafruit/Adafruit_Python_DHT.git
 """
-# refer to https://learn.adafruit.com/dht-humidity-sensing-on-raspberry-pi-with-gdocs-logging/software-install-updated
-# source at: git clone https://github.com/adafruit/Adafruit_Python_DHT.git
 from datetime import datetime
 from time import sleep
 
@@ -60,3 +63,6 @@ class Hardware_DHT(object):
                 self.humidity, self.temperature = humidity, temperature
                 self.last_read = datetime.now()
         return (self.temperature, self.temperature) if T_or_H == "T" else (self.humidity, self.humidity)
+
+    def write(self):
+        raise NotImplementedError("Air temperature and humidity sensor: read only IC i.e. cannot write")

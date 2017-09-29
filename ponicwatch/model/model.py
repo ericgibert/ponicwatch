@@ -6,6 +6,7 @@
 import json
 from sqlite3 import InterfaceError
 from datetime import datetime, timezone
+
 class Ponicwatch_Table(dict):
     """associates a dictionary object to a table record"""
     INACTIVE = -1

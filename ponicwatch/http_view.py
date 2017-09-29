@@ -26,35 +26,19 @@ def log(page=0):
     rows = http_view.controller.log.get_all_records(from_page=page, order_by="created_on desc", where_clause=where)
     return template("log", rows=rows, current_page=page)
 
-def get_pw_list(pw_object_type):
-    """ to do: Try using getattr within a try/except """
-    if pw_object_type == "switches":
-        pw_list = http_view.controller.switches
-    elif pw_object_type == "sensors":
-        pw_list = http_view.controller.sensors
-    elif pw_object_type == "hardware":
-        pw_list = http_view.controller.hardwares
-    elif pw_object_type == "interrupts":
-        pw_list = http_view.controller.interrupts
-    elif pw_object_type == "systems":
-        pw_list = http_view.controller.systems
-    else:
-        pw_list = None
-    return pw_list
-
 @http_view.route('/switches')
 @http_view.route('/switches/<object_id:int>')
 @http_view.route('/sensors')
 @http_view.route('/sensors/<object_id:int>')
-@http_view.route('/hardware')
-@http_view.route('/hardware/<object_id:int>')
+@http_view.route('/hardwares')
+@http_view.route('/hardwares/<object_id:int>')
 @http_view.route('/interrupts')
 @http_view.route('/interrupts/<object_id:int>')
 @http_view.route('/systems')
 @http_view.route('/systems/<object_id:int>')
 def pw_object(object_id=0):
     pw_object_type = (request['bottle.route'].rule[1:].split('/'))[0]
-    pw_list = get_pw_list(pw_object_type)
+    pw_list = getattr(http_view.controller, pw_object_type)
     if object_id:
         pw_object = pw_list[object_id]
         return template("one_pw_object", pw_object=pw_object, image=make_image(pw_object), pw_object_type=pw_object_type)
@@ -68,7 +52,7 @@ def pw_object(object_id=0):
 
 @http_view.post('/switches')
 @http_view.post('/sensors')
-@http_view.post('/hardware')
+@http_view.post('/hardwares')
 @http_view.post('/interrupts')
 @http_view.post('/systems')
 def post_pw_object():
@@ -76,7 +60,7 @@ def post_pw_object():
 
     id = int(request.forms.get('id'))
     pw_object_type = request.forms.get('pw_object_type')
-    pw_list = get_pw_list(pw_object_type)
+    pw_list = getattr(http_view.controller, pw_object_type)
     pw_object = pw_list[id]
     upd_fields = {}
     for k, v in request.forms.items():
