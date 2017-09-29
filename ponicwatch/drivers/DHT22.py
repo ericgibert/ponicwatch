@@ -1,10 +1,16 @@
 #!/usr/bin/env python
+"""
+ DHT22 temperature-humidity sensor
+
+ The DHT22 is a basic, low-cost digital temperature and humidity sensor.
+ It uses a capacitive humidity sensor and a thermistor to measure the surrounding air, and spits out a digital signal
+ on the data pin (no analog input pins needed). Its fairly simple to use, but requires careful timing to grab data.
+ The only real downside of this sensor is you can only get new data from it once every 2 seconds,
+ so when using our library, sensor readings can be up to 2 seconds old.
 
 # 2014-07-11 DHT22.py
-
-import time
+"""
 import atexit
-import pigpio
 
 class dht_sensor:
    """
@@ -46,7 +52,6 @@ class dht_sensor:
       Taking readings more often than about once every two seconds will
       eventually cause the DHT22 to hang.  A 3 second interval seems OK.
       """
-
       self.pi = pi
       self.gpio = gpio
       self.LED = LED
@@ -57,9 +62,7 @@ class dht_sensor:
          time.sleep(2)
 
       self.powered = True
-
       self.cb = None
-
       atexit.register(self.cancel)
 
       self.bad_CS = 0 # Bad checksum count.
@@ -73,16 +76,12 @@ class dht_sensor:
 
       self.rhum = -999
       self.temp = -999
-
       self.tov = None
-
       self.high_tick = 0
       self.bit = 40
 
       pi.set_pull_up_down(gpio, pigpio.PUD_OFF)
-
       pi.set_watchdog(gpio, 0) # Kill any watchdogs.
-
       self.cb = pi.callback(gpio, pigpio.EITHER_EDGE, self._cb)
 
    def _cb(self, gpio, level, tick):
@@ -91,67 +90,44 @@ class dht_sensor:
       humidity low, temperature high, temperature low, checksum.
       """
       diff = pigpio.tickDiff(self.high_tick, tick)
-
       if level == 0:
-
          # Edge length determines if bit is 1 or 0.
-
          if diff >= 50:
             val = 1
             if diff >= 200: # Bad bit?
                self.CS = 256 # Force bad checksum.
          else:
             val = 0
-
          if self.bit >= 40: # Message complete.
             self.bit = 40
-
          elif self.bit >= 32: # In checksum byte.
             self.CS  = (self.CS<<1)  + val
-
             if self.bit == 39:
-
                # 40th bit received.
-
                self.pi.set_watchdog(self.gpio, 0)
-
                self.no_response = 0
-
                total = self.hH + self.hL + self.tH + self.tL
-
                if (total & 255) == self.CS: # Is checksum ok?
-
                   self.rhum = ((self.hH<<8) + self.hL) * 0.1
-
                   if self.tH & 128: # Negative temperature.
                      mult = -0.1
                      self.tH = self.tH & 127
                   else:
                      mult = 0.1
-
                   self.temp = ((self.tH<<8) + self.tL) * mult
-
                   self.tov = time.time()
-
                   if self.LED is not None:
                      self.pi.write(self.LED, 0)
-
                else:
-
                   self.bad_CS += 1
-
          elif self.bit >=24: # in temp low byte
             self.tL = (self.tL<<1) + val
-
          elif self.bit >=16: # in temp high byte
             self.tH = (self.tH<<1) + val
-
          elif self.bit >= 8: # in humidity low byte
             self.hL = (self.hL<<1) + val
-
          elif self.bit >= 0: # in humidity high byte
             self.hH = (self.hH<<1) + val
-
          else:               # header bits
             pass
 
@@ -233,51 +209,32 @@ class dht_sensor:
 
    def cancel(self):
       """Cancel the DHT22 sensor."""
-
       self.pi.set_watchdog(self.gpio, 0)
-
       if self.cb != None:
          self.cb.cancel()
          self.cb = None
 
 if __name__ == "__main__":
-
    import time
-
    import pigpio
-
    import DHT22
-
    # Intervals of about 2 seconds or less will eventually hang the DHT22.
    INTERVAL=3
-
    pi = pigpio.pi()
-
    #s = DHT22.sensor(pi, 22, LED=16, power=8)
    s = DHT22.sensor(pi, 4)
-
    r = 0
-
    next_reading = time.time()
-
    while True:
-
       r += 1
-
       s.trigger()
-
       time.sleep(0.2)
-
       print("{} {} {} {:3.2f} {} {} {} {}".format(
          r, s.humidity(), s.temperature(), s.staleness(),
          s.bad_checksum(), s.short_message(), s.missing_message(),
          s.sensor_resets()))
-
       next_reading += INTERVAL
-
       time.sleep(next_reading-time.time()) # Overall INTERVAL second polling.
-
    s.cancel()
-
    pi.stop()
 

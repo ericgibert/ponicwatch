@@ -8,7 +8,7 @@
 """
 from datetime import datetime, timezone
 from time import sleep
-from model.model import Ponicwatch_Table, INACTIVE
+from model.model import Ponicwatch_Table
 
 class Sensor(Ponicwatch_Table):
     """
@@ -144,8 +144,8 @@ class Sensor(Ponicwatch_Table):
 if __name__ == "__main__":
     from model.pw_db import Ponicwatch_Db
     pw_db = Ponicwatch_Db("sqlite3", {"database": "ponicwatch.db"})
-
-    print(Sensor.all_keys(pw_db))
-
-    sensor1 = Sensor(pw_db, sensor_id=1)
-    print(sensor1)
+    #
+    # print(Sensor.all_keys(pw_db))
+    #
+    # sensor1 = Sensor(pw_db, sensor_id=1)
+    # print(sensor1)

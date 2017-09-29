@@ -5,6 +5,7 @@
 """
 import json
 from sqlite3 import InterfaceError
+from datetime import datetime, timezone
 class Ponicwatch_Table(dict):
     """associates a dictionary object to a table record"""
     INACTIVE = -1
@@ -55,7 +56,7 @@ class Ponicwatch_Table(dict):
                     raise ValueError("Missing or incorrect argument: id or name")
                 rows = self.db.curs.fetchall()
                 if len(rows) == 1:
-                    r = row[0]
+                    r = rows[0]
                     for col in r.keys():
                         self[col] = r[col]
                     self["id"] = r[self.id_column]
