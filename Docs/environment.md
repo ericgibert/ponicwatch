@@ -17,12 +17,30 @@ On "RASPBIAN STRETCH WITH DESKTOP" : Python 3.5.3
 '2.6.0'
 ````
 
+Bottle and Bottle-Session
+-------------------------
+
+####bottle
+Used to provide the HTTP server to interract with the application
 
 pip install bottle
 ````python
 >>> bottle.__version__
 '0.12.13'
 ````
+
+####bottle-session
+Install using either pip or easy_install:
+
+    $ pip install bottle-session
+
+or you can download the latest version from bitbucket:
+
+    $ git clone https://devries@bitbucket.org/devries/bottle-session.git
+    $ cd bottle-session
+    $ python setup.py install
+
+
 
 Sqlite
 ------
