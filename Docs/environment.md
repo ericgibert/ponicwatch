@@ -1,10 +1,10 @@
-Environment and Setups
-======================
+Environment and Setups on Raspberry Pi 3
+========================================
 
 Python 3
 --------
 
-On the development: Python 3.4.2 --> now 3.5.3
+On "RASPBIAN STRETCH WITH DESKTOP" : Python 3.5.3
 
 ````bash
     sudo pip3 install virtualenvwrapper
@@ -54,3 +54,21 @@ For electronic
 --------------
 - smbus  / alternative wiringpi2: http://raspi.tv/2013/using-the-mcp23017-port-expander-with-wiringpi2-to-give-you-16-new-gpio-ports-part-3#top
 - gpiozero
+
+
+Matplotlib
+----------
+
+I tried `pip install matplotlib` without success: error in compilation.
+Plan B:
+```bash
+    sudo apt-get python3-matplotlib
+    toggleglobalsitepackages
+```
+This latest command allows the virtual environment to benefit for the global site-packages.
+
+```bash
+    >>> import matplotlib
+    >>> matplotlib.__version__
+    '2.0.0'
+```
