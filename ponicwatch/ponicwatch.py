@@ -32,7 +32,7 @@ DEBUG = 0
 class Controller(object):
     """The Controller in a MVC model"""
 
-    def __init__(self, db, host="", port=8888):
+    def __init__(self, db, host="", port=8888, bottle_ip=None):
         """- Create the controller, its Viewer and connect to database (Model)
            - Select all the hardware (sensors/switches) for the systems under its control
            - Launch the scheduler
@@ -41,6 +41,7 @@ class Controller(object):
         """
         global _simulation # if no PGIO port as we are not running on a Raspberry Pi
         self.debug = DEBUG
+        self.bottle_ip=bottle_ip
         # keep a link to the database i.e. M in MVC
         self.db = db
         self.db.allow_close = False
@@ -115,7 +116,7 @@ class Controller(object):
         self.log.add_info("Controller is now running.")
         http_view.controller = self
         try:
-            http_view.run()
+            http_view.run(host=self.bottle_ip or '127.0.0.1')
             # # This is here to simulate application activity (which keeps the main thread alive).
             # while self.running :
             #     sleep(2)
@@ -168,6 +169,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--sqlite", dest="dbfilename", help="Path of a Sqlite3 database.")  # type=exist_file, # required=False,
     parser.add_argument("-r", "--raspi", dest="host", help="Optional: remote Raspberry Pi IP address", required=False, default="")
+    parser.add_argument("-b", "--bottle", dest="bottle_ip", help="Optional: Raspberry Pi IP address to allow remote connections", required=False,  default="")
     parser.add_argument("-d", "--debug", dest="debug", help="Optional: debug level [0..3]", required=False, type=int, default=None)
     parser.add_argument("-l", "--list", dest="print_list", help="List all created objects - no running -", action='store_true')
     parser.add_argument("-c", "--clean", dest="cleandb", help="Clean database tables/logs", action='store_true', default=False)
@@ -178,7 +180,7 @@ if __name__ == "__main__":
 
     if args.dbfilename:
         db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename}, args.cleandb)
-        ctrl = Controller(db, host=args.host)
+        ctrl = Controller(db, host=args.host, bottle_ip=args.bottle_ip)
         if args.print_list:
             ctrl.print_list()
         else:
