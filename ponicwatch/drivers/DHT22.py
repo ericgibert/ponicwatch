@@ -11,6 +11,8 @@
 # 2014-07-11 DHT22.py
 """
 import atexit
+import pigpio
+import time
 
 class dht_sensor:
    """
@@ -215,14 +217,11 @@ class dht_sensor:
          self.cb = None
 
 if __name__ == "__main__":
-   import time
-   import pigpio
-   import DHT22
    # Intervals of about 2 seconds or less will eventually hang the DHT22.
    INTERVAL=3
    pi = pigpio.pi()
-   #s = DHT22.sensor(pi, 22, LED=16, power=8)
-   s = DHT22.sensor(pi, 4)
+   #s = dht_sensor(pi, 22, LED=16, power=8)
+   s = dht_sensor(pi, 17)
    r = 0
    next_reading = time.time()
    while True:

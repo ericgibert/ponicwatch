@@ -1,4 +1,4 @@
-#/bin/python3
+#!/bin/env python
 """
     Manage the IC DHT11, DHT22 or AM3202
     This IC can read ambient temperature and humidity
@@ -76,7 +76,9 @@ if __name__ == "__main__":
         exit(1)
 
     pig = pigpio.pi("127.0.0.1", 8888)
+    pig.connected = True
     pin = int(sys.argv[1])
+    print(pin)
     dht = Hardware_DHT(pig, "DHT22", pin)
     print("Temperature:", dht.read(T_or_H='T'))
     print("Humidity:", dht.read(T_or_H='H'))
