@@ -66,3 +66,18 @@ class Hardware_DHT(object):
 
     def write(self):
         raise NotImplementedError("Air temperature and humidity sensor: read only IC i.e. cannot write")
+
+if __name__ == "__main__":
+    import sys
+    import pigpio
+
+    if len(sys.argv) != 2:
+        print("Usage: hardware_DHT.py <pin_number>")
+        exit(1)
+
+    pig = pigpio.pi("127.0.0.1", 8888)
+    pin = int(sys.argv[1])
+    dht = Hardware_DHT(pig, "DHT22", pin)
+    print("Temperature:", dht.read(T_or_H='T'))
+    print("Humidity:", dht.read(T_or_H='H'))
+
