@@ -98,17 +98,19 @@ class Sensor(Ponicwatch_Table):
         try:
             # need to power on the sensor if a power pin is given   { "POWER": "I/O_IC.pin" }
             if self.pwr_ic:
-                self.pwr_ic.write(1)
+                self.pwr_ic.write(self.pwr_pin, 1)
                 self.controller.log.add_info("Switch {}.{} ON before reading sensor {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
                 sleep(0.5)
             read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
             # power off the sensor if necessary
             if self.pwr_ic:
-                self.pwr_ic.write(0)
+                self.pwr_ic.write(self.pwr_pin, 0)
                 self.controller.log.add_info("Switch {}.{} OFF after reading sensor {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
         except TypeError as err:
-            print('*'*30, err)
-            print(self.hardware, self.init_dict["pin"], self.init_dict["hw_param"])
+            print('[1]', '*'*30)
+            print('[1]', err)
+            print('[1]', self.hardware, self.init_dict["pin"], self.init_dict["hw_param"])
+            print('[1]', "Power IC:", self.pwr_ic, "Power Pin:", self.pwr_pin)
         else:
             if read_val is None:
                 self.controller.log.add_error("Cannot read from " + str(self), self["id"])

@@ -63,7 +63,7 @@ class Hardware_MCP3208(object):
         except AttributeError:
             # REPLACE BY SIMULATION
             count, adc = 0, [0,0,0,0]
-        print("read from MCP3208:", (count, adc))
+        # print("read from MCP3208:", (count, adc))
         data = ((adc[1] & 15) << 8) + adc[2]
         volts12bits = (data * param) / 4095.0
         return (data, volts12bits)

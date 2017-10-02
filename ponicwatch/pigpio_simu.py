@@ -2,11 +2,13 @@
   Simulation of the pigpio function to test on a NON Raspi hardware
 """
 from random import randint
+from ponicwatch import DEBUG
 
 class pi():
     connected = False
     def __init__(self):
-        print("INFO --> *** PIGPIO simulation activated  ***")
+        if DEBUG >= 2:
+            print("INFO --> *** PIGPIO simulation activated  ***")
         self.inter_pin = None
         self.connected = False
 
@@ -15,19 +17,23 @@ class pi():
 
     def i2c_read_byte_data(self, handle, register):
         sim = randint(0, 255)
-        print("Simulation read byte pigpio", sim, "from register", register)
+        if DEBUG >= 3:
+            print("Simulation read byte pigpio", sim, "from register", register)
         return sim
 
     def i2c_write_byte_data(self, handle, register, value):
-        print("Simulation write byte pigpio", value, "on register", register)
+        if DEBUG >= 3:
+            print("Simulation write byte pigpio", value, "on register", register)
 
     def read(self, pin, param=None):
         data = randint(0, 1)
-        print("Simulation reading RPI3.%d [%d]" % (pin, data))
+        if DEBUG >= 3:
+            print("Simulation reading RPI3.%d [%d]" % (pin, data))
         return data
 
     def write(self, pin, value):
-        print("Simulation writing %d to pin RPI3.%d" % (value, pin))
+        if DEBUG >= 3:
+            print("Simulation writing %d to pin RPI3.%d" % (value, pin))
 
     def set_watchdog(self, pin, value):
         pass

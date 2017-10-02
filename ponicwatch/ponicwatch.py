@@ -24,7 +24,10 @@ from hardware import Hardware
 from interrupt import Interrupt
 from http_view import http_view
 
-DEBUG = True  # activate the Debug mode or not --> messages on the screen with print() functions
+# activate the Debug mode: messages on the screen with print() functions
+# 0: no messages ; 1: all messages ; 2: Error and Warnings ; 3: Error level
+# command line can pass this [0..3] value too with option --debug / -d
+DEBUG = 0
 
 class Controller(object):
     """The Controller in a MVC model"""
@@ -35,7 +38,7 @@ class Controller(object):
            - Launch the scheduler
         """
         global _simulation # if no PGIO port as we are not running on a Raspberry Pi
-        self.is_debug = DEBUG
+        self.debug = DEBUG
         # keep a link to the database i.e. M in MVC
         self.db = db
         self.db.allow_close = False
@@ -53,7 +56,7 @@ class Controller(object):
         # select all the systems, sensors, switches to monitor and the necessary hardware drivers
         self.pig = pigpio.pi(host, port) if not _simulation else pigpio_simu.pi()
         if not self.pig.connected:
-            print("WARNING: not connected to a RasPi")
+            if self.debug >= 2: print("WARNING: not connected to a RasPi")
             self.pig = pigpio_simu.pi()
             _simulation = True
         self.systems, self.sensors, self.switches, self.hardwares, self.interrupts = {}, {}, {}, {}, {}
@@ -85,8 +88,6 @@ class Controller(object):
                                                           id=interrupt_id,
                                                           system_name=self.systems[system_id]["name"],
                                                           hardware=self.hardwares[hardware_id])
-
-
         self.db.allow_close = True
         self.db.close()
 
@@ -137,13 +138,21 @@ class Controller(object):
         print("--- System ---")
         for k,v in self.systems.items(): print(k,v)
         print("--- Hardware ---")
-        for k,v in self.hardwares.items(): print(k,v)
-        print("--- Sensors ---")
-        for k,v in self.sensors.items(): print(k,v)
+        for k,v in self.hardwares.items(): print(k,v, v["init"])
         print("--- Switches ---")
-        for k,v in self.switches.items(): print(k,v)
+        for k,v in self.switches.items(): print(k,v, v["init"])
+        print("--- Sensors ---")
+        for k,v in self.sensors.items(): print(k,v, v["init"])
         print("--- Interruptions ---")
         for k,v in self.interrupts.items(): print(k,v)
+        print("--- Links ---")
+        for system_id, sensor_id, switch_id, hardware_id, order_for_creation, interrupt_id in self.links:
+            print("system_id", system_id or '-',
+                  "hardware_id", hardware_id or '-',
+                  "switch_id", switch_id or '-',
+                  "sensor_id", sensor_id or '-',
+                  "interrupt_id", interrupt_id or '-', sep='\t')
+
 
 def exist_file(x):
     """
@@ -157,10 +166,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--sqlite", dest="dbfilename", help="Path of a Sqlite3 database.")  # type=exist_file, # required=False,
     parser.add_argument("-r", "--raspi", dest="host", help="Optional: remote Raspberry Pi IP address", required=False, default="")
+    parser.add_argument("-d", "--debug", dest="debug", help="Optional: debug level [0..3]", required=False, type=int, default=None)
     parser.add_argument("-l", "--list", dest="print_list", help="List all created objects - no running -", action='store_true')
     parser.add_argument("-c", "--clean", dest="cleandb", help="Clean database tables/logs", action='store_true', default=False)
     # parser.add_argument('config_file', nargs='?', default='')
     args, unk = parser.parse_known_args()
+    if isinstance(args.debug, int):
+        DEBUG = args.debug
 
     if args.dbfilename:
         db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename}, args.cleandb)
