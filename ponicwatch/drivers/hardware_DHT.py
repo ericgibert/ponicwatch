@@ -53,7 +53,7 @@ class Hardware_DHT(object):
         3 seconds gap is guarantied between 2 readings
         Note: param pins is ignored as the reading pin is defined at __init__ time already
         """
-        print("T_or_H:", T_or_H)
+        # print("T_or_H:", T_or_H)
         if (datetime.now() - self.last_read).seconds > 3 or self.humidity is None:
             #humidity, temperature = Adafruit_DHT.read_retry(self.model, self.pin)
             self.sensor.trigger()

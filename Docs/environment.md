@@ -29,17 +29,15 @@ pip install bottle
 '0.12.13'
 ````
 
-####bottle-session
-Install using either pip or easy_install:
-
-    $ pip install bottle-session
-
-or you can download the latest version from bitbucket:
-
-    $ git clone https://devries@bitbucket.org/devries/bottle-session.git
-    $ cd bottle-session
-    $ python setup.py install
-
+####bottlesession
+https://github.com/linsomniac/bottlesession 
+Attention:
+```python
+        #  save off a secret to a tmp file
+        secret = ''.join([
+            random.choice(string.ascii_letters)   #  <-- modification on line 172
+            for x in range(32)])
+```
 
 
 Sqlite

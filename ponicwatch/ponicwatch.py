@@ -36,6 +36,8 @@ class Controller(object):
         """- Create the controller, its Viewer and connect to database (Model)
            - Select all the hardware (sensors/switches) for the systems under its control
            - Launch the scheduler
+           - host:port is used to connect to the pigpio server running on the Raspberry Pi.
+           Need to execute 'sudo pigpiod' to get that daemon running if it is not automatically started at boot time
         """
         global _simulation # if no PGIO port as we are not running on a Raspberry Pi
         self.debug = DEBUG

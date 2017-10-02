@@ -1,3 +1,4 @@
+import sys
 from os import path
 from glob import glob
 import datetime
@@ -12,7 +13,8 @@ BaseTemplate.defaults['login_logout'] = "Login"
 
 @http_view.route('/')
 def default():
-    return template("default")
+    session = session_manager.get_session()
+    return template("default", session_valid=session["valid"])
 
 @http_view.route('/log')
 @http_view.route('/log/<page:int>')
@@ -121,6 +123,11 @@ def logout():
     session_manager.save(session)
     BaseTemplate.defaults['login_logout'] = "Login"
     redirect('/')
+
+@http_view.route('/stop')
+def stop():
+    """Stops the application"""
+    sys.stderr.close()
 
 #
 ### Generation of the PNG to display the data as a plot
