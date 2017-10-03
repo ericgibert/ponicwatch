@@ -173,7 +173,7 @@ class dht_sensor:
 
    def humidity(self):
       """Return current relative humidity."""
-      return self.rhum
+      return int(self.rhum * 1000.0) / 1000.0
 
    def staleness(self):
       """Return time since measurement made."""

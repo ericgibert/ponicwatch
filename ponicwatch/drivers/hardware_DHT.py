@@ -79,7 +79,7 @@ if __name__ == "__main__":
     pig.connected = True
     pin = int(sys.argv[1])
     print(pin)
-    dht = Hardware_DHT(pig, "DHT22", pin)
+    dht = Hardware_DHT(pig, "AM2302", pin)
     print("Temperature:", dht.read(T_or_H='T'))
     print("Humidity:", dht.read(T_or_H='H'))
 
