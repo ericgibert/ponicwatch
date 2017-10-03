@@ -93,9 +93,13 @@ class Hardware_DS18B20(object):
 
 if __name__ == "__main__":
     import time
+    import pigpio
+    pi = pigpio.pi()
     probes = []
-    for probe_folder in Hardware_DS18B20.list_probes():
-        probes.append(Hardware_DS18B20(probe_folder))
+    list_of_files = Hardware_DS18B20.list_probes()
+    print(list_of_files)
+    for probe_folder in list_of_files:
+        probes.append(Hardware_DS18B20(pi, probe_folder))
 
     if probes:
         while True:
