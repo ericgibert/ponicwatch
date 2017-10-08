@@ -141,17 +141,18 @@ def img(filepath):
     return static_file(filepath, root="images")
 
 def make_image(data_object):
-    """Creates an image for the reading of the given obkect (sensor, switch)"""
+    """Creates an image for the status of the given object (sensor, switch)"""
     obj_class_name = data_object.__class__.__name__ # Sensor / Switch
     if obj_class_name not in ("Sensor", "Switch"):
         return ""
-    image_file = "images/{}_{}.png".format(obj_class_name, data_object["id"])  # images/sensor_id_1.png
+    image_file = "images/{}_id_{}.png".format(obj_class_name, data_object["id"])  # images/sensor_id_1.png
     log_type = http_view.controller.log.LOG_TYPE[obj_class_name.upper()]
     yesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(1)
-    where = "log_type={} and object_id={} and created_on>=?".format(log_type, data_object["id"])  #, yesterday.strftime('%Y-%m-%d %H:%M:%S'))
-    # print(obj_class_name, log_type, image_file)
-    print("where ==>", where, yesterday)
-    rows = http_view.controller.log.get_all_records(page_len=0, where_clause=where, order_by="created_on asc", args=(yesterday,))
+    where_clause = "log_type={} and object_id={} and created_on>=?".format(log_type, data_object["id"])  #, yesterday.strftime('%Y-%m-%d %H:%M:%S'))
+    if http_view.controller.debug >= 3:
+        print(obj_class_name, log_type, image_file)
+        print("where ==>", where_clause, yesterday)
+    rows = http_view.controller.log.get_all_records(page_len=0, where_clause=where_clause, order_by="created_on asc", args=(yesterday,))
     # for row in rows: print(row)
     x = [row[-1] for row in rows]
     y = [row[5] for row in rows]
