@@ -37,6 +37,7 @@ pip install bottle
 ####bottlesession
 ````bash
 	cd ponicwatch
+	mkdir images
 	mkdir Private
 	cd Private
 	git clone https://github.com/linsomniac/bottlesession
@@ -104,6 +105,13 @@ This latest command allows the virtual environment to benefit for the global sit
     >>> matplotlib.__version__
     '2.0.0'
 ```
+
+Pigpio
+------
+
+pip install pigpio
+
+and do not forget to ru: `sudo pigpiod` before the first execution
 
 Ponicwatch
 ----------
