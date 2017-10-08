@@ -6,9 +6,14 @@ Python 3
 
 On "RASPBIAN STRETCH WITH DESKTOP" : Python 3.5.3
 
+Add two lines at the end of .bashrc:
+export WORKON_HOME=$HOME/.virtualenvs
+export PROJECT_HOME=$HOME
+
+
 ````bash
-    sudo pip3 install virtualenvwrapper
-    mkvirtualenv -p python3 ponicwatch
+    sudo apt-get install virtualenvwrapper
+    mkvirtualenv -p /usr/bin/python3 ponicwatch
     workon ponicwatch
 ````
 
@@ -30,8 +35,14 @@ pip install bottle
 ````
 
 ####bottlesession
-https://github.com/linsomniac/bottlesession 
-Attention:
+````bash
+	cd ponicwatch
+	mkdir Private
+	cd Private
+	git clone https://github.com/linsomniac/bottlesession
+````
+ 
+Attention: Edit with `nano bottlesession/bottlesession.py` its line 172 ^_
 ```python
         #  save off a secret to a tmp file
         secret = ''.join([
@@ -39,11 +50,13 @@ Attention:
             for x in range(32)])
 ```
 
+then `cp bottlesession.py ~/.virtualenvs/ponicwatch/lib/python3.5/site-packages/`
+
 
 Sqlite
 ------
 
-GUI: dnf install sqliteman
+GUI: sudo apt-get install sqlitebrowser
 
 APScheduler
 -----------
@@ -52,6 +65,9 @@ In-process task scheduler with Cron-like capabilities
 https://pypi.python.org/pypi/APScheduler/
 
     pip install apscheduler
+	>>> apscheduler.__version__
+	'3.3.1'
+
     
 Markdown
 --------
@@ -78,7 +94,7 @@ Matplotlib
 I tried `pip install matplotlib` without success: error in compilation.
 Plan B:
 ```bash
-    sudo apt-get python3-matplotlib
+    sudo apt-get install python3-matplotlib
     toggleglobalsitepackages
 ```
 This latest command allows the virtual environment to benefit for the global site-packages.
@@ -88,3 +104,10 @@ This latest command allows the virtual environment to benefit for the global sit
     >>> matplotlib.__version__
     '2.0.0'
 ```
+
+Ponicwatch
+----------
+
+git clone https://github.com/ericgibert/ponicwatch
+
+git config --global user.name "ericgibert@yahoo.fr"
