@@ -61,11 +61,12 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
-.idea/
-Private/
-/ponicwatch/ponicwatch.db
+# my ignore rules:
 *.db
+*.bak
+.idea/
+/Private
+/ponicwatch/images
 /drivers
-ponicwatch/ponicwatch (copy).db
-www/
-drivers/Adafruit_Python_DHT
+/www
+
