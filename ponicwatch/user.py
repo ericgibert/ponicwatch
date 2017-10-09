@@ -44,6 +44,8 @@ class User(Ponicwatch_Table):
             self.db.close()
         if len(user_row) == 1:
             self.get_record(id=user_row[0][0])
+        else:
+            self["id"] = None
 
 if __name__ == "__main__":
     from model.pw_db import Ponicwatch_Db

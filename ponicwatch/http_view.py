@@ -5,6 +5,7 @@ import datetime
 from markdown import markdown
 from bottle import Bottle, template, static_file, request, BaseTemplate, redirect
 from bottlesession import CookieSession, authenticator
+from user import User
 session_manager = CookieSession()    #  NOTE: you should specify a secret
 valid_user = authenticator(session_manager)
 
@@ -105,7 +106,11 @@ def do_login():
     session = session_manager.get_session()
     session['valid'] = False
 
-    if password and passwds.get(username) == password:
+    new_user = User(http_view.controller)
+    new_user.get_user(username, password)
+
+    # if password and passwds.get(username) == password:
+    if new_user["id"]:
       session['valid'] = True
       session['name'] = username
 
