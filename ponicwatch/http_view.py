@@ -95,8 +95,9 @@ def login():
 
 @http_view.post('/Login')
 def do_login():
-    passwds = { 'guest' : 'guest' }
-
+    """
+    Fetch the login/password from the form and check this couple against the tb_user table
+    """
     username = request.forms.get('username')
     password = request.forms.get('password')
 
@@ -108,8 +109,6 @@ def do_login():
 
     new_user = User(http_view.controller)
     new_user.get_user(username, password)
-
-    # if password and passwds.get(username) == password:
     if new_user["id"]:
       session['valid'] = True
       session['name'] = username
