@@ -26,8 +26,8 @@ class User(Ponicwatch_Table):
                     )
           }
 
-    def __init__(self, controller, *args, **kwargs):
-        super().__init__(controller.db, User.META, *args, **kwargs)
+    def __init__(self, controller=None, db=None, *args, **kwargs):
+        super().__init__(db or controller.db, User.META, *args, **kwargs)
 
     def get_user(self, login, password):
         """
@@ -50,15 +50,14 @@ class User(Ponicwatch_Table):
 if __name__ == "__main__":
     from model.pw_db import Ponicwatch_Db
     # test for the database on Sqlite3
-    pw_db = Ponicwatch_Db("sqlite3", {"database": "ponicwatch.db"})
-    user = User(pw_db)
-    user.get_user("ctrl", "passwd")
-    print("Name: {}   user_id: {}".format(user, user["id"]))
-    assert(user["id"] == 1)
+    pw_db = Ponicwatch_Db("sqlite3", {"database": "local_ponicwatch.db"})
+    user = User(db=pw_db)
+    user.get_user("test", "test")
+    print("1) Name: {}   user_id: {}".format(user, user["id"]))
 
-    user.get_user("eric", "test")
-    print("Name: {}   Email: {}".format(user, user["email"]))
+    new_user = User(db=pw_db, id=user["id"])
+    print("2) Name: {}   user_id: {}".format(new_user, new_user["id"]))
 
-    new_user = User(pw_db)
+    new_user = User(db=pw_db)
     new_user.insert(login="new", email="new@new", authorization=0, password="qwertyuiop", name="New User")
-    print(new_user["id"], new_user)
+    print("3) Name: {}   user_id: {}".format(new_user, new_user["id"]))
