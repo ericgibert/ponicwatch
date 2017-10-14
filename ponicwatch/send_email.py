@@ -10,6 +10,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from user import User
 
+
 def send_email(subject, from_, to_,
                message_txt="",
                message_HTML="",

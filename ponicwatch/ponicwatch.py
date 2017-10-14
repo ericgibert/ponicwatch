@@ -6,6 +6,7 @@
 """
 import argparse
 import os.path
+import datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
 try:
@@ -22,7 +23,8 @@ from sensor import Sensor
 from switch import Switch
 from hardware import Hardware
 from interrupt import Interrupt
-from http_view import http_view
+from http_view import http_view, make_image
+from send_email import send_email
 
 # activate the Debug mode: messages on the screen with print() functions
 # 0: no messages ; 1: all messages ; 2: Error and Warnings ; 3: Error level
@@ -46,8 +48,7 @@ class Controller(object):
         self.db = db
         self.db.allow_close = False
         # finding the Controller User entry --> currently 'hard coded' as 'ctrl'/'passwd' --> to improve later
-        self.user = User(self)
-        self.user.get_user("ctrl", "passwd")
+        self.user = User(self, id=1)
         self.name = self.user["name"]  # this name is used to identify the log messages posted by this controller
 
         # opening the LOGger with the debug level for this application run
@@ -114,7 +115,7 @@ class Controller(object):
         self.running = True
         self.scheduler.start()
         self.log.add_info("Controller is now running.")
-        http_view.controller = self
+        # http_view.controller = self
         try:
             http_view.run(host=self.bottle_ip or '127.0.0.1')
             # # This is here to simulate application activity (which keeps the main thread alive).
@@ -156,6 +157,41 @@ class Controller(object):
                   "sensor_id", sensor_id or '-',
                   "interrupt_id", interrupt_id or '-', sep='\t')
 
+    def ponicwatch_notification(self):
+        """
+        Regular email to inform the system manager of its status
+        :return:
+        """
+        images = []
+        html = ""
+        # step 1: force the images of all active sensors and swicthes
+        objects = []
+        for s in self.switches.values(): objects.append(s)
+        for s in self.sensors.values(): objects.append(s)
+        for o in objects:
+            img = "." + make_image(o)
+            images.append(img)
+            html += """<hr>
+            <h2>{cls} {id}: {name}</h2>
+            <p>
+            Last Update: {upd}<br/>
+            Value: {value}<br/>
+            <img src="{file_name}"/>
+            </p>
+            """.format(cls=o.__class__.__name__ ,
+                       id=o["id"], name=o["name"],
+                       upd=o["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone() ,
+                       file_name = os.path.basename(img),
+                       value=o["value"] if isinstance(o, Switch) else o["calculated_value"])
+
+        send_email("Ponicwatch Notification - System status",
+                   from_=self.user["email"],
+                   to_=["ericgibert@yahoo.fr", ],
+                   message_HTML=html,
+                   images=images,
+                   login=self.user["email"],
+                   passwd=self.user["password"])
+
 
 def exist_file(x):
     """
@@ -173,6 +209,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--debug", dest="debug", help="Optional: debug level [0..3]", required=False, type=int, default=None)
     parser.add_argument("-l", "--list", dest="print_list", help="List all created objects - no running -", action='store_true')
     parser.add_argument("-c", "--clean", dest="cleandb", help="Clean database tables/logs", action='store_true', default=False)
+    parser.add_argument("-n", "--notification", dest="notification", help="Sends notification email", action='store_true', default=False)
     # parser.add_argument('config_file', nargs='?', default='')
     args, unk = parser.parse_known_args()
     if isinstance(args.debug, int):
@@ -181,9 +218,13 @@ if __name__ == "__main__":
     if args.dbfilename:
         db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename}, args.cleandb)
         ctrl = Controller(db, host=args.host, bottle_ip=args.bottle_ip)
+        http_view.controller = ctrl
         if args.print_list:
             ctrl.print_list()
+        elif args.notification:
+            ctrl.ponicwatch_notification()
         else:
             ctrl.run()
+
     else:
         print("currently: -s dbfilename is mandatory")

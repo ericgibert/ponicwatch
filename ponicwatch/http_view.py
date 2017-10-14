@@ -41,17 +41,17 @@ def log(page=0):
 @http_view.route('/systems/<object_id:int>')
 def pw_object(object_id=0):
     pw_object_type = (request['bottle.route'].rule[1:].split('/'))[0]
-    pw_list = getattr(http_view.controller, pw_object_type)
+    pw_list = getattr(http_view.controller, pw_object_type) # get the controller's dictionary based on its name
     if object_id:
-        pw_object = pw_list[object_id]
-        return template("one_pw_object", pw_object=pw_object, image=make_image(pw_object), pw_object_type=pw_object_type)
+        pwo = pw_list[object_id]
+        return template("one_pw_object", pw_object=pwo, image=make_image(pwo), pw_object_type=pw_object_type)
     else:
         try:
-            pw_object = list(pw_list.values())[0]
-            rows = pw_object.get_all_records()
+            pwo = list(pw_list.values())[0]
+            rows = pwo.get_all_records()
         except IndexError:
-            pw_object, rows = None, []
-        return template("pw_objects", pw_object=pw_object, rows=rows, pw_object_type=pw_object_type)
+            pwo, rows = None, []
+        return template("pw_objects", pw_object=pwo, rows=rows, pw_object_type=pw_object_type)
 
 @http_view.post('/switches')
 @http_view.post('/sensors')
@@ -158,7 +158,7 @@ def make_image(data_object):
         print("where ==>", where_clause, yesterday)
     rows = http_view.controller.log.get_all_records(page_len=0, where_clause=where_clause, order_by="created_on asc", args=(yesterday,))
     # for row in rows: print(row)
-    x = [row[-1] for row in rows]
+    x = [row[-1].replace(tzinfo=datetime.timezone.utc).astimezone() for row in rows]
     y = [row[5] for row in rows]
     # print(len(x), "log entries:")
     # print("x ==>",min(x), max(x))
@@ -173,7 +173,10 @@ def make_image(data_object):
     ax.set_xlabel('time')
     xax = ax.get_xaxis()  # get the x-axis
     adf = xax.get_major_formatter()  # the the auto-formatter
-    adf.scaled[1. / 24] = '%H:%M'  # set the < 1d scale to H:M
+    try:
+        adf.scaled[1. / 24] = '%H:%M'  # set the < 1d scale to H:M
+    except AttributeError:
+        pass
     ax.format_xdata = mdates.DateFormatter('%H:%M:%S')  # .strftime("%y-%m-%d %H:%M:%S")
     ax.set_ylabel('measure')
     canvas.print_figure(image_file)
