@@ -43,8 +43,8 @@ class Switch(Ponicwatch_Table):
                         )
             }
 
-    def __init__(self, controller, system_name, hardware, *args, **kwargs):
-        super().__init__(controller.db, Switch.META, *args, **kwargs)
+    def __init__(self, controller, system_name, hardware, db=None, *args, **kwargs):
+        super().__init__(db or controller.db, Switch.META, *args, **kwargs)
         self.controller = controller
         self.hardware = hardware
         #if hardware["mode"] == 2:  # R/W

@@ -48,8 +48,8 @@ class Sensor(Ponicwatch_Table):
                         )
             }
 
-    def __init__(self, controller, system_name, hardware, *args, **kwargs):
-        super().__init__(controller.db, Sensor.META, *args, **kwargs)
+    def __init__(self, controller, system_name, hardware, db=None, *args, **kwargs):
+        super().__init__(db or controller.db, Sensor.META, *args, **kwargs)
         self.controller = controller
         self.hardware = hardware
         if self["mode"] > self.INACTIVE:

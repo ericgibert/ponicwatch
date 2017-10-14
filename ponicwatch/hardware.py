@@ -40,8 +40,8 @@ class Hardware(Ponicwatch_Table):
                         )
             }
 
-    def __init__(self, controller, *args, **kwargs):
-        super().__init__(controller.db, Hardware.META, *args, **kwargs)
+    def __init__(self, controller, db=None, *args, **kwargs):
+        super().__init__(db or controller.db, Hardware.META, *args, **kwargs)
         self.debug = controller.debug
         hardware, hw_init = self["hardware"], self.init_dict
         if hardware in Hardware_DHT.supported_models:  # DHT11|DHT22|AM2302

@@ -64,8 +64,8 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         )
             }
 
-    def __init__(self, controller, debug=False, *args, **kwargs):
-        super().__init__(controller.db, Ponicwatch_Log.META, *args, **kwargs)
+    def __init__(self, controller, debug=False, db=None, *args, **kwargs):
+        super().__init__(db or controller.db, Ponicwatch_Log.META, *args, **kwargs)
         self.debug = debug
         self.controller_name = controller.name
 
