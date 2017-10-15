@@ -121,6 +121,7 @@ class Ponicwatch_Log(Ponicwatch_Table):
     def print_debug(self, msg, id, name, value=""):
         """Helper function to print a debug message to console"""
         if self.debug:
+            if msg.startswith("ERROR"): msg = "** %s *" % msg
             print("{0:15} {1:10} {2:3} {3} {4}".format(datetime.now().strftime("%H:%M:%S.%f"), msg, id, name, value))
 
     def add_info(self, msg, err_code=0, fval=0.0):

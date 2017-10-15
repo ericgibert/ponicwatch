@@ -7,7 +7,7 @@
     They belong to one Controller that controls their state.
     A switch is either set manually ON/OFF while in AUTO mode,the controler will tabulate the current time on the 'timer' string.
 """
-# from datetime import datetime, timezone
+from datetime import datetime, timezone
 from model.model import Ponicwatch_Table
 
 class Switch(Ponicwatch_Table):

@@ -32,12 +32,30 @@ class Interrupt(Ponicwatch_Table):
         self.controller = controller
         self.hardware = hardware
         self.system_name = system_name + "/" + self["name"]
-        # self.hw_name, self.pin = self["hardware"].split('.')
-        self.hardware.register_interrupt(self.init_dict["pin"], self.on_interrupt)
+        # link the interrupt to the associated hardware pin if applicable
+        if self["hardware"] != "N/A":
+            self.hardware.register_interrupt(self.init_dict["pin"], self.on_interrupt)
+        elif "timer" in self.init_dict: # special interrupt based on timer
+            self.controller.add_cron_job(self.on_interrupt, self.init_dict["timer"])
+
 
     def on_interrupt(self):
         """Callback function"""
-        print("Call back on interrupt:", self)
+        if self.controller.debug >= 3:
+            print("Call back on interrupt:", self, self.init_dict)
+        # what to do?
+        try:
+            if self.init_dict["action"] == "email_notification":
+                self.controller.ponicwatch_notification()
+                msg = {
+                    "text_value": "Notification email sent",
+                    "error_code": self["id"]
+                }
+                self.controller.log.add_log(system_name=self.system_name, param=msg, log_type="INFO")
+        except KeyError as err:
+            # no action? Really??
+            self.controller.log.add_error(msg="Interrupt %s has NO action declared in its init field." % self.system_name)
+            print(err)
 
     def __str__(self):
         return "{}".format(self["name"])
