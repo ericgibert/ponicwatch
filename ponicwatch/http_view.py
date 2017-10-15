@@ -45,9 +45,6 @@ def pw_object(object_id=0):
     if object_id:
         pwo = pw_list[object_id]
         return one_pw_object_html(pwo)
-        # return template("one_pw_object", pw_object=pwo, image=make_image(pwo),
-        #                 pw_object_type=pw_object_type,
-        #                 pw_upd_local_datetime = pwo["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone())
     elif pw_list.values():
         try:
             pwo = list(pw_list.values())[0]

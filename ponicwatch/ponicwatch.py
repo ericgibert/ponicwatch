@@ -23,7 +23,7 @@ from sensor import Sensor
 from switch import Switch
 from hardware import Hardware
 from interrupt import Interrupt
-from http_view import http_view, make_image
+from http_view import http_view, make_image, one_pw_object_html
 from send_email import send_email
 
 # activate the Debug mode: messages on the screen with print() functions
@@ -164,31 +164,16 @@ class Controller(object):
         """
         images = []
         html = ""
-        # step 1: force the images of all active sensors and swicthes
         objects = []
+        for s in self.systems.values(): objects.append(s)
         for s in self.switches.values(): objects.append(s)
         for s in self.sensors.values(): objects.append(s)
         for pwo in objects:
-            pw_object_type = pwo.__class__.__name__.lower()
-            img = "." + make_image(pwo)
-            images.append(img)
-            html += template("one_pw_object", pw_object=pwo, image=make_image(pwo),
-                             pw_object_type=pw_object_type,
-                             pw_upd_local_datetime=pwo["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone())
-            # html += """<hr>
-            # <h2>{cls} {id}: {name}</h2>
-            # <p>
-            # Last Update: {upd}<br/>
-            # Value: {value}<br/>
-            # <img src="{file_name}"/>
-            # </p>
-            # """.format(cls=pw_object_type,
-            #            id=pwo["id"], name=pwo["name"],
-            #            upd=pwo["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone() ,
-            #            file_name = os.path.basename(img),
-            #            value=pwo["value"] if isinstance(pwo, Switch) else pwo["calculated_value"])
+            if pwo.__class__.__name__ in ["Sensor", "Switch"]:
+                img = "." + make_image(pwo)
+                images.append(img)
+            html += one_pw_object_html(pwo)
         # print(html)
-
         send_email("Ponicwatch Notification - System status",
                    from_=self.user["email"],
                    to_=["ericgibert@yahoo.fr", ],
