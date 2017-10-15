@@ -6,7 +6,7 @@
 """
 import argparse
 import os.path
-import datetime
+from bottle import template
 
 from apscheduler.schedulers.background import BackgroundScheduler
 try:
@@ -168,21 +168,26 @@ class Controller(object):
         objects = []
         for s in self.switches.values(): objects.append(s)
         for s in self.sensors.values(): objects.append(s)
-        for o in objects:
-            img = "." + make_image(o)
+        for pwo in objects:
+            pw_object_type = pwo.__class__.__name__.lower()
+            img = "." + make_image(pwo)
             images.append(img)
-            html += """<hr>
-            <h2>{cls} {id}: {name}</h2>
-            <p>
-            Last Update: {upd}<br/>
-            Value: {value}<br/>
-            <img src="{file_name}"/>
-            </p>
-            """.format(cls=o.__class__.__name__ ,
-                       id=o["id"], name=o["name"],
-                       upd=o["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone() ,
-                       file_name = os.path.basename(img),
-                       value=o["value"] if isinstance(o, Switch) else o["calculated_value"])
+            html += template("one_pw_object", pw_object=pwo, image=make_image(pwo),
+                             pw_object_type=pw_object_type,
+                             pw_upd_local_datetime=pwo["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone())
+            # html += """<hr>
+            # <h2>{cls} {id}: {name}</h2>
+            # <p>
+            # Last Update: {upd}<br/>
+            # Value: {value}<br/>
+            # <img src="{file_name}"/>
+            # </p>
+            # """.format(cls=pw_object_type,
+            #            id=pwo["id"], name=pwo["name"],
+            #            upd=pwo["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone() ,
+            #            file_name = os.path.basename(img),
+            #            value=pwo["value"] if isinstance(pwo, Switch) else pwo["calculated_value"])
+        # print(html)
 
         send_email("Ponicwatch Notification - System status",
                    from_=self.user["email"],

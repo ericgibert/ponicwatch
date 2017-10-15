@@ -44,14 +44,35 @@ def pw_object(object_id=0):
     pw_list = getattr(http_view.controller, pw_object_type) # get the controller's dictionary based on its name
     if object_id:
         pwo = pw_list[object_id]
-        return template("one_pw_object", pw_object=pwo, image=make_image(pwo), pw_object_type=pw_object_type)
-    else:
+        return one_pw_object_html(pwo)
+        # return template("one_pw_object", pw_object=pwo, image=make_image(pwo),
+        #                 pw_object_type=pw_object_type,
+        #                 pw_upd_local_datetime = pwo["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone())
+    elif pw_list.values():
         try:
             pwo = list(pw_list.values())[0]
             rows = pwo.get_all_records()
         except IndexError:
             pwo, rows = None, []
         return template("pw_objects", pw_object=pwo, rows=rows, pw_object_type=pw_object_type)
+    else:
+        return template("pw_objects", pw_object=None, rows=[], pw_object_type="No %s found" % pw_object_type)
+
+def one_pw_object_html(pwo):
+    """
+    Use the template engine to return the HTML mesage givien all  information from one object
+    :param pwo:
+    :return:
+    """
+    pw_object_type = pwo.__class__.__name__.lower()
+    if "updated_on" in pwo and isinstance(pwo["updated_on"], datetime.datetime):
+        pw_upd_local_datetime = pwo["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone()
+    else:
+        pw_upd_local_datetime = "no datetime given"
+    return template("one_pw_object", pw_object=pwo, image=make_image(pwo),
+                    pw_object_type=pw_object_type,
+                    pw_upd_local_datetime=pw_upd_local_datetime)
+
 
 @http_view.post('/switches')
 @http_view.post('/sensors')

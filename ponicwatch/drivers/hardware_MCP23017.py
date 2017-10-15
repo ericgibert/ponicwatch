@@ -176,7 +176,7 @@ class Hardware_MCP23017(object):
     def write(self, pin, value):
         """set an output pin to a specific value"""
         assert 0 <= pin < self.num_gpios, "Pin number %s is invalid, only 0-%s are valid" % (pin, self.num_gpios)
-        assert self.direction & (1 << pin) == 0, "Pin %s not set to output" % pin
+        # assert self.direction & (1 << pin) == 0, "Pin %s not set to output" % pin
         # if the pin is < 8, use register from first bank
         if (pin < 8):
             self.outputvalue = self._read_and_change_pin(Hardware_MCP23017.GPIOA, pin, value, self._read_byte(Hardware_MCP23017.OLATA))

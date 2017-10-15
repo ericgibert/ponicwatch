@@ -13,6 +13,8 @@
 % for k in pw_object.META["columns"]:
     <tr><td style="text-align:right">{{k}}:</td><td><input type="text" size="60" value="{{pw_object[k]}}" name="{{k}}" {{ 'readonly' if login_logout=='Login' or k.endswith('_id') else '' }}/></td></tr>
 % end
+
+<tr><td style="text-align:right">Last Upd Local Time:</td><td>{{pw_upd_local_datetime}}</td></tr>
 </table>
 % if login_logout=="Logout":
     <input type="hidden" value="{{ pw_object['id'] }}" name="id" />
