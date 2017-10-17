@@ -17,7 +17,8 @@ def send_email(subject, from_, to_,
                images=[],
                server="mail.allodonata.com", port=465,
                login="",
-               passwd=""):
+               passwd="",
+               debug=0):
     """
         allow some default values to reduce overhead
     :return:
@@ -44,11 +45,23 @@ def send_email(subject, from_, to_,
             img = MIMEImage(fp.read())
         msg.attach(img)
 
+    if debug >= 3:
+        print(msg['From'])
+        print(msg['To'])
+        print(message_txt)
+        print(message_HTML)
     # Send the email via our own SMTP server.
     s = smtplib.SMTP_SSL(server, port)
-    s.login(login, passwd)
-    # s.send_message(msg)
-    s.sendmail(msg['From'], msg['To'], msg.as_string())
+    if debug >= 3:
+        print(s)
+    is_logged = s.login(login, passwd)
+    if debug >= 3:
+        print(is_logged)
+
+    #is_sent = s.send_message(msg)
+    is_sent = s.sendmail(msg['From'], msg['To'], msg.as_string())
+    if debug >= 3:
+        print(is_sent)
     s.quit()
 
 
@@ -64,5 +77,6 @@ if __name__ == "__main__":
                From the <b>__main__</b> part of send_email.py module
                <p>網站有中、英文版本，也有繁、簡體版</p>
                """,
-               images=[r"/home/eric/mySources/myPython/ponicwatch/ponicwatch/images/Sensor_id_4.png"],
-               login=ctrl["email"], passwd=ctrl["password"])
+               images=[r"images/Sensor_id_4.png"],
+               login=ctrl["email"], passwd=ctrl["password"],
+               debug=3)
