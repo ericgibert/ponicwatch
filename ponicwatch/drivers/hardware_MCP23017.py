@@ -341,13 +341,13 @@ if __name__ == "__main__":
     v = 0
     try:
         while True:
-            test_IC.output(OUT_PIN, v)
+            test_IC.write(OUT_PIN, v)
             v = 0 if v==1 else 1
             time.sleep(2)
 
-            # nv = test_IC.input(IN_PIN)
+            # nv = test_IC.read(IN_PIN)
             # if v != nv:
-            #     test_IC.output(OUT_PIN, nv)
+            #     test_IC.write(OUT_PIN, nv)
             #     print("new value=", nv)
             #     v = nv
             # time.sleep(0.2)
