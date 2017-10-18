@@ -337,12 +337,14 @@ if __name__ == "__main__":
     IN_PIN, OUT_PIN = 8, 0
     test_IC.set_pin_mode(IN_PIN, Hardware_MCP23017.INPUT)
     test_IC.set_pull_up(IN_PIN, Hardware_MCP23017.LOW)
-    test_IC.set_pin_mode(OUT_PIN, Hardware_MCP23017.OUTPUT)
+    for OUT_PIN in range(4):
+        test_IC.set_pin_mode(OUT_PIN, Hardware_MCP23017.OUTPUT)
     v = 0
     try:
         while True:
-            print("Set pin {} to {}".format(OUT_PIN,v))
-            test_IC.write(OUT_PIN, v)
+            for OUT_PIN in range(4):
+                print("Set pin {} to {}".format(OUT_PIN,v))
+                test_IC.write(OUT_PIN, v)
             v = 0 if v==1 else 1
             time.sleep(2)
 
