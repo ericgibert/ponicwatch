@@ -11,6 +11,10 @@ https://bitbucket.org/dewoodruff/mcp23017-python-3-library-with-interrupts
 
 Adapted to work with pigpio and python3 by Eric Gibert
 
+Checking i2c bus:
+    sudo i2cdetect -y 1
+from https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c
+
 """
 import time
 import math
@@ -329,7 +333,7 @@ class Hardware_MCP23017(object):
 if __name__ == "__main__":
     import pigpio
     pig = pigpio.pi()
-    test_IC = Hardware_MCP23017(pig, "1.0x20")
+    test_IC = Hardware_MCP23017(pig, { "bus":1, "address": "0x20", "interrupt": ""})
     IN_PIN, OUT_PIN = 0, 8
     test_IC.set_pin_mode(IN_PIN, Hardware_MCP23017.INPUT)
     test_IC.set_pull_up(IN_PIN, Hardware_MCP23017.LOW)
@@ -337,11 +341,15 @@ if __name__ == "__main__":
     v = 0
     try:
         while True:
-            nv = test_IC.input(IN_PIN)
-            if v != nv:
-                test_IC.output(OUT_PIN, nv)
-                print("new value=", nv)
-                v = nv
-            time.sleep(0.2)
+            test_IC.output(OUT_PIN, v)
+            v = 0 if v==1 else 1
+            time.sleep(2)
+
+            # nv = test_IC.input(IN_PIN)
+            # if v != nv:
+            #     test_IC.output(OUT_PIN, nv)
+            #     print("new value=", nv)
+            #     v = nv
+            # time.sleep(0.2)
     finally:
         test_IC.cleanup()
