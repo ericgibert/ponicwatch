@@ -53,21 +53,16 @@ class Switch(Ponicwatch_Table):
             self.system_name = system_name + "/" + self["name"]
             if self["timer"]:
                 self.controller.add_cron_job(self.execute, self["timer"])
+            # set the switch to 'set_value_to' if given in the init dictionary else to the last value recorded
+            # try:
+            #     self.execute(self.init_dict["set_value_to"])
+            # except KeyError:
+            #     self.execute(self.init_dict["value"])
 
-    # def get_record(self, id=None, name=None):
-    #     """
-    #     Fetch one record from tb_switch matching either of the given parameters
-    #     :param name: tb_switch.name (string)
-    #     :param id: tb_switch.switch_id (int)
-    #     """
-    #     super().get_record(id, name)
-    #     self.hw_components = self["hardware"].split('.')  # example:"RPI3.4.0" --> ['RPI3', '4', '0]
-    #     self.IC, self.pin, self.set_value_to = self.hw_components[0], self.hw_components[1], int(self.hw_components[2])
-    #     self.hw_id = self.IC + '.' + str(self.pin) #  like "RPI3.4"  pin 4 on chip AM2302
 
     def execute(self, given_value=None):
         """
-        On timer/scheduler: no 'given_value' hence set the pin to the 'set_value"to' found in the 'init' dictionary
+        On timer/scheduler: no 'given_value' hence set the pin to the 'set_value_to' found in the 'init' dictionary
         Else direct call: the pin is set to the 'given_value' if provided else the 'set_value'to' is used
         """
         self.hardware.write(self.init_dict["pin"], given_value or self.init_dict["set_value_to"])
