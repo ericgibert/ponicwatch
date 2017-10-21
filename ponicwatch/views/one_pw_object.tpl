@@ -6,7 +6,9 @@
 </head>
 <body>
 % include('header.html')
-<h1>{{pw_object.__class__.__name__}} {{pw_object["name"]}}</h1>
+% pwo_cls_name = pw_object.__class__.__name__
+% pw_object_type = pwo_cls_name.lower()
+<h1>{{pwo_cls_name}} {{pw_object["name"]}}</h1>
 <form method="POST" id="form" action="/{{ pw_object_type }}">
 <table>
 <!--for k in ("id","name","mode","init","value","timer","timer_interval","updated_on"): -->
@@ -15,6 +17,14 @@
 % end
 
 <tr><td style="text-align:right">Last Upd Local Time:</td><td>{{pw_upd_local_datetime}}</td></tr>
+
+%if pwo_cls_name == "Hardware":
+    % col1, col2 = pw_object.get_html()
+<tr><td style="text-align:right">{{col1}}:</td>
+    <td>{{!col2}}
+    </td></tr>
+%end
+
 </table>
 % if login_logout=="Logout":
     <input type="hidden" value="{{ pw_object['id'] }}" name="id" />

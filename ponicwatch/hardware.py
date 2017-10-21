@@ -109,6 +109,18 @@ class Hardware(Ponicwatch_Table):
     def __str__(self):
         return "{} ({})".format(self["name"], Hardware.MODE[self["mode"]])
 
+    def get_html(self):
+        """return a HTML string for extra information associated to a IC"""
+        html_col1, html_col2 = "Extra Data", "No extra data"
+        if self["hardware"] in ["MCP23017"]:
+            html_col2 = """
+    Set the pin value:
+    <input type="radio" name="set_value_to" value="ON" {{'checked' if pw_object['id'] == 1 else ""}}/> On<br />
+    <input type="radio" name="set_value_to" value="OFF" {{'checked' if pw_object['id'] == 0 else ""}}/> Off<br />
+    """
+        return (html_col1, html_col2)
+
+
 # helper function #
 def get_pin(str_pin):
     """Accept a string representing an integer (base 10 or Hex) or A0,...,A7,B0,...,B7"""

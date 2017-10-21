@@ -23,7 +23,7 @@ from sensor import Sensor
 from switch import Switch
 from hardware import Hardware
 from interrupt import Interrupt
-from http_view import http_view, make_image, one_pw_object_html
+from http_view import http_view, get_image_file, one_pw_object_html
 from send_email import send_email
 
 # activate the Debug mode: messages on the screen with print() functions
@@ -162,17 +162,16 @@ class Controller(object):
         Regular email to inform the system manager of its status
         :return:
         """
-        images = []
-        html = ""
-        objects = []
+        images = []     # list of .png to attach to the email
+        html = ""       # email's body
+        objects = []    # working list of all Ponicwatch objects (pwo)
         for s in self.systems.values(): objects.append(s)
         for s in self.switches.values(): objects.append(s)
         for s in self.sensors.values(): objects.append(s)
         for pwo in objects:
-            if pwo.__class__.__name__ in ["Sensor", "Switch"]:
-                img = "." + make_image(pwo)
-                images.append(img)
             html += one_pw_object_html(pwo)
+            if os.path.isfile(get_image_file(pwo)):
+                images.append(get_image_file(pwo))
         # print(html)
         send_email("Ponicwatch Notification - System status",
                    from_=self.user["email"],

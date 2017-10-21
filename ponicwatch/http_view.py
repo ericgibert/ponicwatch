@@ -61,13 +61,12 @@ def one_pw_object_html(pwo):
     :param pwo:
     :return:
     """
-    pw_object_type = pwo.__class__.__name__.lower()
     if "updated_on" in pwo and isinstance(pwo["updated_on"], datetime.datetime):
         pw_upd_local_datetime = pwo["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone()
     else:
         pw_upd_local_datetime = "no datetime given"
-    return template("one_pw_object", pw_object=pwo, image=make_image(pwo),
-                    pw_object_type=pw_object_type,
+    return template("one_pw_object", pw_object=pwo,
+                    image=make_image(pwo),
                     pw_upd_local_datetime=pw_upd_local_datetime)
 
 
@@ -78,7 +77,6 @@ def one_pw_object_html(pwo):
 @http_view.post('/systems')
 def post_pw_object():
     """Update a switch record from FORM"""
-
     id = int(request.forms.get('id'))
     pw_object_type = request.forms.get('pw_object_type')
     pw_list = getattr(http_view.controller, pw_object_type)
@@ -162,18 +160,21 @@ import matplotlib.dates as mdates
 def img(filepath):
     return static_file(filepath, root="images")
 
+def get_image_file(pwo):
+    return "images/{}_id_{}.png".format(pwo.__class__.__name__, pwo["id"])  # images/sensor_id_1.png
+
 def make_image(data_object):
     """Creates an image for the status of the given object (sensor, switch)"""
     obj_class_name = data_object.__class__.__name__ # Sensor / Switch
     if obj_class_name not in ("Sensor", "Switch"):
         return ""
-    image_file = "images/{}_id_{}.png".format(obj_class_name, data_object["id"])  # images/sensor_id_1.png
+    image_file = get_image_file(data_object)  # images/sensor_id_1.png
     log_type = http_view.controller.log.LOG_TYPE[obj_class_name.upper()]
     yesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(1)
     where_clause = "log_type={} and object_id={} and created_on>=?".format(log_type, data_object["id"])  #, yesterday.strftime('%Y-%m-%d %H:%M:%S'))
     if http_view.controller.debug >= 3:
-        print(obj_class_name, log_type, image_file)
-        print("where ==>", where_clause, yesterday)
+        print(obj_class_name, data_object, image_file)
+        # print("where ==>", where_clause, yesterday)
     rows = http_view.controller.log.get_all_records(page_len=0, where_clause=where_clause, order_by="created_on asc", args=(yesterday,))
     # for row in rows: print(row)
     x = [row[-1].replace(tzinfo=datetime.timezone.utc).astimezone() for row in rows]
