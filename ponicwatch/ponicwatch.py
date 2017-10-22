@@ -116,7 +116,7 @@ class Controller(object):
         """Starts the APScheduler task and the Bottle HTTP server"""
         self.running = True
         self.scheduler.start()
-        self.log.add_info("Controller is now running.")
+        self.log.add_info("Controller is now running.", fval=1.0)
         # http_view.controller = self
         try:
             http_view.run(host=self.bottle_ip or '127.0.0.1')
@@ -137,7 +137,7 @@ class Controller(object):
             self.scheduler.shutdown()  # Not strictly necessary if daemonic mode is enabled but should be done if possible
             for hw in self.hardwares.values():
                 hw.cleanup()
-        self.log.add_info("Controller has been stopped.")
+        self.log.add_info("Controller has been stopped.", fval=0.0)
 
     def print_list(self):
         """Print the list of all created objects in the __init__ phase"""
