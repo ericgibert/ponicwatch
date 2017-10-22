@@ -72,9 +72,11 @@ class Controller(object):
             if system_id not in self.systems:
                 self.systems[system_id] = System(self, id=system_id)
             if hardware_id and hardware_id not in self.hardwares:
-                self.hardwares[hardware_id] = Hardware(controller=self, id=hardware_id)
+                self.hardwares[hardware_id] = Hardware(controller=self, id=hardware_id, system_name=self.systems[system_id]["name"])
                 if self.hardwares[hardware_id]["hardware"] == 'RPI3':
                     self.RPI3 = self.hardwares[hardware_id]
+                elif self.hardwares[hardware_id]["hardware"] == 'MCP23017':
+                    self.MCP23017 = self.hardwares[hardware_id]
 
             if sensor_id and sensor_id not in self.sensors:
                     self.sensors[sensor_id] = Sensor(controller=self,

@@ -102,6 +102,15 @@ def docs(doc_name=""):
             text += "<a href='/docs/{f}'>{f}</a><br />".format(f=path.basename(_file))
         return template("docs", text=text)
 
+@http_view.post('/switch/<pin>/<set_to>')
+def set_pin_to(pin, set_to):
+    """Set the pin of an IC to a value
+    - outAx | putBx: MCP23017 pin
+    - RPIxx: RPI3's pin
+    set_to: ON | OFF"""
+    if pin.startswith("out"):
+        http_view.controller.MCP23017.write(pin[-2:], 1 if set_to == "ON" else 0)
+
 #
 ### Login/Logout form & process
 #

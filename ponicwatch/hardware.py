@@ -40,12 +40,14 @@ class Hardware(Ponicwatch_Table):
                         )
             }
 
-    def __init__(self, controller, db=None, *args, **kwargs):
+    def __init__(self, controller, system_name, db=None, *args, **kwargs):
         super().__init__(db or controller.db, Hardware.META, *args, **kwargs)
         self.debug = controller.debug
+        self.controller = controller
+        self.system_name = system_name + "/" + self["name"]
         hardware, hw_init = self["hardware"], self.init_dict
         if hardware in Hardware_DHT.supported_models:  # DHT11|DHT22|AM2302
-            self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=get_pin(hw_init["pin"]))
+            self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=translate_pin(hw_init["pin"]))
         elif hardware in ["DS18B20"]:
             self.driver = Hardware_DS18B20(pig=controller.pig, device_folder=hw_init["path"])
         elif hardware in ["RPI3"]:
@@ -66,11 +68,14 @@ class Hardware(Ponicwatch_Table):
         """
         if self.debug >= 3:
             print("Hardware read (pin, param) =", (pin, param))
-        return self.driver.read(get_pin(pin), param)
+        return self.driver.read(translate_pin(pin), param)
 
     def write(self, pin, value):
         """param is a tuple (pin, value)"""
-        self.driver.write(get_pin(pin), value)
+        if self.debug >= 3:
+            print("Hardware write (pin, value) =", (pin, value))
+        self.controller.log.add_log(system_name=self.system_name, param=self)
+        self.driver.write(translate_pin(pin), value)
 
     def cleanup(self):
         try:
@@ -79,14 +84,14 @@ class Hardware(Ponicwatch_Table):
             pass
 
     def set_pin_as_input(self, pin):
-        self.driver.set_pin_as_input(get_pin(pin))
+        self.driver.set_pin_as_input(translate_pin(pin))
 
     def set_pin_as_output(self, pin):
-        self.driver.set_pin_as_output(get_pin(pin))
+        self.driver.set_pin_as_output(translate_pin(pin))
 
     def register_interrupt(self, pin, callback):
         # attach the Interrupt on the IC pin if requested
-        pin = get_pin(pin)
+        pin = translate_pin(pin)
         if pin in RPI3_CALLBACKS:
             RPI3_CALLBACKS[pin].append(callback)
         else:
@@ -113,16 +118,12 @@ class Hardware(Ponicwatch_Table):
         """return a HTML string for extra information associated to a IC"""
         html_col1, html_col2 = "Extra Data", "No extra data"
         if self["hardware"] in ["MCP23017"]:
-            html_col2 = """
-    Set the pin value:
-    <input type="radio" name="set_value_to" value="ON" {{'checked' if pw_object['id'] == 1 else ""}}/> On<br />
-    <input type="radio" name="set_value_to" value="OFF" {{'checked' if pw_object['id'] == 0 else ""}}/> Off<br />
-    """
+            html_col2 = self.driver.get_html(with_javascript=True)
         return (html_col1, html_col2)
 
 
 # helper function #
-def get_pin(str_pin):
+def translate_pin(str_pin):
     """Accept a string representing an integer (base 10 or Hex) or A0,...,A7,B0,...,B7"""
     try:
         pin = int(str_pin)

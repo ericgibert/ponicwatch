@@ -330,11 +330,61 @@ class Hardware_MCP23017(object):
         self._read_byte(Hardware_MCP23017.GPIOA)
         self._read_byte(Hardware_MCP23017.GPIOB)
 
+    def get_html(self, with_javascript=False):
+        """return the radiobutton list to set the pins IN/OUT"""
+        radio_IN_html = """
+            <td><input type="radio"{}/> IN</td>"""
+        radio_OUT_html = """<td>
+            <input type="radio" name="out{0}" onclick="handleClick(this);" {1} value="ON"/> ON
+            <input type="radio" name="out{0}" onclick="handleClick(this);" {2} value="OFF"/> OFF</td>"""
+        html = """\n<table border="1">\n"""
+        for port in ("A", "B"):
+            html += """<tr><td>%s0..7</td>""" % port
+            dir = self.direction & 255 if port == "A" else (self.direction >> 8) & 0xff
+            for i in range(8):
+                i_or_o = dir & (1 << i)
+                pin = port + str(i)
+                pin_val = self.read(self.translate_pin(pin))[0]
+                if i_or_o:  # output = 0 ; input != 0
+                    html += radio_IN_html.format(" checked" if pin_val else "")
+                else:
+                    html += radio_OUT_html.format(pin,
+                                                  " checked" if pin_val else "",
+                                                  "" if pin_val else " checked")
+            html += "</tr>\n"
+        html += "</table>\n"
+        if with_javascript:
+            html += """
+            <script>
+                function handleClick(myRadio) {
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.open("POST", 
+                               "/switch/" +myRadio.name + "/" + myRadio.value, 
+                               true);
+                    xhttp.setRequestHeader("Content-type", "application/json");
+                    xhttp.send();
+                    var response = JSON.parse(xhttp.responseText);
+                    alert('New value: ' + myRadio.value);
+                }
+            </script>
+            """
+        return html
+
+    # helper function #
+    def translate_pin(self, str_pin):
+        """Accept a string representing an integer (base 10 or Hex) or A0,...,A7,B0,...,B7"""
+        if str_pin[0] in ('A', 'B') and '0' <= str_pin[1] <= '7':
+            return 8 + int(str_pin[1]) if str_pin[0] == 'B' else int(str_pin[1])
+        elif str_pin.startswith("0x"):
+            return int(str_pin, 16)
+        else:
+            return int(str_pin)
+
 if __name__ == "__main__":
     import pigpio
     pig = pigpio.pi()
     test_IC = Hardware_MCP23017(pig, { "bus":1, "address": "0x20", "interrupt": ""})
-    IN_PIN, OUT_PIN = 8, 0
+    IN_PIN, OUT_PIN = test_IC.translate_pin("B0"), test_IC.translate_pin("A0")
     test_IC.set_pin_mode(IN_PIN, Hardware_MCP23017.INPUT)
     test_IC.set_pull_up(IN_PIN, Hardware_MCP23017.LOW)
     for OUT_PIN in range(4):
