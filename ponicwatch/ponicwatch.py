@@ -27,7 +27,7 @@ from http_view import http_view, get_image_file, one_pw_object_html
 from send_email import send_email
 
 # activate the Debug mode: messages on the screen with print() functions
-# 0: no messages ; 1: all messages ; 2: Error and Warnings ; 3: Error level
+# 3: all messages ; 2: Error and Warnings ; 1: Error level ; 0: no messages
 # command line can pass this [0..3] value too with option --debug / -d
 DEBUG = 0
 
