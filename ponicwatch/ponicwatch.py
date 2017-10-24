@@ -34,7 +34,7 @@ DEBUG = 0
 class Controller(object):
     """The Controller in a MVC model"""
 
-    def __init__(self, db, host="", port=8888, bottle_ip=None):
+    def __init__(self, db, pigpio_host="", pigpio_port=8888, bottle_ip=None):
         """- Create the controller, its Viewer and connect to database (Model)
            - Select all the hardware (sensors/switches) for the systems under its control
            - Launch the scheduler
@@ -43,7 +43,7 @@ class Controller(object):
         """
         global _simulation # if no PGIO port as we are not running on a Raspberry Pi
         self.debug = DEBUG
-        self.bottle_ip=bottle_ip
+        self.bottle_ip = bottle_ip
         # keep a link to the database i.e. M in MVC
         self.db = db
         self.db.allow_close = False
@@ -58,7 +58,7 @@ class Controller(object):
         self.scheduler = BackgroundScheduler()
 
         # select all the systems, sensors, switches to monitor and the necessary hardware drivers
-        self.pig = pigpio.pi(host, port) if not _simulation else pigpio_simu.pi()
+        self.pig = pigpio.pi(pigpio_host, pigpio_port) if not _simulation else pigpio_simu.pi()
         if not self.pig.connected:
             if self.debug >= 2: print("WARNING: not connected to a RasPi")
             self.pig = pigpio_simu.pi()
