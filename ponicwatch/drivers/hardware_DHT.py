@@ -10,13 +10,13 @@
 """
 from datetime import datetime
 from time import sleep
-
+from random import randint
 try:
     from drivers.DHT22 import dht_sensor
 except ImportError:
     print("Simulation for DHT22")
 
-from random import randint
+
 class dht_sensor_simu():
     def __init__(self, pig, pin):
         pass
@@ -46,7 +46,6 @@ class Hardware_DHT(object):
         self.last_read = datetime.now()
         self.sensor = dht_sensor(pig, self.pin) if pig.connected else dht_sensor_simu(pig, self.pin)
       
-
     def read(self, pins, T_or_H):
         """
         Reads the values from the IC
@@ -66,6 +65,7 @@ class Hardware_DHT(object):
 
     def write(self):
         raise NotImplementedError("Air temperature and humidity sensor: read only IC i.e. cannot write")
+
 
 if __name__ == "__main__":
     import sys
