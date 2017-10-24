@@ -4,8 +4,8 @@
 
     Controller
 """
+import os
 import argparse
-import os.path
 from bottle import template
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -115,6 +115,8 @@ class Controller(object):
     def run(self):
         """Starts the APScheduler task and the Bottle HTTP server"""
         self.running = True
+        with open("ponicwatch.pid", "wt") as fpid:
+            print(os.getpid(), file=fpid)
         self.scheduler.start()
         self.log.add_info("Controller is now running.", fval=1.0)
         # http_view.controller = self
