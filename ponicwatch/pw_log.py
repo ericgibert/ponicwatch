@@ -126,13 +126,13 @@ class Ponicwatch_Log(Ponicwatch_Table):
 
     def add_info(self, msg, err_code=0, fval=0.0):
         """Helper function for the controller to log an INFO message"""
-        self.add_log("INFO", "controller", {'error_code': err_code, 'float_value': fval, 'text_value': msg})
+        self.add_log("INFO", self.controller_name, {'error_code': err_code, 'float_value': fval, 'text_value': msg})
     def add_warning(self, msg, err_code=0, fval=0.0):
         """Helper function for the controller to log a WARNING message"""
-        self.add_log("WARNING", "controller", {'error_code': err_code, 'float_value': fval, 'text_value': msg})
+        self.add_log("WARNING", self.controller_name, {'error_code': err_code, 'float_value': fval, 'text_value': msg})
     def add_error(self, msg, err_code=0, fval=0.0):
         """Helper function for the controller to log an ERROR message"""
-        self.add_log("ERROR", "controller", {'error_code': err_code, 'float_value': fval, 'text_value': msg})
+        self.add_log("ERROR", self.controller_name, {'error_code': err_code, 'float_value': fval, 'text_value': msg})
 
     def __str__(self):
         return "[{}] {}".format(self.controller_name, self["text_value"])
