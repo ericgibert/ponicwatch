@@ -7,14 +7,15 @@
 import os
 import argparse
 from bottle import template
-
 from apscheduler.schedulers.background import BackgroundScheduler
+
 try:
     import pigpio
     _simulation = False
 except ImportError:
     _simulation = True
 import pigpio_simu
+
 from model.pw_db import Ponicwatch_Db
 from system import System
 from pw_log import Ponicwatch_Log
