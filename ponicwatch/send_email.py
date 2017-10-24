@@ -24,12 +24,9 @@ def send_email(subject, from_, to_,
     :return:
     """
     COMMASPACE = ', '
-
     # Create the container (outer) email message.
     msg = MIMEMultipart()
     msg['Subject'] = subject
-    # me ==
-    # family =
     msg['From'] = from_ # the sender's email address
     msg['To'] = COMMASPACE.join(to_) # the list of all recipients' email addresses
     if message_txt:
@@ -50,6 +47,7 @@ def send_email(subject, from_, to_,
         print(msg['To'])
         print(message_txt)
         print(message_HTML)
+        
     # Send the email via our own SMTP server.
     s = smtplib.SMTP_SSL(server, port)
     if debug >= 3:
