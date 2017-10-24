@@ -105,11 +105,11 @@ def docs(doc_name=""):
 @http_view.post('/switch/<pin>/<set_to>')
 def set_pin_to(pin, set_to):
     """Set the pin of an IC to a value
-    - outAx | putBx: MCP23017 pin
-    - RPIxx: RPI3's pin
+    - MCP23017: outAx | outBx where the last 2 char are the pin number to set
+    - RPI3: RPIxx where xx is the pin to set
     set_to: ON | OFF"""
     if pin.startswith("out"):
-        http_view.controller.MCP23017.write(pin[-2:], 1 if set_to == "ON" else 0)
+        http_view.controller.MCP23017.write(pin[-2:], int(set_to == "ON"))
 
 #
 ### Login/Logout form & process
