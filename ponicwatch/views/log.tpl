@@ -6,13 +6,15 @@
 </head>
 <body>
 % include('header.html')
+<p>{{!pwo}}</p>
 <table border="1">
-    <tr><th>log_id</th><th>Controller</th><th>System</th><th>value</th><th>time stamp</th></tr>
+    <tr><th>log_id</th><th>Log Type</th><th>System/PWO</th><th>Value</th><th>Text</th><th>Timestamp</th></tr>
 % for row in rows:
 <tr><td>{{row[0]}}</td>
-    <td>{{row[1]}}</td>
-    <td><a href="/log?system={{int(row[2])*1000+int(row[3])}}">{{row[4]}}</a></td>
+    <td>{{row[2]}}</td>
+    <td><a href="/log?system={{row[2]+'_'+str(row[3])}}">{{row[4]}}</a></td>
     <td>{{row[5]}}</td>
+    <td>{{row[6] if row[2] in ("INFO", "WARNING", "ERROR") else ""}}</td>
     <td>{{row[7]}}</td></tr>
 % end
 </table>

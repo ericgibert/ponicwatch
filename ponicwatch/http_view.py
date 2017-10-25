@@ -20,14 +20,15 @@ def default():
 @http_view.route('/log')
 @http_view.route('/log/<page:int>')
 def log(page=0):
-    try:
-        system = int(request.query["system"])
-        log_type, object_id = system // 1000, system % 1000
-        where = "log_type={} and object_id={}".format(log_type, object_id)
-    except (KeyError, ValueError):
-        where = ""
+    if "system" in request.query:
+        log_type, object_id =  request.query["system"].split('_')
+        where = "log_type='{}' and object_id={}".format(log_type, object_id)
+        pwo = """<a href="/{}s/{}">Go to PWO page</a>""".format(log_type.lower(),
+                                                                object_id) if log_type in ("SENSOR", "SWITCH", "HARDWARE") else ""
+    else:
+        where, pwo = "", ""
     rows = http_view.controller.log.get_all_records(from_page=page, order_by="created_on desc", where_clause=where)
-    return template("log", rows=rows, current_page=page)
+    return template("log", rows=rows, current_page=page, pwo=pwo)
 
 @http_view.route('/switches')
 @http_view.route('/switches/<object_id:int>')
@@ -178,9 +179,9 @@ def make_image(data_object):
     if obj_class_name not in ("Sensor", "Switch"):
         return ""
     image_file = get_image_file(data_object)  # images/sensor_id_1.png
-    log_type = http_view.controller.log.LOG_TYPE[obj_class_name.upper()]
+    log_type = obj_class_name.upper()  # http_view.controller.log.LOG_TYPE[obj_class_name.upper()]
     yesterday = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(1)
-    where_clause = "log_type={} and object_id={} and created_on>=?".format(log_type, data_object["id"])  #, yesterday.strftime('%Y-%m-%d %H:%M:%S'))
+    where_clause = "log_type='{}' and object_id={} and created_on>=?".format(log_type, data_object["id"])  #, yesterday.strftime('%Y-%m-%d %H:%M:%S'))
     if http_view.controller.debug >= 3:
         print(obj_class_name, data_object, image_file)
         # print("where ==>", where_clause, yesterday)

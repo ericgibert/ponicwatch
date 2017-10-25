@@ -99,7 +99,7 @@ class P_log(unittest.TestCase):
         # Sensor
         psys = Ponic_System(pw_db, id=1)
         sensor1 = Sensor(pw_db, id=1)
-        sensor1["read_value"], sensor1["calculated_value"] = 2.5, 3.5
+        sensor1["read_value"], sensor1["value"] = 2.5, 3.5
         id = logger.add_log(ctrl["name"], system_name=psys["name"], param=sensor1)
         print(sensor1, "on", psys["name"], "added as", id)
 

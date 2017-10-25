@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
     Created by Eric Gibert on 12 May 2016
 
@@ -6,7 +7,6 @@
 """
 import os
 import argparse
-from bottle import template
 from apscheduler.schedulers.background import BackgroundScheduler
 
 try:
@@ -26,6 +26,10 @@ from hardware import Hardware
 from interrupt import Interrupt
 from http_view import http_view, get_image_file, one_pw_object_html
 from send_email import send_email
+
+__version__ = "1.20171025"
+__author__ = 'Eric Gibert'
+__license__ = 'MIT'
 
 # activate the Debug mode: messages on the screen with print() functions
 # 3: all messages ; 2: Error and Warnings ; 1: Error level ; 0: no messages

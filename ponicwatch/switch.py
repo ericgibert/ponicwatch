@@ -7,7 +7,6 @@
     They belong to one Controller that controls their state.
     A switch is either set manually ON/OFF while in AUTO mode,the controler will tabulate the current time on the 'timer' string.
 """
-from datetime import datetime, timezone
 from model.model import Ponicwatch_Table
 
 class Switch(Ponicwatch_Table):
@@ -66,12 +65,8 @@ class Switch(Ponicwatch_Table):
         Else direct call: the pin is set to the 'given_value' if provided else the 'set_value'to' is used
         """
         self.hardware.write(self.init_dict["pin"], given_value or self.init_dict["set_value_to"])
-        #self.update_value(self.init_dict["set_value_to"])
         self.update(value=given_value or self.init_dict["set_value_to"])
         self.controller.log.add_log(system_name=self.system_name, param=self)
-
-    def update_value(self, value):
-        self.update(value=value, updated_on=datetime.now(timezone.utc))
 
     @classmethod
     def all_keys(cls, db):

@@ -6,7 +6,6 @@
     Sensors are objects linked to a hardware pin (on/off digital input) or an analog input to capture a sensor's state.
     They belong to one Controller.
 """
-from datetime import datetime, timezone
 from time import sleep
 from model.model import Ponicwatch_Table
 
@@ -22,8 +21,8 @@ class Sensor(Ponicwatch_Table):
         * MCP23017/MCP23S17.4 --> analog input on channel 4 of the I/O Expander
         * DS18B20.4 --> read temperature given by the DS18B20 probe on pin 4
     - 'read_value': last reading, always as float even for digital input. Float between 0.0 and 1.0 to be converted.
-    - 'calculated_value': conversion of the 'read_value' to reflect the expected metric
-    Note: if the physical sensor already provides a converted value then 'read_value' = 'calculated_value'
+    - 'value': conversion of the 'read_value' to reflect the expected metric (calculated value)
+    Note: if the physical sensor already provides a converted value then 'read_value' = 'value'
     """
     MODE = {
        -1: "INACTIVE",    # sensor to be ignored
@@ -41,7 +40,7 @@ class Sensor(Ponicwatch_Table):
                           "init",               # TEXT NOT NULL,
                           "timer",              # TEXT,
                           "read_value",         # FLOAT NOT NULL DEFAULT (0.0),
-                          "calculated_value",   # REAL NOT NULL DEFAULT (0.0)
+                          "value",              # REAL NOT NULL DEFAULT (0.0)
                           "timestamp_value",    # TIMESTAMP,
                           "updated_on",         # TIMESTAMP,
                           "synchro_on",         # TIMESTAMP
@@ -99,13 +98,13 @@ class Sensor(Ponicwatch_Table):
             # need to power on the sensor if a power pin is given   { "POWER": "I/O_IC.pin" }
             if self.pwr_ic:
                 self.pwr_ic.write(self.pwr_pin, 1)
-                self.controller.log.add_info("Switch {}.{} ON before reading sensor {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
+                self.controller.log.add_info("{}.{} powered on before reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
                 sleep(0.5)
             read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
             # power off the sensor if necessary
             if self.pwr_ic:
                 self.pwr_ic.write(self.pwr_pin, 0)
-                self.controller.log.add_info("Switch {}.{} OFF after reading sensor {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
+                self.controller.log.add_info("{}.{} powered off after reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
         except TypeError as err:
             print('[1]', '*'*30)
             print('[1]', err)
@@ -115,7 +114,7 @@ class Sensor(Ponicwatch_Table):
             if read_val is None:
                 self.controller.log.add_error("Cannot read from " + str(self), self["id"])
             else:
-                self.update_values(read_val, calc_val)
+                self.update(read_value=read_val, value=calc_val)   #  update_values(read_val, calc_val)
                 self.controller.log.add_log(system_name=self.system_name, param=self)
                 try:
                     if calc_val >= self.init_dict["threshold"]:
@@ -123,17 +122,11 @@ class Sensor(Ponicwatch_Table):
                 except KeyError:
                     pass
 
-
-    def update_values(self, read_value, calculated_value):
-        self.update(read_value=read_value,
-                    calculated_value=calculated_value,
-                    updated_on=datetime.now(timezone.utc))
-
     def on_interrupt(self):
         print("Ready to take care of the interrupt", self)
 
     def send_mail(self):
-        print("sending email from", self, "as threshold has been reached", self["calculated_value"])
+        print("sending email from", self, "as threshold has been reached", self["value"])
 
     @classmethod
     def all_keys(cls, db):

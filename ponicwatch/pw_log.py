@@ -13,11 +13,7 @@
 """
 import json
 from datetime import datetime, timezone, timedelta
-
 from model.model import Ponicwatch_Table
-from sensor import Sensor
-from switch import Switch
-
 
 class Ponicwatch_Log(Ponicwatch_Table):
     """
@@ -38,18 +34,6 @@ class Ponicwatch_Log(Ponicwatch_Table):
 
     'created_on": timestamp when the log record has been created. A log record cannot be updated.
     """
-    LOG_TYPE = {
-        #
-        "UNKNOWN": 0,
-        # hardware/peripherics
-        "SENSOR": 1,
-        "SWITCH": 2,
-        # messages
-        "INFO": 10,
-        "WARNING": 11,
-        "ERROR": 12,
-    }
-
     META = {"table": "tb_log",
             "id": "log_id",
             "columns": (
@@ -89,7 +73,7 @@ class Ponicwatch_Log(Ponicwatch_Table):
         # param is a dictionary
         if log_type in ["INFO", "WARNING", "ERROR"]:
             self.insert(controller_name=self.controller_name,
-                        log_type=Ponicwatch_Log.LOG_TYPE[log_type],
+                        log_type=log_type,
                         object_id=param["error_code"],
                         system_name=system_name,
                         float_value=param["float_value"] if "float_value" in param else -1.0,
@@ -97,26 +81,18 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         created_on=datetime.now(timezone.utc)
                         )
             self.print_debug(log_type, param["error_code"], param["text_value"])
-        elif isinstance(param, Switch):
+        elif param.__class__.__name__ in ["Switch", "Sensor", "Hardware"]:
+            log_type = param.__class__.__name__.upper()
             self.insert(controller_name=self.controller_name,
-                        log_type=Ponicwatch_Log.LOG_TYPE["SWITCH"],
-                        object_id=param["switch_id"],
+                        log_type=log_type,
+                        object_id=param["id"],
                         system_name=system_name,
                         float_value=float(param["value"]),
                         text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_Log.json_exception),
                         created_on=datetime.now(timezone.utc)
                         )
-            self.print_debug("SWITCH", param["switch_id"], param["name"], param["value"])
-        elif isinstance(param, Sensor):
-            self.insert(controller_name=self.controller_name,
-                        log_type=Ponicwatch_Log.LOG_TYPE["SENSOR"],
-                        object_id=param["sensor_id"],
-                        system_name=system_name,
-                        float_value=float(param["calculated_value"]),
-                        text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_Log.json_exception),
-                        created_on=datetime.now(timezone.utc)
-                        )
-            self.print_debug("SENSOR", param["sensor_id"], param["name"], param["calculated_value"])
+            self.print_debug(log_type, param["id"], param["name"], param["value"])
+
 
     def print_debug(self, msg, id, name, value=""):
         """Helper function to print a debug message to console"""
@@ -157,7 +133,7 @@ if __name__ == "__main__":
     delta = timedelta(minutes=10)
     while created_on <= end_time:
         logger.insert(controller_name=simu.name,
-                      log_type=1, object_id=3,
+                      log_type="INFO", object_id=3,
                       system_name="Atmosphere/Water Temperature",
                       float_value= randint(20, 30),
                       text_value="reading simulation",
