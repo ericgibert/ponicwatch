@@ -208,6 +208,7 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--list",   dest="print_list", help="List all created objects - no running -", action='store_true')
     parser.add_argument("-c", "--clean",  dest="cleandb", help="Clean database tables/logs", action='store_true', default=False)
     parser.add_argument("-n", "--notification", dest="notification", help="Sends notification email", action='store_true', default=False)
+    parser.add_argument('-v', '--version', action='version', version=__version__)
     # parser.add_argument('config_file', nargs='?', default='')
     args, unk = parser.parse_known_args()
     if isinstance(args.debug, int):
