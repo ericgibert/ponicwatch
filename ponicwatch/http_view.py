@@ -195,8 +195,10 @@ def make_image(data_object):
     fig = Figure()
     canvas = FigureCanvas(fig)
     ax = fig.add_subplot(111)
-    ax.plot(x, y)
-    # ax.scatter(x, y)
+    if obj_class_name == "Switch":
+        ax.scatter(x, y)
+    else:
+        ax.plot(x, y)
     ax.set_title(data_object["name"])
     ax.grid(True)
     ax.set_xlabel('time')

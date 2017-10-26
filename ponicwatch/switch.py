@@ -64,8 +64,14 @@ class Switch(Ponicwatch_Table):
         On timer/scheduler: no 'given_value' hence set the pin to the 'set_value_to' found in the 'init' dictionary
         Else direct call: the pin is set to the 'given_value' if provided else the 'set_value'to' is used
         """
-        self.hardware.write(self.init_dict["pin"], given_value or self.init_dict["set_value_to"])
-        self.update(value=given_value or self.init_dict["set_value_to"])
+        if given_value:
+            set_to = given_value
+        elif self.init_dict["set_value_to"] in ('t', 'T'):
+            set_to = abs(self["value"] - 1)
+        else:
+            set_to = self.init_dict["set_value_to"] or -1.0
+        self.hardware.write(self.init_dict["pin"], set_to)
+        self.update(value=set_to)
         self.controller.log.add_log(system_name=self.system_name, param=self)
 
     @classmethod

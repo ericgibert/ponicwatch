@@ -34,6 +34,7 @@ class Ponicwatch_Table(dict):
         """Execute an SQL command on the cursor with exclusive access to the database"""
         with self.db.exclusive_access:
             self.db.open()
+            # print(sql, params)
             try:
                 self.db.curs.execute(sql, params)
                 self.db.conn.commit()
@@ -61,28 +62,22 @@ class Ponicwatch_Table(dict):
                     for col in r.keys():
                         self[col] = r[col]
                     self["id"] = r[self.id_column]
-                    #for idx, col in enumerate(self.columns):
-                    #    self[col] = rows[0][idx]
-                    #    if col == self.id:
-                    #        self["id"] = rows[0][idx]
                 elif len(rows) == 0: # unknown key
                     raise KeyError("Unkown record key on id/name: " + str(name or id))
                 else: # not a key: more than one record found ?1?
                     raise KeyError("Too many records found ?!? Not a key on id/name: " + str(name or id))
             finally:
-                if "init" in self:
-                    try:
-                        self.init_dict = json.loads(self["init"]) if self["init"] else {}
-                    except : #json.JSONDecodeError:
-                        print("Warning: init is not a JSON string for", self)
-                        print("init=", self["init"])
-                else:
-                    # print("---> no init field for", self)
-                    try:
-                        print("-->", self["init"])
-                    except:
-                        pass
                 self.db.close()
+        # convert the JSON init string to a python dictionary
+        try:
+            self.init_dict = json.loads(self["init"])
+        except KeyError:
+            # print("Warning ---> no init field for", self)
+            self.init_dict = {}
+        except:  # json.JSONDecodeError:
+            print("Warning: init is not a JSON string for", self)
+            print("init=", self["init"])
+
 
     def get_all_records(self, page_len=20, from_page=0, where_clause=None, order_by=None, args=[]):
         """
@@ -127,7 +122,6 @@ class Ponicwatch_Table(dict):
             sql = "UPDATE {0} SET {1} WHERE {2}=?".format(self.table,
                                                           ",".join([c+"=?" for c, v in col_value]),
                                                           self.id_column)
-            # print("sql =", sql)
             self.execute_sql(sql, [v for c, v in col_value] + [self["id"]])
             self.get_record(id=self["id"]) # reload data after the update
 
@@ -144,7 +138,7 @@ class Ponicwatch_Table(dict):
                                                                 ",".join([c for c, v in col_value]),
                                                                 ",".join("?" * len(col_value)))
             self.execute_sql(sql, [v for c, v in col_value])
-            self.get_record(id=self.db.curs.lastrowid)  # reload data after the update
+            # self.get_record(id=self.db.curs.lastrowid)  # reload data after the insert - NO NEED, AS ONLY LOG INSERTS
 
     @classmethod
     def all_keys(cls, db, META):
