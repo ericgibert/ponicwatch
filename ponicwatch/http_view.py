@@ -23,7 +23,7 @@ def log(page=0):
     if "system" in request.query:
         log_type, object_id =  request.query["system"].split('_')
         where = "log_type='{}' and object_id={}".format(log_type, object_id)
-        pwo = """<a href="/{}s/{}">Go to PWO page</a>""".format(log_type.lower(),
+        pwo = """<a href="/{}s/{}">Go to PWO page</a>""".format(log_type.lower() + ('e' if log_type.lower()=='switch' else ''),
                                                                 object_id) if log_type in ("SENSOR", "SWITCH", "HARDWARE") else ""
     else:
         where, pwo = "", ""
