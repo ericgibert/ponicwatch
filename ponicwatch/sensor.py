@@ -57,11 +57,8 @@ class Sensor(Ponicwatch_Table):
             self.system_name = system_name + "/" + self["name"]
             self.controller.add_cron_job(self.execute, self["timer"])
             # attach the interruption if present
-            try:
-                if self.init_dict["IC"] == "RPI3" and self.init_dict["hw_param"]:
-                    hardware.register_interrupt(int(self.init_dict["hw_param"]), self.on_interrupt)
-            except KeyError as err:
-                print("warning:", err, "on", self)
+            if "interrupt" in self.init_dict:
+                hardware.register_interrupt(int(self.init_dict["interrupt"]), self.on_interrupt)
             # if the sensor needs to be power ON before reading / OFF after reading: { "POWER": "I/O_IC.pin" }
             try:
                 pwr_ic_hw, self.pwr_pin = self.init_dict["POWER"].split('.')

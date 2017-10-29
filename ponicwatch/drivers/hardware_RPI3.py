@@ -51,7 +51,10 @@ class Hardware_RPI3(object):
             pass
 
     def read(self, pin, param=None):
-        data = float(self.pig.read(pin)) if pin in self.in_out["IN"] else None
+        if param == 'T':
+            data = self.read_temperature()
+        else:
+            data = float(self.pig.read(pin)) if pin in self.in_out["IN"] else None
         return data, data
 
     def write(self, pin, value):
@@ -67,6 +70,14 @@ class Hardware_RPI3(object):
         """Already done at __init__"""
         # self.pig.set_mode(pin, pigpio.OUTPUT)
         pass
+
+    def read_temperature(self):
+        """Reads the CPU temperature
+        init:  { "IC":"RPI3", "pin":-1, "hw_param":"T"}
+        """
+        with open('/sys/class/thermal/thermal_zone0/temp', "rt") as tFile:
+            tempC = float(tFile.read())
+        return tempC / 1000.0
 
     @staticmethod
     def pigpio_callback(gpio, level, tick):
