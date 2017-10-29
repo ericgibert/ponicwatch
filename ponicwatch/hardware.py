@@ -117,9 +117,10 @@ class Hardware(Ponicwatch_Table):
 
     def get_html(self):
         """return a HTML string for extra information associated to a IC"""
-        html_col1, html_col2 = "Extra Data", "No extra data"
-        if self["hardware"] in ["MCP23017"]:
-            html_col2 = self.driver.get_html(with_javascript=True)
+        try:
+            html_col1, html_col2 = "Extra Data", self.driver.get_html(with_javascript=True)
+        except AttributeError:
+            html_col1, html_col2 = "Extra Data", "No extra data"
         return (html_col1, html_col2)
 
 

@@ -11,7 +11,6 @@
 <h1>{{pwo_cls_name}} {{pw_object["name"]}}</h1>
 <form method="POST" id="form" action="/{{ pw_object_type }}">
 <table>
-<!--for k in ("id","name","mode","init","value","timer","timer_interval","updated_on"): -->
 % for k in pw_object.META["columns"]:
     <tr><td style="text-align:right">{{k}}:</td><td><input type="text" size="60" value="{{pw_object[k]}}" name="{{k}}" {{ 'readonly' if login_logout=='Login' or k.endswith('_id') else '' }}/></td></tr>
 % end
@@ -25,7 +24,13 @@
     </td></tr>
 %end
 
+%if pwo_cls_name == "Sensor":
+<tr><td style="text-align:right"> </td>
+    <td><button onclick="location.href='/sensor/read/{{pw_object["id"]}}'" type="button">Excute reading...</button></td></tr>
+%end
+
 </table>
+
 % if login_logout=="Logout":
     <input type="hidden" value="{{ pw_object['id'] }}" name="id" />
     <input type="hidden" value="{{ pw_object_type }}" name="pw_object_type" />

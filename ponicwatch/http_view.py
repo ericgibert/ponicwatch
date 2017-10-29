@@ -112,6 +112,14 @@ def set_pin_to(pin, set_to):
     if pin.startswith("out"):
         http_view.controller.MCP23017.write(pin[-2:], int(set_to == "ON"))
 
+@http_view.get('/sensor/read/<sensor_id:int>')
+def sensor_read(sensor_id):
+    """Force read the sensor value now"""
+    for sensor in http_view.controller.sensors.values():
+        if sensor["id"] == sensor_id:
+            sensor.execute()
+            redirect("/sensors/%d" % sensor_id)
+
 #
 ### Login/Logout form & process
 #
