@@ -69,7 +69,7 @@ class Switch(Ponicwatch_Table):
         elif self.init_dict["set_value_to"] in ('t', 'T'):
             set_to = abs(self["value"] - 1)
         else:
-            set_to = self.init_dict["set_value_to"] or -1.0
+            set_to = int(self.init_dict["set_value_to"])
         self.hardware.write(self.init_dict["pin"], set_to)
         self.update(value=set_to)
         self.controller.log.add_log(system_name=self.system_name, param=self)
