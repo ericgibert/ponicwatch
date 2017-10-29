@@ -120,6 +120,14 @@ def sensor_read(sensor_id):
             sensor.execute()
             redirect("/sensors/%d" % sensor_id)
 
+@http_view.get('/interrupt/exec/<inter_id:int>')
+def sensor_read(inter_id):
+    """Force read the sensor value now"""
+    for inter in http_view.controller.interrupts.values():
+        if inter["id"] == inter_id:
+            inter.on_interrupt()
+            redirect("/interrupts/%d" % inter_id)
+
 #
 ### Login/Logout form & process
 #

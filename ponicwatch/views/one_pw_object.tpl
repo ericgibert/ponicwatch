@@ -19,14 +19,17 @@
 
 %if pwo_cls_name == "Hardware":
     % col1, col2 = pw_object.get_html()
-<tr><td style="text-align:right">{{col1}}:</td>
-    <td>{{!col2}}
-    </td></tr>
+<tr><td style="text-align:right">{{col1}}:</td><td>{{!col2}}</td></tr>
 %end
 
 %if pwo_cls_name == "Sensor":
 <tr><td style="text-align:right"> </td>
     <td><button onclick="location.href='/sensor/read/{{pw_object["id"]}}'" type="button">Excute reading...</button></td></tr>
+%end
+
+%if pwo_cls_name == "Interrupt":
+<tr><td style="text-align:right"> </td>
+    <td><button onclick="location.href='/interrupt/exec/{{pw_object["id"]}}'" type="button">Execute interruptionn callback...</button></td></tr>
 %end
 
 </table>

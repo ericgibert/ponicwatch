@@ -52,6 +52,7 @@ class Interrupt(Ponicwatch_Table):
                     "error_code": self["id"]
                 }
                 self.controller.log.add_log(system_name=self.system_name, param=msg, log_type="INFO")
+                self.update() # just to get the last updated_on timestamp
         except KeyError as err:
             # no action? Really??
             self.controller.log.add_error(msg="Interrupt %s has NO action declared in its init field." % self.system_name)
