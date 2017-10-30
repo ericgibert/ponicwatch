@@ -102,6 +102,22 @@ class Controller(object):
         self.db.allow_close = True
         self.db.close()
 
+    def get_pwo(self, cls, id):
+        """return a PonicWatch Object from trhe controller's list
+        :param cls: either a string as class name or an PW object
+        :return pwo:
+        """
+        if isinstance(cls, str):
+            list_name = cls.lower()
+        else:
+            list_name = cls.__class__.__name__.lower()
+        list_name += 'es' if list_name == "switch" else 's' # irregular plural for 'switches'
+        this_list = getattr(self, list_name)
+        for pwo in this_list.values():
+            if pwo["id"] == id:
+                return pwo
+        return None
+
     def add_cron_job(self, callback, cron_time):
         # When do we need to read the sensor or activate a switch?
         # ┌───────────── sec (0 - 59)

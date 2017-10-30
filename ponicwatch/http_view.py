@@ -15,7 +15,7 @@ BaseTemplate.defaults['login_logout'] = "Login"
 @http_view.route('/')
 def default():
     session = session_manager.get_session()
-    return template("default", session_valid=session["valid"])
+    return template("default", session_valid=session["valid"], systems=http_view.controller.systems.values())
 
 @http_view.route('/log')
 @http_view.route('/log/<page:int>')

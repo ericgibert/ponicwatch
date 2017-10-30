@@ -15,7 +15,8 @@
     <tr><td style="text-align:right">{{k}}:</td><td><input type="text" size="60" value="{{pw_object[k]}}" name="{{k}}" {{ 'readonly' if login_logout=='Login' or k.endswith('_id') else '' }}/></td></tr>
 % end
 
-<tr><td style="text-align:right">Last Upd Local Time:</td><td>{{pw_upd_local_datetime}}</td></tr>
+<tr><td style="text-align:right">Last Upd Local Time:</td><td>{{pw_upd_local_datetime}}
+        <a href="/log?system={{pwo_cls_name.upper()}}_{{pw_object["id"]}}">Go to Log page</a></td></tr>
 
 %if pwo_cls_name == "Hardware":
     % col1, col2 = pw_object.get_html()
@@ -24,13 +25,14 @@
 
 %if pwo_cls_name == "Sensor":
 <tr><td style="text-align:right"> </td>
-    <td><button onclick="location.href='/sensor/read/{{pw_object["id"]}}'" type="button">Excute reading...</button></td></tr>
+    <td><button onclick="location.href='/sensor/read/{{pw_object["id"]}}'" type="button">Execute reading...</button></td></tr>
 %end
 
 %if pwo_cls_name == "Interrupt":
 <tr><td style="text-align:right"> </td>
     <td><button onclick="location.href='/interrupt/exec/{{pw_object["id"]}}'" type="button">Execute interruptionn callback...</button></td></tr>
 %end
+
 
 </table>
 

@@ -1,5 +1,6 @@
 <style>
-ul {
+
+.menu {
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -7,11 +8,11 @@ ul {
     background-color: #333333;
 }
 
-li {
+ul.menu li {
     float: left;
 }
 
-li a {
+ul.menu li a {
     display: block;
     color: white;
     text-align: center;
@@ -19,7 +20,7 @@ li a {
     text-decoration: none;
 }
 
-li a:hover {
+ul.menu li a:hover {
     background-color: #111111;
 }
 
@@ -31,7 +32,7 @@ th, td {
 </head>
 <body>
 
-<ul>
+<ul class="menu">
   <li><a href="/">Home</a></li>
   <li><a href="/log">Log</a></li>
   <li><a href="/sensors">Sensors</a></li>
