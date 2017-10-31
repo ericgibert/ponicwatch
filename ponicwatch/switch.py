@@ -64,15 +64,26 @@ class Switch(Ponicwatch_Table):
         On timer/scheduler: no 'given_value' hence set the pin to the 'set_value_to' found in the 'init' dictionary
         Else direct call: the pin is set to the 'given_value' if provided else the 'set_value'to' is used
         """
-        if given_value:
-            set_to = given_value
-        elif self.init_dict["set_value_to"] in ('t', 'T'):
-            set_to = abs(self["value"] - 1)
-        else:
-            set_to = int(self.init_dict["set_value_to"])
-        self.hardware.write(self.init_dict["pin"], set_to)
-        self.update(value=set_to)
-        self.controller.log.add_log(system_name=self.system_name, param=self)
+        try:
+            pwo_cls, s = self.init_dict["if"].split('[', 1)
+            id, test = s.split(']', 1)
+            pwo = self.controller.get_pwo(pwo_cls, int(id))
+            continue_execution = eval(str(pwo["value"])+test)
+        except KeyError:
+            continue_execution = True
+
+        if continue_execution:
+            if given_value:
+                set_to = given_value
+            elif self.init_dict["set_value_to"] in ('t', 'T'):
+                set_to = abs(self["value"] - 1)
+            else:
+                set_to = int(self.init_dict["set_value_to"])
+            self.hardware.write(self.init_dict["pin"], set_to)
+            self.update(value=set_to)
+            self.controller.log.add_log(system_name=self.system_name, param=self)
+        elif self.controller.debug > 1:
+            print(self, "'if' condition False: abort execution")
 
     @classmethod
     def all_keys(cls, db):
