@@ -100,6 +100,7 @@ sql_statements = {
     "updated_on" TIMESTAMP,
     "synchro_on" TIMESTAMP
 )""",
+
 'tb_switch': """CREATE TABLE "tb_switch" (
 	`switch_id`	INTEGER NOT NULL,
 	`name`	TEXT NOT NULL,
@@ -110,8 +111,8 @@ sql_statements = {
 	`timer_interval`	INTEGER NOT NULL DEFAULT '(15)',
 	`updated_on`	TIMESTAMP,
 	`synchro_on`	TIMESTAMP
-)
-""",
+)""",
+
 'tb_system':    """CREATE TABLE tb_system (
     "system_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
@@ -127,8 +128,8 @@ sql_statements = {
     "authorization" INTEGER NOT NULL DEFAULT (0),
     "password" TEXT,
     "name" TEXT
-)
-""",
+)""",
+
 'tb_link': """CREATE TABLE tb_link (
     "system_id" INTEGER NOT NULL,
     "sensor_id" INTEGER,
@@ -137,7 +138,8 @@ sql_statements = {
     "order_for_creation" INTEGER DEFAULT ('0'),
     "interrupt_id" INTEGER
 )""",
- 'tb_log': """CREATE TABLE tb_log (
+
+'tb_log': """CREATE TABLE tb_log (
 "log_id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     "controller_name" TEXT NOT NULL,
     "log_type" TEXT NOT NULL,
@@ -146,9 +148,9 @@ sql_statements = {
     "float_value" REAL NOT NULL DEFAULT (0.0),
     "text_value" TEXT,
     "created_on" TIMESTAMP NOT NULL
-)
- """,
- 'tb_interrupt': """CREATE TABLE tb_interrupt (
+)""",
+
+'tb_interrupt': """CREATE TABLE tb_interrupt (
     "interrupt_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "hardware" TEXT NOT NULL,
@@ -156,8 +158,8 @@ sql_statements = {
     "threshold" INTEGER NOT NULL DEFAULT (0),
     "updated_on" TIMESTAMP,
     "synchro_on" TIMESTAMP
-)
-    """,
+)""",
+
  'tb_hardware': """CREATE TABLE tb_hardware (
     "hardware_id" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
@@ -167,10 +169,21 @@ sql_statements = {
     "updated_on" TIMESTAMP,
     "synchro_on" TIMESTAMP,
     "value" INTEGER DEFAULT (0)
-)
- """,
+)""",
 }
 
 
 if __name__ == "__main__":
-    db = Ponicwatch_Db("sqlite3", {'database': "test_to_delete.db"})
+    db = Ponicwatch_Db("sqlite3", {'database': "../local_ponicwatch.db"})
+    db.open()
+    for table, schema in sql_statements.items():
+        db.curs.execute("select sql from sqlite_master where type = 'table' and name = ?", (table, ))
+        in_schema = db.curs.fetchone()
+        if schema == in_schema[0]:
+            print("Table {} is defined properly.".format(table))
+        else:
+            print("Table {} has difference:".format(table))
+            print("In program:\n", schema)
+            print("In database:\n", in_schema[0])
+    db.close()
+
