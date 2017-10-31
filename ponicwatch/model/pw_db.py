@@ -166,7 +166,7 @@ sql_statements = {
     "init" TEXT,
     "updated_on" TIMESTAMP,
     "synchro_on" TIMESTAMP,
-    "value" REAL DEFAULT (0.0)
+    "value" INTEGER DEFAULT (0)
 )
  """,
 }
