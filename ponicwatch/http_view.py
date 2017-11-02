@@ -173,6 +173,7 @@ def logout():
 @http_view.route('/stop')
 def stop():
     """Stops the application"""
+    http_view.controller.stop(from_bottle=True)
     sys.stderr.close()
 
 #

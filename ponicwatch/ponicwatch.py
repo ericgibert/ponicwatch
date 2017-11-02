@@ -168,12 +168,12 @@ class Controller(object):
             self.stop()
 
 
-    def stop(self):
+    def stop(self, from_bottle=False):
         self.scheduler.shutdown()  # Not strictly necessary if daemonic mode is enabled but should be done if possible
         for hw in self.hardwares.values():
             hw.cleanup()
         self.log.add_info("Controller has been stopped.", fval=0.0)
-        bottle_stop()
+        if not from_bottle: bottle_stop()
 
     def print_list(self):
         """Print the list of all created objects in the __init__ phase"""
