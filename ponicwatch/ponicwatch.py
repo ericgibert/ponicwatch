@@ -5,8 +5,9 @@
 
     Controller
 """
-import os
+import sys, os
 import argparse
+import signal
 from apscheduler.schedulers.background import BackgroundScheduler
 
 try:
@@ -24,7 +25,7 @@ from sensor import Sensor
 from switch import Switch
 from hardware import Hardware
 from interrupt import Interrupt
-from http_view import http_view, get_image_file, one_pw_object_html
+from http_view import http_view, get_image_file, one_pw_object_html, stop as bottle_stop
 from send_email import send_email
 
 __version__ = "1.20171025"
@@ -138,6 +139,13 @@ class Controller(object):
         self.running = True
         with open("ponicwatch.pid", "wt") as fpid:
             print(os.getpid(), file=fpid)
+
+        def stop_handler(signum, frame):
+            """ allow:   kill -10 `cat ponicwatch.pid`   """
+            self.stop()
+            sys.exit()
+        signal.signal(signal.SIGUSR1, stop_handler)
+
         self.scheduler.start()
         self.log.add_info("Controller is now running.", fval=1.0)
         # http_view.controller = self
@@ -157,10 +165,15 @@ class Controller(object):
         except (KeyboardInterrupt, SystemExit):
             pass
         finally:
-            self.scheduler.shutdown()  # Not strictly necessary if daemonic mode is enabled but should be done if possible
-            for hw in self.hardwares.values():
-                hw.cleanup()
+            self.stop()
+
+
+    def stop(self):
+        self.scheduler.shutdown()  # Not strictly necessary if daemonic mode is enabled but should be done if possible
+        for hw in self.hardwares.values():
+            hw.cleanup()
         self.log.add_info("Controller has been stopped.", fval=0.0)
+        bottle_stop()
 
     def print_list(self):
         """Print the list of all created objects in the __init__ phase"""
