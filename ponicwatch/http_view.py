@@ -122,11 +122,19 @@ def sensor_read(sensor_id):
 
 @http_view.get('/interrupt/exec/<inter_id:int>')
 def sensor_read(inter_id):
-    """Force read the sensor value now"""
+    """Force the interruption's callback execution now"""
     for inter in http_view.controller.interrupts.values():
         if inter["id"] == inter_id:
             inter.on_interrupt()
             redirect("/interrupts/%d" % inter_id)
+
+@http_view.get('/switch/exec/<switch_id:int>')
+def sensor_read(switch_id):
+    """Force the setting of the switch now"""
+    for switch in http_view.controller.switches.values():
+        if switch["id"] == switch_id:
+            switch.execute(switch.init_dict["set_value_to"])
+            redirect("/switches/%d" % switch_id)
 
 #
 ### Login/Logout form & process

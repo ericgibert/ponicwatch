@@ -73,10 +73,10 @@ class Hardware(Ponicwatch_Table):
 
     def write(self, pin, value):
         """param is a tuple (pin, value)"""
-        self.controller.log.add_log(system_name=self.system_name, param=self)
         new_val = self.driver.write(translate_pin(pin), value)
         if new_val != self["value"]:
             self.update(value=new_val)
+        self.controller.log.add_log(system_name=self.system_name, param=self)
 
     def cleanup(self):
         try:
