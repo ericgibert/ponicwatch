@@ -32,7 +32,7 @@ class Hardware_RPI3(object):
     def __init__(self, pig, in_out):
         """
         :param pig: instance of a pigpio object cretaed by the controller
-        :param in_out: dictionary of IN and OUT pins like {"IN": (1,2,3), "OUT":(4,5,6)}
+        :param in_out: dictionary of IN and OUT pins like {"IN":[],"OUT":[27,9]}
         """
         global CALLBACKS
         self.pig = pig

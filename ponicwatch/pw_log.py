@@ -88,7 +88,8 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         object_id=param["id"],
                         system_name=system_name,
                         float_value=float(param["value"]),
-                        text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_Log.json_exception),
+                        # text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_Log.json_exception),
+                        text_value="{} value: {}".format(str(param), param["value"]),
                         created_on=datetime.now(timezone.utc)
                         )
             self.print_debug(log_type, param["id"], param["name"], param["value"])
