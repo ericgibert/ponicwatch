@@ -65,15 +65,26 @@ class Switch(Ponicwatch_Table):
         Else direct call: the pin is set to the 'given_value' if provided else the 'set_value'to' is used
         """
         if given_value is not None:
-            set_to = int(given_value)
-            continue_execution = True
+            try:
+                set_to = int(given_value)
+                continue_execution = True
+            except ValueError:
+                self.controller.log.add_error(msg="given_value {} cannot be converted to int()".format(given_value),
+                                              err_code=self["id"], fval=-2.1)
+                continue_execution = False
         else: # automatic call by scheduler
             # if there is a 'if' condition then check it out first
             try:
                 pwo_cls, s = self.init_dict["if"].split('[', 1)
                 id, test = s.split(']', 1)
                 pwo = self.controller.get_pwo(pwo_cls, int(id))
-                continue_execution = eval(str(pwo["value"])+test)
+                if_expression = str(pwo["value"])+test
+                try:
+                    continue_execution = eval(if_expression)
+                except (SyntaxError, NameError):
+                    self.controller.log.add_error(msg="if_expression {} cannot be evaluated".format(if_expression),
+                                                  err_code=self["id"], fval=-2.2)
+                    continue_execution = False
             except KeyError:
                 continue_execution = True
             if self.init_dict["set_value_to"] in ('t', 'T'):

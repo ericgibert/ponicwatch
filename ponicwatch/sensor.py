@@ -69,8 +69,8 @@ class Sensor(Ponicwatch_Table):
                 else:
                     self.pwr_ic = None
                     # need to add ERROR on the LOG as the IC is not found!
-                    self.controller.log.add_error("Unknown POWER IC {} for Sensor {}.".format(pwr_ic_hw, self["name"]), err_code=1000)
-                    print(self.controller.hardwares)
+                    self.controller.log.add_error("Unknown POWER IC {} for Sensor {}.".format(pwr_ic_hw, self["name"]),
+                                                  err_code=self["id"], fval=-3.1)
             except KeyError:
                 self.pwr_ic, self.pwr_pin = None, None
 
@@ -103,18 +103,16 @@ class Sensor(Ponicwatch_Table):
                 self.pwr_ic.write(self.pwr_pin, 0)
                 self.controller.log.add_info("{}.{} powered off after reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
         except TypeError as err:
-            print('[1]', '*'*30)
-            print('[1]', err)
-            print('[1]', self.hardware, self.init_dict["pin"], self.init_dict["hw_param"])
-            print('[1]', "Power IC:", self.pwr_ic, "Power Pin:", self.pwr_pin)
+            self.controller.log.add_error(msg="Cannot write to hw: {} pin: {} power: {}".format(self.hardware, self.init_dict["pin"], self.pwr_pin),
+                                          err_code=self["id"], fval=-3.2)
         else:
             if read_val is None:
-                self.controller.log.add_error("Cannot read from " + str(self), self["id"])
+                self.controller.log.add_error("Cannot read from " + str(self), err_code=self["id"], fval=-3.3)
             else:
                 self.update(read_value=read_val, value=calc_val)   #  update_values(read_val, calc_val)
                 self.controller.log.add_log(system_name=self.system_name, param=self)
                 try:
-                    if calc_val >= self.init_dict["threshold"]:
+                    if calc_val >= float(self.init_dict["threshold"]):
                         getattr(self, self.init_dict["action"])()
                 except KeyError:
                     pass

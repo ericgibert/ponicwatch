@@ -117,6 +117,8 @@ class Controller(object):
         for pwo in this_list.values():
             if pwo["id"] == id:
                 return pwo
+        else:
+            self.log.add_error(msg="Looking for in {} for pwo id {}".format(list_name, id), err_code=id, fval=-1.0)
         return None
 
     def add_cron_job(self, callback, cron_time):
@@ -151,22 +153,10 @@ class Controller(object):
         # http_view.controller = self
         try:
             http_view.run(host=self.bottle_ip or '127.0.0.1')
-            # # This is here to simulate application activity (which keeps the main thread alive).
-            # while self.running :
-            #     sleep(2)
-            #     # simulate the generation of an interrupt
-            #     if _simulation:
-            #         try:
-            #             pin = choice(list(self.RPI3.get_callbacks()))
-            #             self.RPI3.driver.pigpio_callback(pin, 1, 30000)
-            #         except IndexError:
-            #             print("No choice possible in empty callbacks")
-
         except (KeyboardInterrupt, SystemExit):
             pass
         finally:
             self.stop()
-
 
     def stop(self, from_bottle=False):
         self.scheduler.shutdown()  # Not strictly necessary if daemonic mode is enabled but should be done if possible

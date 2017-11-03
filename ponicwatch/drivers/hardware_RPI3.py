@@ -52,7 +52,7 @@ class Hardware_RPI3(object):
 
     def read(self, pin, param=None):
         if param == 'T':
-            data = self.read_temperature()
+            data = self.read_cpu_temperature()
         else:
             data = float(self.pig.read(pin)) if pin in self.in_out["IN"] else None
         return data, data
@@ -72,7 +72,7 @@ class Hardware_RPI3(object):
         # self.pig.set_mode(pin, pigpio.OUTPUT)
         pass
 
-    def read_temperature(self):
+    def read_cpu_temperature(self):
         """Reads the CPU temperature
         init:  { "IC":"RPI3", "pin":-1, "hw_param":"T"}
         """
