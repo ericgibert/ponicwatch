@@ -118,7 +118,7 @@ class Controller(object):
             if pwo["id"] == id:
                 return pwo
         else:
-            self.log.add_error(msg="Looking for in {} for pwo id {}".format(list_name, id), err_code=id, fval=-1.0)
+            self.log.add_error(msg="No pwo id {} found in {}".format(id, list_name), err_code=id, fval=-1.1)
         return None
 
     def add_cron_job(self, callback, cron_time):

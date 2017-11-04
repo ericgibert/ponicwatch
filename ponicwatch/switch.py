@@ -58,6 +58,30 @@ class Switch(Ponicwatch_Table):
             # except KeyError:
             #     self.execute(self.init_dict["value"])
 
+    def expand_expression(self, if_expression):
+        """Replace the Sensor/Switch/Hardware reference to its value
+        Error will be caught by the calling function: SyntaxError, ValueError, NameError
+        :param if_expression: string or tuple from the 'init' dictionary under the key 'if'
+        ":return result: input string with all pwo references have been replaced by their value
+        """
+        if isinstance(if_expression, str):
+            # expects a string starting by a pwo reference and then a bollean test
+            pwo_cls, s = if_expression.split('[', 1)
+            id, test = s.split(']', 1)
+            pwo = self.controller.get_pwo(pwo_cls, int(id))
+            result = str(pwo["value"])+test
+        elif isinstance(if_expression, list):
+            # expects list: format string followed by the pwo references
+            # example: [ "{}>10. and {}==1", "Sensor[1]", "Switch[2]" ]
+            _format, pwo_values = if_expression[0], []
+            for pwo_ref in if_expression[1:]:
+                pwo_cls, s = pwo_ref.split('[', 1)
+                pwo = self.controller.get_pwo(pwo_cls, int(s[:-1]))
+                pwo_values.append(pwo["value"])
+            result = _format.format(*pwo_values)
+        else:
+            result = "Error! Unknown if_expression type: " + type(if_expression)
+        return result
 
     def execute(self, given_value=None):
         """
@@ -75,22 +99,24 @@ class Switch(Ponicwatch_Table):
         else: # automatic call by scheduler
             # if there is a 'if' condition then check it out first
             try:
-                pwo_cls, s = self.init_dict["if"].split('[', 1)
-                id, test = s.split(']', 1)
-                pwo = self.controller.get_pwo(pwo_cls, int(id))
-                if_expression = str(pwo["value"])+test
-                try:
-                    continue_execution = eval(if_expression)
-                except (SyntaxError, NameError):
-                    self.controller.log.add_error(msg="if_expression {} cannot be evaluated".format(if_expression),
-                                                  err_code=self["id"], fval=-2.2)
-                    continue_execution = False
+                if_expression = self.init_dict["if"]
+                continue_execution = eval(self.expand_expression(if_expression))
+            except (SyntaxError, NameError, ValueError) as err:
+                self.controller.log.add_error(msg="if_expression {} cannot be evaluated: {}".format(if_expression, err),
+                                              err_code=self["id"], fval=-2.2)
+                continue_execution = False
             except KeyError:
                 continue_execution = True
+
             if self.init_dict["set_value_to"] in ('t', 'T'):
                 set_to = abs(self["value"] - 1)
             else:
-                set_to = int(self.init_dict["set_value_to"])
+                try:
+                    set_to = int(self.init_dict["set_value_to"])
+                except ValueError:
+                    self.controller.log.add_error(msg="set_value_to {} must be int()".format(self.init_dict["set_value_to"]),
+                                                  err_code=self["id"], fval=-2.3)
+                    continue_execution = False
 
         if continue_execution:
             self.hardware.write(self.init_dict["pin"], set_to)
