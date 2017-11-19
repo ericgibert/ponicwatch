@@ -173,13 +173,27 @@ sql_statements = {
 }
 
 
+def same_schema(sch1, sch2):
+    """Compare two schema strings ignoring whitespaces and quotes
+    Display the line in error
+    """
+    result_same = True
+    for l1, l2 in zip(sch1.split('\n'), sch2.split('\n')):
+        a1, a2 = "".join(l1.split()).replace("`",'').replace('"',''), "".join(l2.split()).replace("`",'').replace('"','')
+        result_same = a1 == a2
+        if not result_same:
+            print("*** pgr: {}\n <>  db: {}".format(l1.strip(), l2.strip()))
+            break
+    return result_same
+
+
 if __name__ == "__main__":
     db = Ponicwatch_Db("sqlite3", {'database': "../local_ponicwatch.db"})
     db.open()
     for table, schema in sql_statements.items():
         db.curs.execute("select sql from sqlite_master where type = 'table' and name = ?", (table, ))
         in_schema = db.curs.fetchone()
-        if schema == in_schema[0]:
+        if same_schema(schema, in_schema[0]):
             print("Table {} is defined properly.".format(table))
         else:
             print("Table {} has difference:".format(table))
