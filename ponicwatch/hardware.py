@@ -54,7 +54,7 @@ class Hardware(Ponicwatch_Table):
         elif hardware in ["RPI3"]:
             self.driver = Hardware_RPI3(pig=controller.pig, in_out=hw_init)
         elif hardware in ["MCP23017"]:
-            self.driver = Hardware_MCP23017(pig=controller.pig, bus_address_inter=hw_init)
+            self.driver = Hardware_MCP23017(pig=controller.pig, hw_init_dict=hw_init)
         elif hardware in ["MCP3208"]:
             self.driver = Hardware_MCP3208(pig=controller.pig, trx_flags=hw_init)
         else:

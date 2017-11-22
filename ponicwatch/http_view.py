@@ -15,7 +15,8 @@ BaseTemplate.defaults['login_logout'] = "Login"
 @http_view.route('/')
 def default():
     session = session_manager.get_session()
-    rows = http_view.controller.log.get_all_records(order_by="created_on desc", where_clause="log_type='ERROR'")
+    rows = http_view.controller.log.get_all_records(order_by="created_on desc",
+                                                    where_clause="log_type='ERROR' and julianday(date('now')) - julianday(created_on)  < 8")
     return template("default", session_valid=session["valid"],
                     controller=http_view.controller,
                     rows=rows)

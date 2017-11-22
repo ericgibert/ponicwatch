@@ -62,18 +62,19 @@ class Hardware_MCP23017(object):
     OLATA = 0x14
     OLATB = 0x15
 
-    def __init__(self, pig, bus_address_inter, num_gpios=16):
+    def __init__(self, pig, hw_init_dict, num_gpios=16):
         """
         Create the driver to communicate with the MCP23017 chip by i2c
         :param pig: pigpio from the controller
-        :param bus_address_inter: 1.0x20.16 when the 3 address pins are grounded and INTA is connected to RASPI pin 16
+        :param hw_init_dict: 1.0x20.16 when the 3 address pins are grounded and INTA is connected to RASPI pin 16
         :param num_gpios: up to 16 for MCP23017
         """
         assert 0 <= num_gpios <= 16, "Number of GPIOs must be between 0 and 16"
         self.pig = pig
-        busnum, self.address, interrupt = (bus_address_inter["bus"],
-                                           bus_address_inter["address"] if isinstance(bus_address_inter["address"], int) else int(bus_address_inter["address"], 16),
-                                           bus_address_inter["interrupt"])
+        self.hw_init_dict = hw_init_dict
+        busnum, self.address, interrupt = (hw_init_dict["bus"],
+                                           hw_init_dict["address"] if isinstance(hw_init_dict["address"], int) else int(hw_init_dict["address"], 16),
+                                           hw_init_dict["interrupt"])
         self.i2c_handle = self.pig.i2c_open(busnum, self.address)
         self.num_gpios = num_gpios
 
@@ -333,8 +334,8 @@ class Hardware_MCP23017(object):
     def get_html(self, with_javascript=False):
         """return the radiobutton list to set the pins IN/OUT"""
         radio_IN_html = """
-            <td><input type="radio"{}/> IN</td>"""
-        radio_OUT_html = """<td>
+            <td>{}<input type="radio"{}/> IN</td>"""
+        radio_OUT_html = """<td>{3}
             <input type="radio" name="out{0}" onclick="handleClick(this);" {1} value="ON"/> ON
             <input type="radio" name="out{0}" onclick="handleClick(this);" {2} value="OFF"/> OFF</td>"""
         html = """\n<table border="1">\n"""
@@ -345,12 +346,21 @@ class Hardware_MCP23017(object):
                 i_or_o = dir & (1 << i)
                 pin = port + str(i)
                 pin_val = self.read(self.translate_pin(pin))[0]
+                try:
+                    pin_name = self.hw_init_dict["names"][pin] + "<br/>"
+                except KeyError:
+                    pin_name = ""
+                try:
+                    ON_value = self.hw_init_dict["ON_value"]
+                except KeyError:
+                    ON_value = 1
                 if i_or_o:  # output = 0 ; input != 0
-                    html += radio_IN_html.format(" checked" if pin_val else "")
+                    html += radio_IN_html.format(pin_name, " checked" if pin_val else "")
                 else:
                     html += radio_OUT_html.format(pin,
-                                                  " checked" if pin_val else "",
-                                                  "" if pin_val else " checked")
+                                                  " checked" if pin_val==ON_value else "",
+                                                  "" if pin_val==ON_value else " checked",
+                                                  pin_name)
             html += "</tr>\n"
         html += "</table>\n"
         if with_javascript:
