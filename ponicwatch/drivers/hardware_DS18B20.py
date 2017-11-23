@@ -8,7 +8,7 @@ import os
 from time import sleep
 from glob import glob
 from random import randint
-from pigpio import FILE_READ
+from pigpio import FILE_READ, error as pig_error
 
 class Hardware_DS18B20(object):
     """
@@ -61,9 +61,12 @@ class Hardware_DS18B20(object):
                 lines = f.readlines()
                 return lines
         else:
-            h = self.pig.file_open(self.device_file, FILE_READ)
-            c, data = self.pig.file_read(h, 1000)  # 1000 is plenty to read full file.
-            self.pig.file_close(h)
+            try:
+                h = self.pig.file_open(self.device_file, FILE_READ)
+                c, data = self.pig.file_read(h, 1000)  # 1000 is plenty to read full file.
+                self.pig.file_close(h)
+            except pig_error:
+                data = ("xxxxxxxxxxxxxxxxxx", "xxxxxxxxxxxxxxxx", "xxxxxxxxxxxxx")
             return data.decode("utf-8").split('\n')
 
     def read(self, pin=None, param=None):
@@ -73,7 +76,7 @@ class Hardware_DS18B20(object):
         if self.simulation:
             self.temperature = randint(25, 35)
         else:
-            self.temperature = None
+            self.temperature = -999.0
             lines = self.read_temp_raw()
             # print(lines)
             tries = 10
