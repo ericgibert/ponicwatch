@@ -76,7 +76,7 @@ class Hardware_DS18B20(object):
         if self.simulation:
             self.temperature = randint(25, 35)
         else:
-            self.temperature = -999.0
+            self.temperature = None
             lines = self.read_temp_raw()
             # print(lines)
             tries = 10
