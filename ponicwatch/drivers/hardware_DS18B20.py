@@ -66,7 +66,7 @@ class Hardware_DS18B20(object):
                 c, data = self.pig.file_read(h, 1000)  # 1000 is plenty to read full file.
                 self.pig.file_close(h)
             except pig_error:
-                data = "xxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxx"
+                data = b"xxxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxxxxx\nxxxxxxxxxxxxx"
             return data.decode("utf-8").split('\n')
 
     def read(self, pin=None, param=None):
