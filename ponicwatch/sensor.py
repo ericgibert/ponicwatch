@@ -74,20 +74,41 @@ class Sensor(Ponicwatch_Table):
             except KeyError:
                 self.pwr_ic, self.pwr_pin = None, None
 
-    # def get_record(self, id=None, name=None):
-    #     """
-    #     Fetch one record from tb_sensor matching either of the given parameters
-    #     :param name: tb_sensor.name (string)
-    #     :param id: tb_sensor.sensor_id (int)
+
     #
     #     example:
     #     "AM2302.4.T" --> ['AM2302', '4', 'T'] --> 'T' for temperature, 'H' for humidity
     #     "RPI3.4" --> ['RPI3', '4', None] --> Simply reads pin 4 from the Raspi
     #     "RPI3.4.16" --> ['RPI3', '4', '16'] --> Read pin 4 and declare an interrupt on pin 16
     #     """
-    #     super().get_record(id, name)
-    #     hw_parts = self["hardware"].split('.')
-    #     self.IC, self.pins, self.hw_param = hw_parts[0], hw_parts[1], hw_parts[2] if len(hw_parts) == 3 else None
+
+    def read_values(self):
+        """Reads the direct and calculated values from a sensor
+        Powers ON and OFF the sensor if required
+        """
+        # need to power on the sensor if a power pin is given   { "POWER": "I/O_IC.pin" }
+        if self.pwr_ic:
+            try:
+                self.pwr_ic.write(self.pwr_pin, 1)
+                self.controller.log.add_info("{}.{} powered on before reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
+                sleep(0.5)
+            except TypeError as err:
+                msg="Cannot write to hw: {} pin: {} power: {}".format(self.hardware, self.init_dict["pin"], self.pwr_pin)
+                self.controller.log.add_error(msg=msg, err_code=self["id"], fval=-3.2)
+        # reads from sensor hardware
+        read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
+        # power off the sensor if necessary
+        if self.pwr_ic:
+            self.pwr_ic.write(self.pwr_pin, 0)
+            self.controller.log.add_info("{}.{} powered off after reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
+        return read_val, calc_val
+
+    @property
+    def value(self):
+        """Force the sensor reading and return the calculated valule only
+        NO LOGGING: convenient for frequent reading in switch condition"""
+        read_val, calc_val = self.read_values()
+        return calc_val
 
     def execute(self):
         """Called by the scheduler to perform the data reading"""
