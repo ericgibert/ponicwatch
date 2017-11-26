@@ -77,7 +77,10 @@ class Switch(Ponicwatch_Table):
             for pwo_ref in if_expression[1:]:
                 pwo_cls, s = pwo_ref.split('[', 1)
                 pwo = self.controller.get_pwo(pwo_cls, int(s[:-1]))
-                pwo_values.append(pwo.value)
+                try:
+                    pwo_values.append(pwo.value)
+                except AttributeError:
+                    pwo_values.append(pwo["value"])
             result = _format.format(*pwo_values)
         else:
             result = "Error! Unknown if_expression type: " + type(if_expression)
