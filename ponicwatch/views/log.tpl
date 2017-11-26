@@ -6,6 +6,7 @@
 </head>
 <body>
 % include('header.html')
+% import datetime
 <p>{{!pwo}}</p>
 <table border="1">
     <tr><th>log_id</th><th>Log Type</th><th>System/PWO</th><th>Value</th><th>Text</th><th>Timestamp</th></tr>
@@ -15,7 +16,7 @@
     <td><a href="/log?system={{row[2]+'_'+str(row[3])}}">{{row[4]}}</a></td>
     <td>{{row[5]}}</td>
     <td>{{row[6] if row[2] in ("INFO", "WARNING", "ERROR") else ""}}</td>
-    <td>{{row[7]}}</td></tr>
+    <td>{{row[7].replace(tzinfo=datetime.timezone.utc).astimezone()}}</td></tr>
 % end
 </table>
 <p>

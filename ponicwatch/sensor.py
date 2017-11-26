@@ -111,32 +111,35 @@ class Sensor(Ponicwatch_Table):
         return calc_val
 
     def execute(self):
-        """Called by the scheduler to perform the data reading"""
-        try:
-            # need to power on the sensor if a power pin is given   { "POWER": "I/O_IC.pin" }
-            if self.pwr_ic:
-                self.pwr_ic.write(self.pwr_pin, 1)
-                self.controller.log.add_info("{}.{} powered on before reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
-                sleep(0.5)
-            read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
-            # power off the sensor if necessary
-            if self.pwr_ic:
-                self.pwr_ic.write(self.pwr_pin, 0)
-                self.controller.log.add_info("{}.{} powered off after reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
-        except TypeError as err:
-            self.controller.log.add_error(msg="Cannot write to hw: {} pin: {} power: {}".format(self.hardware, self.init_dict["pin"], self.pwr_pin),
-                                          err_code=self["id"], fval=-3.2)
+        """Called by the scheduler to perform the data reading
+        Log the read values
+        """
+        # try:
+        #     # need to power on the sensor if a power pin is given   { "POWER": "I/O_IC.pin" }
+        #     if self.pwr_ic:
+        #         self.pwr_ic.write(self.pwr_pin, 1)
+        #         self.controller.log.add_info("{}.{} powered on before reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
+        #         sleep(0.5)
+        #     read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
+        #     # power off the sensor if necessary
+        #     if self.pwr_ic:
+        #         self.pwr_ic.write(self.pwr_pin, 0)
+        #         self.controller.log.add_info("{}.{} powered off after reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
+        # except TypeError as err:
+        #     self.controller.log.add_error(msg="Cannot write to hw: {} pin: {} power: {}".format(self.hardware, self.init_dict["pin"], self.pwr_pin),
+        #                                   err_code=self["id"], fval=-3.2)
+        # else:
+        read_val, calc_val = self.read_values()
+        if read_val is None:
+            self.controller.log.add_error("Cannot read from " + str(self), err_code=self["id"], fval=-3.3)
         else:
-            if read_val is None:
-                self.controller.log.add_error("Cannot read from " + str(self), err_code=self["id"], fval=-3.3)
-            else:
-                self.update(read_value=read_val, value=calc_val)   #  update_values(read_val, calc_val)
-                self.controller.log.add_log(system_name=self.system_name, param=self)
-                try:
-                    if calc_val >= float(self.init_dict["threshold"]):
-                        getattr(self, self.init_dict["action"])()
-                except KeyError:
-                    pass
+            self.update(read_value=read_val, value=calc_val)   #  update_values(read_val, calc_val)
+            self.controller.log.add_log(system_name=self.system_name, param=self)
+            # try:
+            #     if calc_val >= float(self.init_dict["threshold"]):
+            #         getattr(self, self.init_dict["action"])()
+            # except KeyError:
+            #     pass
 
     def on_interrupt(self):
         print("Ready to take care of the interrupt", self)
