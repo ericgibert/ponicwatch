@@ -108,6 +108,8 @@ class Sensor(Ponicwatch_Table):
         """Force the sensor reading and return the calculated valule only
         NO LOGGING: convenient for frequent reading in switch condition"""
         read_val, calc_val = self.read_values()
+        if self.controller.debug >= 3:
+            print("Reading {}: {}, {}".format(self, read_val, calc_val))
         return calc_val
 
     def execute(self):

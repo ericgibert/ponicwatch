@@ -77,7 +77,7 @@ class Switch(Ponicwatch_Table):
             for pwo_ref in if_expression[1:]:
                 pwo_cls, s = pwo_ref.split('[', 1)
                 pwo = self.controller.get_pwo(pwo_cls, int(s[:-1]))
-                pwo_values.append(pwo["value"])
+                pwo_values.append(pwo.value)
             result = _format.format(*pwo_values)
         else:
             result = "Error! Unknown if_expression type: " + type(if_expression)
@@ -124,6 +124,11 @@ class Switch(Ponicwatch_Table):
             self.controller.log.add_log(system_name=self.system_name, param=self)
         elif self.controller.debug >= 3:
             print(self, "'if' condition False: abort execution")
+
+    @property
+    def value(self):
+        """Read the switch position from the hardware directly - NO log"""
+        return self.hardware.read(self.init_dict["pin"], self.init_dict)
 
     @classmethod
     def all_keys(cls, db):

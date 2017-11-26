@@ -16,7 +16,7 @@
 
 <table border="1">
 % for row in rows:
-    <tr><td>{{row[2]}}</td><td>{{row[3]}}</td><td>{{row[4]}}</td><td>{{row[5]}}</td><td>{{row[6]}}</td><td>{{row[7]}}</td></tr>
+    <tr><td>{{row[0]}}</td><td>{{row[2]}}</td><td>{{row[3]}}</td><td>{{row[4]}}</td><td>{{row[5]}}</td><td>{{row[6]}}</td><td>{{row[7]}}</td></tr>
 %end
 </table>
 % from ponicwatch import __version__, __author__, __license__
