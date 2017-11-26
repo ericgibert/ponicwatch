@@ -69,7 +69,10 @@ class Switch(Ponicwatch_Table):
             pwo_cls, s = if_expression.split('[', 1)
             id, test = s.split(']', 1)
             pwo = self.controller.get_pwo(pwo_cls, int(id))
-            result = str(pwo["value"])+test
+            try:
+                result = str(pwo.value) + test
+            except AttributeError:
+                result = str(pwo["value"]) + test
         elif isinstance(if_expression, list):
             # expects list: format string followed by the pwo references
             # example: [ "{}>10. and {}==1", "Sensor[1]", "Switch[2]" ]
