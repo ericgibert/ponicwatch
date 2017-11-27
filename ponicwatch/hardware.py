@@ -131,7 +131,7 @@ def translate_pin(str_pin):
         pin = int(str_pin)
     except ValueError:
         if str_pin.startswith("0x"):
-            pin = eval(str_pin)
+            pin = int(str_pin, 16)
         elif str_pin[0] in ('A', 'B') and '0' <= str_pin[1] <= '7':
             pin = 8 * (str_pin[0] == 'B') + int(str_pin[1])
         else:
