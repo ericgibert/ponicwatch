@@ -104,21 +104,22 @@ class Controller(object):
         self.db.close()
 
     def get_pwo(self, cls, id):
-        """return a PonicWatch Object from trhe controller's list
+        """return a PonicWatch Object from the controller's PWO dictionary
         :param cls: either a string as class name or an PW object
-        :return pwo:
+        :param id: the pwo's id, must be integer as pwo dictionary key
+        :return pwo: the matching pwo or None
         """
-        if isinstance(cls, str):
-            list_name = cls.lower()
-        else:
-            list_name = cls.__class__.__name__.lower()
-        list_name += 'es' if list_name == "switch" else 's' # irregular plural for 'switches'
-        this_list = getattr(self, list_name)
-        for pwo in this_list.values():
-            if pwo["id"] == id:
-                return pwo
-        else:
-            self.log.add_error(msg="No pwo id {} found in {}".format(id, list_name), err_code=id, fval=-1.1)
+        cls_name = (cls if isinstance(cls, str) else cls.__class__.__name__).lower()
+        cls_name += 'es' if cls_name == "switch" else 's' # irregular plural for 'switches'
+        pwo_dict = getattr(self, cls_name)
+        try:
+            pwo = pwo_dict[int(id)]
+            return pwo
+        except KeyError:
+            msg = "No pwo id {} found in {}".format(id, cls_name)
+            if self.debug >= 3:
+                print(msg)
+            self.log.add_error(msg=msg, err_code=id, fval=-1.1)
         return None
 
     def add_cron_job(self, callback, cron_time):

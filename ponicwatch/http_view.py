@@ -6,11 +6,25 @@ from markdown import markdown
 from bottle import Bottle, template, static_file, request, BaseTemplate, redirect
 from bottlesession import CookieSession, authenticator
 from user import User
+
 session_manager = CookieSession()    #  NOTE: you should specify a secret
 valid_user = authenticator(session_manager)
 
 http_view = Bottle()
 BaseTemplate.defaults['login_logout'] = "Login"
+
+
+def get_pwo():
+    """Helper function: returns a PonicWatch Object based on the object type and id found in the form.
+    Expected fields in the form (can be hidden if necessary):
+    - pw_object_type: the class name
+    - id: the PWO id, which is the key in the controller's pwo dictionaries
+    These two <input> are hidden above to the 'submit' button in the one_pw_object.tpl form
+    """
+    cls_name = request.forms["pw_object_type"]
+    pwo = http_view.controller.get_pwo(cls_name, request.forms["id"])
+    return pwo
+
 
 @http_view.route('/')
 def default():
@@ -24,41 +38,40 @@ def default():
 @http_view.route('/log')
 @http_view.route('/log/<page:int>')
 def log(page=0):
+    where, pwo = "", ""
     if "system" in request.query:
-        log_type, object_id =  request.query["system"].split('_')
-        where = "log_type='{}' and object_id={}".format(log_type, object_id)
-        pwo = """<a href="/{}s/{}">Go to PWO page</a>""".format(log_type.lower() + ('e' if log_type.lower()=='switch' else ''),
-                                                                object_id) if log_type in ("SENSOR", "SWITCH", "HARDWARE") else ""
-    else:
-        where, pwo = "", ""
+        log_type, object_id = request.query["system"].split('_')
+        if log_type in ("SENSOR", "SWITCH", "HARDWARE"):
+            where = "log_type='{}' and object_id={}".format(log_type, object_id)
+            type_plural = "switches" if log_type == 'SWITCH' else log_type.lower() + 's'
+            pwo = """<a href="/{}/{}">Go to PWO page</a>""".format(type_plural, object_id)
     rows = http_view.controller.log.get_all_records(from_page=page, order_by="created_on desc", where_clause=where)
     return template("log", rows=rows, current_page=page, pwo=pwo)
 
 @http_view.route('/switches')
-@http_view.route('/switches/<object_id:int>')
+@http_view.route('/switches/<id:int>')
 @http_view.route('/sensors')
-@http_view.route('/sensors/<object_id:int>')
+@http_view.route('/sensors/<id:int>')
 @http_view.route('/hardwares')
-@http_view.route('/hardwares/<object_id:int>')
+@http_view.route('/hardwares/<id:int>')
 @http_view.route('/interrupts')
-@http_view.route('/interrupts/<object_id:int>')
+@http_view.route('/interrupts/<id:int>')
 @http_view.route('/systems')
-@http_view.route('/systems/<object_id:int>')
-def pw_object(object_id=0):
-    pw_object_type = (request['bottle.route'].rule[1:].split('/'))[0]
-    pw_list = getattr(http_view.controller, pw_object_type) # get the controller's dictionary based on its name
-    if object_id:
-        pwo = pw_list[object_id]
+@http_view.route('/systems/<id:int>')
+def pw_object(id=0):
+    pwo_dict_name = request.path.split('/')[1]
+    pwo_dict = getattr(http_view.controller, pwo_dict_name)  # get the controller's dictionary based on its name
+    if id: # one PonicWatch Object page
+        pwo = pwo_dict[id]
         return one_pw_object_html(pwo)
-    elif pw_list.values():
+    else:
         try:
-            pwo = list(pw_list.values())[0]
+            pwo = list(pwo_dict.values())[0]
             rows = pwo.get_all_records()
         except IndexError:
             pwo, rows = None, []
-        return template("pw_objects", pw_object=pwo, rows=rows, pw_object_type=pw_object_type)
-    else:
-        return template("pw_objects", pw_object=None, rows=[], pw_object_type="No %s found" % pw_object_type)
+            pwo_dict_name = "No %s found" % pwo_dict_name
+        return template("pw_objects", pw_object=pwo, rows=rows, pw_object_type=pwo_dict_name)
 
 def one_pw_object_html(pwo):
     """
@@ -74,26 +87,75 @@ def one_pw_object_html(pwo):
                     image=make_image(pwo),
                     pw_upd_local_datetime=pw_upd_local_datetime)
 
+@http_view.post('/switch/upd/<id:int>')
+@http_view.post('/sensor/upd/<id:int>')
+@http_view.post('/hardware/upd/<id:int>')
+@http_view.post('/interrupt/upd/<id:int>')
+def pwo_update(id):
+    """update the PWO's record with the form's values"""
+    # cls_name =  request.forms["pw_object_type"]   # request.path.split('/')[1]
+    # pwo = http_view.controller.get_pwo(cls_name, id)
+    pwo = get_pwo()
+    upd_dict = {}
+    for k in ("name", "timer", "init"):     # <-- ensure the tuple is the same in one_pw_object.tpl
+        try:
+            v = request.forms[k]
+            if v != pwo[k]:
+                upd_dict[k] = v
+                if http_view.controller.debug >= 3:
+                    print("Update id:", id, pwo, "changes:", k, v)
+        except IndexError:
+            pass
+    if upd_dict:
+        pwo.update(**upd_dict)
+    url = "switches" if request.forms["pw_object_type"] == "switch" else request.forms["pw_object_type"] + 's'
+    redirect("/{}/{}".format(url, id))
 
-@http_view.post('/switches')
-@http_view.post('/sensors')
-@http_view.post('/hardwares')
-@http_view.post('/interrupts')
-@http_view.post('/systems')
-def post_pw_object():
-    """Update a switch record from FORM"""
-    id = int(request.forms.get('id'))
-    pw_object_type = request.forms.get('pw_object_type')
-    pw_list = getattr(http_view.controller, pw_object_type)
-    pw_object = pw_list[id]
-    upd_fields = {}
-    for k, v in request.forms.items():
-        if not(k.endswith("_id")) and k in pw_object.columns and v != pw_object[k]:
-            upd_fields[k] = v
-    if upd_fields:
-        pw_object.update(**upd_fields)
-    redirect('/{}/{}'.format(pw_object_type, id))
-    
+#
+###  Special operations on specific PWO
+#
+@http_view.post('/switch/<pin>/<set_to>')
+def set_pin_to(pin, set_to):
+    """Set the pin of an IC to a value
+    - to set a pin on MCP23017: outAx | outBx where the last 2 char are the pin number to set
+    - to set a pin on RPI3: RPIxx where xx is the pin to set
+    set_to: ON | OFF"""
+    if pin.startswith("out"):
+        http_view.controller.MCP23017.write(pin[-2:], int(set_to == "ON"))
+
+@http_view.get('/sensor/read/<sensor_id:int>')
+def sensor_read(sensor_id):
+    """Force read the sensor value now"""
+    try:
+        sensor = http_view.controller.interrupts[sensor_id]
+        sensor.execute()
+    except KeyError:
+        pass
+    redirect("/sensors/%d" % sensor_id)
+
+@http_view.get('/interrupt/exec/<inter_id:int>')
+def sensor_read(inter_id):
+    """Force the interruption's callback execution now"""
+    try:
+        inter = http_view.controller.interrupts[inter_id]
+        inter.on_interrupt()
+    except KeyError:
+        pass
+    redirect("/interrupts/%d" % inter_id)
+
+@http_view.get('/switch/exec/<switch_id:int>')
+def sensor_read(switch_id):
+    """Force the setting of the switch now"""
+    try:
+        switch = http_view.controller.switches[switch_id]
+        switch.execute(switch.init_dict["set_value_to"])
+    except KeyError:
+        pass
+    redirect("/switches/%d" % switch_id)
+
+#
+####  *.md documents posted in the 'views' folder
+#
 @http_view.route('/docs')
 @http_view.route('/docs/<doc_name>')
 def docs(doc_name=""):
@@ -103,42 +165,9 @@ def docs(doc_name=""):
         return template("docs", text=http_rendered)
     else:
         text = "<h1>List of Documents</h1>"
-        for _file in glob("views/*.md"):
-            text += "<a href='/docs/{f}'>{f}</a><br />".format(f=path.basename(_file))
+        for file_ in glob("views/*.md"):
+            text += "<a href='/docs/{f}'>{f}</a><br />".format(f=path.basename(file_))
         return template("docs", text=text)
-
-@http_view.post('/switch/<pin>/<set_to>')
-def set_pin_to(pin, set_to):
-    """Set the pin of an IC to a value
-    - MCP23017: outAx | outBx where the last 2 char are the pin number to set
-    - RPI3: RPIxx where xx is the pin to set
-    set_to: ON | OFF"""
-    if pin.startswith("out"):
-        http_view.controller.MCP23017.write(pin[-2:], int(set_to == "ON"))
-
-@http_view.get('/sensor/read/<sensor_id:int>')
-def sensor_read(sensor_id):
-    """Force read the sensor value now"""
-    for sensor in http_view.controller.sensors.values():
-        if sensor["id"] == sensor_id:
-            sensor.execute()
-            redirect("/sensors/%d" % sensor_id)
-
-@http_view.get('/interrupt/exec/<inter_id:int>')
-def sensor_read(inter_id):
-    """Force the interruption's callback execution now"""
-    for inter in http_view.controller.interrupts.values():
-        if inter["id"] == inter_id:
-            inter.on_interrupt()
-            redirect("/interrupts/%d" % inter_id)
-
-@http_view.get('/switch/exec/<switch_id:int>')
-def sensor_read(switch_id):
-    """Force the setting of the switch now"""
-    for switch in http_view.controller.switches.values():
-        if switch["id"] == switch_id:
-            switch.execute(switch.init_dict["set_value_to"])
-            redirect("/switches/%d" % switch_id)
 
 #
 ### Login/Logout form & process
