@@ -127,7 +127,7 @@ def set_pin_to(pin, set_to):
 def sensor_read(sensor_id):
     """Force read the sensor value now"""
     try:
-        sensor = http_view.controller.interrupts[sensor_id]
+        sensor = http_view.controller.sensors[sensor_id]
         sensor.execute()
     except KeyError:
         pass
