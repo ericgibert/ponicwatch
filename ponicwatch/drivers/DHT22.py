@@ -76,8 +76,8 @@ class dht_sensor:
       self.no_response = 0
       self.MAX_NO_RESPONSE = 2
 
-      self.rhum = -999
-      self.temp = -999
+      self.rhum = None
+      self.temp = None
       self.tov = None
       self.high_tick = 0
       self.bit = 40
@@ -169,18 +169,18 @@ class dht_sensor:
 
    def temperature(self):
       """Return current temperature."""
-      return int(self.temp * 1000.0) / 1000.0
+      return int(self.temp * 1000.0) / 1000.0 if self.temp else None
 
    def humidity(self):
       """Return current relative humidity."""
-      return int(self.rhum * 1000.0) / 1000.0
+      return int(self.rhum * 1000.0) / 1000.0 if self.rhum else None
 
    def staleness(self):
       """Return time since measurement made."""
       if self.tov is not None:
          return time.time() - self.tov
       else:
-         return -999
+         return None
 
    def bad_checksum(self):
       """Return count of messages received with bad checksums."""
