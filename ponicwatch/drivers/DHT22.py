@@ -169,11 +169,11 @@ class dht_sensor:
 
    def temperature(self):
       """Return current temperature."""
-      return int(self.temp * 1000.0) / 1000.0 if self.temp else None
+      return int(self.temp * 1000.0) / 1000.0 if self.temp is not None else None
 
    def humidity(self):
       """Return current relative humidity."""
-      return int(self.rhum * 1000.0) / 1000.0 if self.rhum else None
+      return int(self.rhum * 1000.0) / 1000.0 if self.rhum is not None  else None
 
    def staleness(self):
       """Return time since measurement made."""
