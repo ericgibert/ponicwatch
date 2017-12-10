@@ -38,15 +38,16 @@ def default():
 @http_view.route('/log')
 @http_view.route('/log/<page:int>')
 def log(page=0):
-    where, pwo = "", ""
+    where, pwo, req_query = "", "", ""
     if "system" in request.query:
         log_type, object_id = request.query["system"].split('_')
         if log_type in ("SENSOR", "SWITCH", "HARDWARE", "INTERRUPT"):
             where = "log_type='{}' and object_id={}".format(log_type, object_id)
             type_plural = "switches" if log_type == 'SWITCH' else log_type.lower() + 's'
             pwo = """<a href="/{}/{}">Go to PWO page</a>""".format(type_plural, object_id)
+            req_query = "?system=" + request.query["system"]
     rows = http_view.controller.log.get_all_records(from_page=page, order_by="created_on desc", where_clause=where)
-    return template("log", rows=rows, current_page=page, pwo=pwo)
+    return template("log", rows=rows, current_page=page, pwo=pwo, req_query=req_query)
 
 @http_view.route('/switches')
 @http_view.route('/switches/<id:int>')
