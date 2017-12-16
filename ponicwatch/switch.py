@@ -58,36 +58,6 @@ class Switch(Ponicwatch_Table):
             # except KeyError:
             #     self.execute(self.init_dict["value"])
 
-    def expand_expression(self, if_expression):
-        """Replace the Sensor/Switch/Hardware reference to its value
-        Error will be caught by the calling function: SyntaxError, ValueError, NameError
-        :param if_expression: string or tuple from the 'init' dictionary under the key 'if'
-        ":return result: input string with all pwo references have been replaced by their value
-        """
-        if isinstance(if_expression, str):
-            # expects a string starting by a pwo reference and then a bollean test
-            pwo_cls, s = if_expression.split('[', 1)
-            id, test = s.split(']', 1)
-            pwo = self.controller.get_pwo(pwo_cls, int(id))
-            try:
-                result = str(pwo.value) + test
-            except AttributeError:
-                result = str(pwo["value"]) + test
-        elif isinstance(if_expression, list):
-            # expects list: format string followed by the pwo references
-            # example: [ "{}>10. and {}==1", "Sensor[1]", "Switch[2]" ]
-            _format, pwo_values = if_expression[0], []
-            for pwo_ref in if_expression[1:]:
-                pwo_cls, s = pwo_ref.split('[', 1)
-                pwo = self.controller.get_pwo(pwo_cls, int(s[:-1]))
-                try:
-                    pwo_values.append(pwo.value)
-                except AttributeError:
-                    pwo_values.append(pwo["value"])
-            result = _format.format(*pwo_values)
-        else:
-            result = "Error! Unknown if_expression type: " + type(if_expression)
-        return result
 
     def execute(self, given_value=None):
         """
@@ -106,7 +76,7 @@ class Switch(Ponicwatch_Table):
             # if there is a 'if' condition then check it out first
             try:
                 if_expression = self.init_dict["if"]
-                continue_execution = eval(self.expand_expression(if_expression))
+                continue_execution = eval(self.controller.expand_expression(if_expression))
             except (SyntaxError, NameError, ValueError) as err:
                 self.controller.log.add_error(msg="if_expression {} cannot be evaluated: {}".format(if_expression, err),
                                               err_code=self["id"], fval=-2.2)

@@ -28,7 +28,7 @@ from interrupt import Interrupt
 from http_view import http_view, get_image_file, one_pw_object_html, stop as bottle_stop
 from send_email import send_email
 
-__version__ = "1.20171201"
+__version__ = "1.20171216 beta"
 __author__ = 'Eric Gibert'
 __license__ = 'MIT'
 
@@ -42,7 +42,7 @@ class Controller(object):
 
     def __init__(self, db, pigpio_host="", pigpio_port=8888, bottle_ip=None):
         """- Create the controller, its Viewer and connect to database (Model)
-           - Select all the hardware (sensors/switches) for the systems under its control
+           - Select all the hardware (sensors/switchs) for the systems under its control
            - Launch the scheduler
            - host:port is used to connect to the pigpio server running on the Raspberry Pi.
            Need to execute 'sudo pigpiod' to get that daemon running if it is not automatically started at boot time
@@ -63,13 +63,14 @@ class Controller(object):
         # Create the background scheduler that will execute the actions (using the APScheduler library)
         self.scheduler = BackgroundScheduler()
 
-        # select all the systems, sensors, switches to monitor and the necessary hardware drivers
+        # select all the systems, sensors, switchs to monitor and the necessary hardware drivers
         self.pig = pigpio.pi(pigpio_host, pigpio_port) if not _simulation else pigpio_simu.pi()
         if not self.pig.connected:
             if self.debug >= 2: print("WARNING: not connected to a RasPi")
             self.pig = pigpio_simu.pi()
             _simulation = True
-        self.systems, self.sensors, self.switches, self.hardwares, self.interrupts = {}, {}, {}, {}, {}
+        # some plural are "fake" to respect the logic of: <cls name> + 's' --> dictionary of <cls> PonicWatch Object
+        self.systems, self.sensors, self.switchs, self.hardwares, self.interrupts = {}, {}, {}, {}, {}
         self.db.curs.execute("SELECT * from tb_link where system_id > 0 order by system_id, order_for_creation")
         self.links = self.db.curs.fetchall()
         for system_id, sensor_id, switch_id, hardware_id, order_for_creation, interrupt_id in self.links:
@@ -89,11 +90,11 @@ class Controller(object):
                                                      id=sensor_id,
                                                      system_name=self.systems[system_id]["name"],
                                                      hardware=self.hardwares[hardware_id])
-            if switch_id and switch_id not in self.switches:
-                    self.switches[switch_id] = Switch(controller=self,
-                                                      id=switch_id,
-                                                      system_name=self.systems[system_id]["name"],
-                                                      hardware=self.hardwares[hardware_id])
+            if switch_id and switch_id not in self.switchs:
+                    self.switchs[switch_id] = Switch(controller=self,
+                                                     id=switch_id,
+                                                     system_name=self.systems[system_id]["name"],
+                                                     hardware=self.hardwares[hardware_id])
 
             if interrupt_id and interrupt_id not in self.interrupts:
                 self.interrupts[interrupt_id] = Interrupt(controller=self,
@@ -103,20 +104,52 @@ class Controller(object):
         self.db.allow_close = True
         self.db.close()
 
+    def expand_expression(self, if_expression):
+        """Replace the Sensor/Switch/Hardware reference to its value
+        Error will be caught by the calling function: SyntaxError, ValueError, NameError
+        :param if_expression: string or tuple from the 'init' dictionary under the key 'if'
+        ":return result: input string with all pwo references have been replaced by their value
+        """
+        if isinstance(if_expression, str):
+            # expects a string starting by a pwo reference and then a boolean test
+            # ex: "Sensor[2]>=40.0" or "Switch[1]==0"
+            pwo_cls, _ = if_expression.split('[', 1)
+            id, test = _.split(']', 1)
+            pwo = self.get_pwo(pwo_cls, int(id))
+            try:
+                result = str(pwo.value) + test  # if the direct read is possible then use it
+            except AttributeError:
+                result = str(pwo["value"]) + test  # else take the latest read value
+        elif isinstance(if_expression, list):
+            # expects list: format string followed by the pwo references
+            # example: [ "{}>10. and {}==1", "Sensor[1]", "Switch[2]" ]
+            _format, pwo_values = if_expression[0], []
+            for pwo_ref in if_expression[1:]:
+                pwo_cls, id = pwo_ref.split('[', 1)
+                pwo = self.get_pwo(pwo_cls, int(id[:-1]))
+                try:
+                    pwo_values.append(pwo.value)
+                except AttributeError:
+                    pwo_values.append(pwo["value"])
+            result = _format.format(*pwo_values)
+        else:
+            result = "Error! Unknown if_expression type: " + type(if_expression)
+        return result
+
+
     def get_pwo(self, cls, id):
         """return a PonicWatch Object from the controller's PWO dictionary
         :param cls: either a string as class name or an PW object
         :param id: the pwo's id, must be integer as pwo dictionary key
         :return pwo: the matching pwo or None
         """
-        cls_name = (cls if isinstance(cls, str) else cls.__class__.__name__).lower()
-        cls_name += 'es' if cls_name == "switch" else 's' # irregular plural for 'switches'
-        pwo_dict = getattr(self, cls_name)
+        pwo_dict_name = (cls if isinstance(cls, str) else cls.__class__.__name__).lower() + 's'
+        pwo_dict = getattr(self, pwo_dict_name)
         try:
             pwo = pwo_dict[int(id)]
             return pwo
         except KeyError:
-            msg = "No pwo id {} found in {}".format(id, cls_name)
+            msg = "No pwo id {} found in {}".format(id, pwo_dict_name)
             if self.debug >= 3:
                 print(msg)
             self.log.add_error(msg=msg, err_code=id, fval=-1.1)
@@ -173,7 +206,7 @@ class Controller(object):
         print("--- Hardware ---")
         for k,v in self.hardwares.items(): print(k,v, v["init"])
         print("--- Switches ---")
-        for k,v in self.switches.items(): print(k,v, v["init"])
+        for k,v in self.switchs.items(): print(k, v, v["init"])
         print("--- Sensors ---")
         for k,v in self.sensors.items(): print(k,v, v["init"])
         print("--- Interruptions ---")
@@ -195,7 +228,7 @@ class Controller(object):
         html = ""       # email's body
         objects = []    # working list of all Ponicwatch objects (pwo)
         for s in self.systems.values(): objects.append(s)
-        for s in self.switches.values(): objects.append(s)
+        for s in self.switchs.values(): objects.append(s)
         for s in self.sensors.values(): objects.append(s)
         for pwo in objects:
             html += one_pw_object_html(pwo)

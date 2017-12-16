@@ -43,14 +43,13 @@ def log(page=0):
         log_type, object_id = request.query["system"].split('_')
         if log_type in ("SENSOR", "SWITCH", "HARDWARE", "INTERRUPT"):
             where = "log_type='{}' and object_id={}".format(log_type, object_id)
-            type_plural = "switches" if log_type == 'SWITCH' else log_type.lower() + 's'
-            pwo = """<a href="/{}/{}">Go to PWO page</a>""".format(type_plural, object_id)
+            pwo = """<a href="/{}/{}">Go to PWO page</a>""".format(log_type.lower() + 's', object_id)
             req_query = "?system=" + request.query["system"]
     rows = http_view.controller.log.get_all_records(from_page=page, order_by="created_on desc", where_clause=where)
     return template("log", rows=rows, current_page=page, pwo=pwo, req_query=req_query)
 
-@http_view.route('/switches')
-@http_view.route('/switches/<id:int>')
+@http_view.route('/switchs')
+@http_view.route('/switchs/<id:int>')
 @http_view.route('/sensors')
 @http_view.route('/sensors/<id:int>')
 @http_view.route('/hardwares')
@@ -109,7 +108,7 @@ def pwo_update(id):
             pass
     if upd_dict:
         pwo.update(**upd_dict)
-    url = "switches" if request.forms["pw_object_type"] == "switch" else request.forms["pw_object_type"] + 's'
+    url = request.forms["pw_object_type"] + 's'
     redirect("/{}/{}".format(url, id))
 
 #
@@ -148,11 +147,11 @@ def sensor_read(inter_id):
 def sensor_read(switch_id):
     """Force the setting of the switch now"""
     try:
-        switch = http_view.controller.switches[switch_id]
+        switch = http_view.controller.switchs[switch_id]
         switch.execute(switch.init_dict["set_value_to"])
     except KeyError:
         pass
-    redirect("/switches/%d" % switch_id)
+    redirect("/switchs/%d" % switch_id)
 
 #
 ####  *.md documents posted in the 'views' folder
