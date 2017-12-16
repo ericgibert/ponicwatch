@@ -75,17 +75,12 @@ class Switch(Ponicwatch_Table):
         else: # automatic call by scheduler
             # if there is a 'if' condition then check it out first
             try:
-                if_expression = self.init_dict["if"]
-                continue_execution = eval(self.controller.expand_expression(if_expression))
-            except (SyntaxError, NameError, ValueError) as err:
-                self.controller.log.add_error(msg="if_expression {} cannot be evaluated: {}".format(if_expression, err),
-                                              err_code=self["id"], fval=-2.2)
-                continue_execution = False
+                continue_execution = self.controller.eval_expression(submitted_by=self, if_expression=self.init_dict["if"])
             except KeyError:
                 continue_execution = True
 
             if self.init_dict["set_value_to"] in ('t', 'T'):
-                set_to = abs(self["value"] - 1)
+                set_to = abs(self.value - 1)         # abs(self["value"] - 1)
             else:
                 try:
                     set_to = int(self.init_dict["set_value_to"])
@@ -104,7 +99,8 @@ class Switch(Ponicwatch_Table):
     @property
     def value(self):
         """Read the switch position from the hardware directly - NO log"""
-        return self.hardware.read(self.init_dict["pin"], self.init_dict)
+        val = self.hardware.read(self.init_dict["pin"], self.init_dict)
+        return val if isinstance(val, int) else val[1]
 
     @classmethod
     def all_keys(cls, db):

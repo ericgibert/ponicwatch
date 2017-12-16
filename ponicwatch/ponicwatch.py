@@ -104,57 +104,6 @@ class Controller(object):
         self.db.allow_close = True
         self.db.close()
 
-    def expand_expression(self, if_expression):
-        """Replace the Sensor/Switch/Hardware reference to its value
-        Error will be caught by the calling function: SyntaxError, ValueError, NameError
-        :param if_expression: string or tuple from the 'init' dictionary under the key 'if'
-        ":return result: input string with all pwo references have been replaced by their value
-        """
-        if isinstance(if_expression, str):
-            # expects a string starting by a pwo reference and then a boolean test
-            # ex: "Sensor[2]>=40.0" or "Switch[1]==0"
-            pwo_cls, _ = if_expression.split('[', 1)
-            id, test = _.split(']', 1)
-            pwo = self.get_pwo(pwo_cls, int(id))
-            try:
-                result = str(pwo.value) + test  # if the direct read is possible then use it
-            except AttributeError:
-                result = str(pwo["value"]) + test  # else take the latest read value
-        elif isinstance(if_expression, list):
-            # expects list: format string followed by the pwo references
-            # example: [ "{}>10. and {}==1", "Sensor[1]", "Switch[2]" ]
-            _format, pwo_values = if_expression[0], []
-            for pwo_ref in if_expression[1:]:
-                pwo_cls, id = pwo_ref.split('[', 1)
-                pwo = self.get_pwo(pwo_cls, int(id[:-1]))
-                try:
-                    pwo_values.append(pwo.value)
-                except AttributeError:
-                    pwo_values.append(pwo["value"])
-            result = _format.format(*pwo_values)
-        else:
-            result = "Error! Unknown if_expression type: " + type(if_expression)
-        return result
-
-
-    def get_pwo(self, cls, id):
-        """return a PonicWatch Object from the controller's PWO dictionary
-        :param cls: either a string as class name or an PW object
-        :param id: the pwo's id, must be integer as pwo dictionary key
-        :return pwo: the matching pwo or None
-        """
-        pwo_dict_name = (cls if isinstance(cls, str) else cls.__class__.__name__).lower() + 's'
-        pwo_dict = getattr(self, pwo_dict_name)
-        try:
-            pwo = pwo_dict[int(id)]
-            return pwo
-        except KeyError:
-            msg = "No pwo id {} found in {}".format(id, pwo_dict_name)
-            if self.debug >= 3:
-                print(msg)
-            self.log.add_error(msg=msg, err_code=id, fval=-1.1)
-        return None
-
     def add_cron_job(self, callback, cron_time):
         # When do we need to read the sensor or activate a switch?
         # ┌───────────── sec (0 - 59)
@@ -199,8 +148,73 @@ class Controller(object):
         self.log.add_info("Controller has been stopped.", fval=0.0)
         if not from_bottle: bottle_stop()
 
+    # if_expression manipulation to provide conditional execution to PWO based on their 'if' string
+    def eval_expression(self, submitted_by, if_expression):
+        """Replace the Sensor/Switch/Hardware reference to its value
+        Error will be caught by the calling function: SyntaxError, ValueError, NameError
+        :param submitted_by: the pwo requesting the 'if_expression' evalution (needed for logging in case of error)
+        :param if_expression: string or tuple from the 'init' dictionary under the key 'if'
+        :return result: python evaluation of the input string with all pwo references have been replaced by their value
+        """
+        if isinstance(if_expression, str):
+            # expects a string starting by a pwo reference and then a boolean test
+            # ex: "Sensor[2]>=40.0" or "Switch[1]==0"
+            pwo_cls, _ = if_expression.split('[', 1)
+            id, test = _.split(']', 1)
+            pwo = self.get_pwo(pwo_cls, id)
+            try:
+                _expression = str(pwo.value) + test  # if the direct read is possible then use it
+            except AttributeError:
+                _expression = str(pwo["value"]) + test  # else take the latest read value
+        elif isinstance(if_expression, list):
+            # expects list: format string followed by the pwo references
+            # example: [ "{}>10. and {}==1", "Sensor[1]", "Switch[2]" ]
+            _format, pwo_values = if_expression[0], []
+            for pwo_ref in if_expression[1:]:
+                pwo_cls, id = pwo_ref.split('[', 1)[:-1]   # drop the last ']'
+                pwo = self.get_pwo(pwo_cls, id)
+                try:
+                    pwo_values.append(pwo.value)
+                except AttributeError:
+                    pwo_values.append(pwo["value"])
+            _expression = _format.format(*pwo_values)
+        else:
+            msg = "Error! Unknown if_expression type: {} for {}".format(type(if_expression), submitted_by)
+            self.log.add_error(msg=msg, err_code=submitted_by["id"], fval=-2.6)
+            return None
+
+        try:
+            result = eval(_expression)
+        except (SyntaxError, NameError, ValueError) as err:
+            self.log.add_error(msg="if_expression {} cannot be evaluated: {} for {}".format(if_expression, err, submitted_by),
+                                  err_code=submitted_by["id"], fval=-2.7)
+            result = None
+
+        if self.debug >= 3:
+            print("eval({}) == {}".format(_expression, result))
+        return  result
+
+    ### helper functions
+    def get_pwo(self, cls, id):
+        """return a PonicWatch Object from the controller's PWO dictionary
+        :param cls: either a string as class name or an PW object
+        :param id: the pwo's id, must be integer as pwo dictionary key
+        :return pwo: the matching pwo or None
+        """
+        pwo_dict_name = (cls if isinstance(cls, str) else cls.__class__.__name__).lower() + 's'
+        pwo_dict = getattr(self, pwo_dict_name)
+        try:
+            pwo = pwo_dict[int(id)]
+            return pwo
+        except KeyError:
+            msg = "No pwo id {} found in {}".format(id, pwo_dict_name)
+            if self.debug >= 3:
+                print(msg)
+            self.log.add_error(msg=msg, err_code=id, fval=-1.1)
+        return None
+
     def print_list(self):
-        """Print the list of all created objects in the __init__ phase"""
+        """CLI: Print the list of all created objects in the __init__ phase"""
         print("--- System ---")
         for k,v in self.systems.items(): print(k,v)
         print("--- Hardware ---")
