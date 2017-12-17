@@ -49,7 +49,7 @@ class Controller(object):
         """
         global _simulation # if no PGIO port as we are not running on a Raspberry Pi
         self.debug = DEBUG
-        self.bottle_ip = bottle_ip
+        self.bottle_ip = bottle_ip or '127.0.0.1'
         # keep a link to the database i.e. M in MVC
         self.db = db
         self.db.allow_close = False
@@ -135,7 +135,7 @@ class Controller(object):
         self.log.add_info("Controller is now running.", fval=1.0)
         # http_view.controller = self
         try:
-            http_view.run(host=self.bottle_ip or '127.0.0.1')
+            http_view.run(host=self.bottle_ip)
         except (KeyboardInterrupt, SystemExit):
             pass
         finally:
