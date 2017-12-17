@@ -9,6 +9,7 @@ import sys, os
 import argparse
 import signal
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers import SchedulerNotRunningError
 
 try:
     import pigpio
@@ -142,7 +143,10 @@ class Controller(object):
             self.stop()
 
     def stop(self, from_bottle=False):
-        self.scheduler.shutdown()  # Not strictly necessary if daemonic mode is enabled but should be done if possible
+        try:
+            self.scheduler.shutdown()  # Not strictly necessary if daemonic mode is enabled but should be done if possible
+        except SchedulerNotRunningError:
+            pass
         for hw in self.hardwares.values():
             hw.cleanup()
         self.log.add_info("Controller has been stopped.", fval=0.0)
