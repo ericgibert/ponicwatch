@@ -76,7 +76,7 @@ def pw_object(id=0):
 
 def one_pw_object_html(pwo):
     """
-    Use the template engine to return the HTML mesage givien all  information from one object
+    Use the template engine to return the HTML page giving all information from one object
     :param pwo:
     :return:
     """

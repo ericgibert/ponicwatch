@@ -14,20 +14,24 @@
 %end
 </ol>
 
-<table border="1">
-% for row in rows:
-    <tr><td>{{row[0]}}</td><td>{{row[2]}}</td><td>{{row[3]}}</td><td>{{row[4]}}</td><td>{{row[5]}}</td><td>{{row[6]}}</td><td>{{row[7]}}</td></tr>
-%end
-</table>
+%import os
+<p>Database file size: {{os.path.getsize(controller.db.server_params["database"]) >> 10}} kB</p>
 % from ponicwatch import __version__, __author__, __license__
 <p>Version: {{__version__}}<br/>
    Author: &nbsp;{{__author__}}<br/>
    License: {{__license__}}<br/>
 </p>
 
+<table border="1">
+% for row in rows:
+    <tr><td>{{row[0]}}</td><td>{{row[2]}}</td><td>{{row[3]}}</td><td>{{row[4]}}</td><td>{{row[5]}}</td><td>{{row[6]}}</td><td>{{row[7]}}</td></tr>
+%end
+</table>
+
+<p>
 % if session_valid:
 Click <a href="/stop">here</a> to stop the application.
 % end
-
+</p>
 </body>
 </html>
