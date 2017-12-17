@@ -31,27 +31,49 @@
 
 %if pwo_cls_name == "Sensor":
 <tr><td style="text-align:right"> </td>
-    <td><button onclick="location.href='/sensor/read/{{pw_object["id"]}}'" type="button">Execute reading...</button></td></tr>
+    <td><button onclick="location.href='/sensor/read/{{pw_object["id"]}}'">Execute reading...</button></td></tr>
 %end
 
 %if pwo_cls_name == "Interrupt":
 <tr><td style="text-align:right"> </td>
-    <td><button onclick="location.href='/interrupt/exec/{{pw_object["id"]}}'" type="button">Execute interruption callback...</button></td></tr>
+    <td><button onclick="location.href='/interrupt/exec/{{pw_object["id"]}}'">Execute interruption callback...</button></td></tr>
 %end
 
 %if pwo_cls_name == "Switch":
 <tr><td style="text-align:right"> </td>
-    <td><button onclick="location.href='/switch/exec/{{pw_object["id"]}}'" type="button">Set switch to {{pw_object.init_dict["set_value_to"]}} ...</button></td></tr>
+    <td><button onclick="location.href='/switch/exec/{{pw_object["id"]}}'">Set switch to {{pw_object.init_dict["set_value_to"]}} ...</button></td></tr>
 %end
-
-</table>
-
+<tr><td>
     <input type="hidden" value="{{ pw_object['id'] }}" name="id" />
     <input type="hidden" value="{{ pw_object_type }}" name="pw_object_type" />
 % if login_logout=="Logout":
     <input type="submit" value="Update" name="submit" />
 %end
+</td><td><button type="button" onclick="get_value('{{pw_object_type}}', {{pw_object["id"]}})">Check value</button>
+    <div id="value_text"></div>
+</td>
+</tr>
+</table>
 </form>
 <p><img src="{{image}}" border="1"/></p>
+<script type="text/javascript" language="javascript">
+function get_value(pwo_cls, id)
+{
+    var xhttp = new XMLHttpRequest();
+    var url = "/" + pwo_cls + "/value/" + id;
+    xhttp.open("GET", url, true);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            var response = JSON.parse(this.responseText);
+            var msg = "<p>this.value = " + response["value"] + "</p><hr/>"
+                    + "<p>['if']: " + response["if"] + "</p><p>make: " + response["make"]
+                    + "</p><p>eval = " + response["eval"] + "</p>";
+            document.getElementById('value_text').innerHTML = msg;
+        }
+    }
+    xhttp.send();
+}
+</script>
 </body>
 </html>

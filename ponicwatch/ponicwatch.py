@@ -149,7 +149,7 @@ class Controller(object):
         if not from_bottle: bottle_stop()
 
     # if_expression manipulation to provide conditional execution to PWO based on their 'if' string
-    def eval_expression(self, submitted_by, if_expression):
+    def make_expression(self, submitted_by, if_expression):
         """Replace the Sensor/Switch/Hardware reference to its value
         Error will be caught by the calling function: SyntaxError, ValueError, NameError
         :param submitted_by: the pwo requesting the 'if_expression' evalution (needed for logging in case of error)
@@ -181,9 +181,13 @@ class Controller(object):
         else:
             msg = "Error! Unknown if_expression type: {} for {}".format(type(if_expression), submitted_by)
             self.log.add_error(msg=msg, err_code=submitted_by["id"], fval=-2.6)
-            return None
+            _expression = None
+        return _expression
 
+    def eval_expression(self, submitted_by, if_expression, make_expression=None):
+        """evaluate the expression found in the init_dit['if'] of a PWO"""
         try:
+            _expression = make_expression or self.make_expression(submitted_by, if_expression)
             result = eval(_expression)
         except (SyntaxError, NameError, ValueError) as err:
             self.log.add_error(msg="if_expression {} cannot be evaluated: {} for {}".format(if_expression, err, submitted_by),

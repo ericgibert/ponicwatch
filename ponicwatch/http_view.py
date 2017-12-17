@@ -2,8 +2,9 @@ import sys
 from os import path
 from glob import glob
 import datetime
+import json
 from markdown import markdown
-from bottle import Bottle, template, static_file, request, BaseTemplate, redirect
+from bottle import Bottle, template, static_file, request, BaseTemplate, redirect, response
 from bottlesession import CookieSession, authenticator
 from user import User
 
@@ -110,6 +111,29 @@ def pwo_update(id):
         pwo.update(**upd_dict)
     url = request.forms["pw_object_type"] + 's'
     redirect("/{}/{}".format(url, id))
+
+@http_view.get('/switch/value/<id:int>')
+@http_view.get('/sensor/value/<id:int>')
+@http_view.get('/hardware/value/<id:int>')
+@http_view.get('/interrupt/value/<id:int>')
+def pwo_value(id):
+    pwo = http_view.controller.get_pwo(request.path.split('/')[1], id)
+    try:
+        if_expression = pwo.init_dict['if']
+    except KeyError:
+        result = { "if": "No 'if' in init_dict", "make": "", "eval": ""}
+    else:
+        if_make = http_view.controller.make_expression(pwo, if_expression)
+        if_eval = http_view.controller.eval_expression(pwo, if_expression, if_make)
+        result = {"if": if_expression, "make": if_make, "eval": if_eval}
+    try:
+        result["value"] = pwo.value
+    except AttributeError:
+        result["value"] = "Not implemented"
+    if http_view.controller.debug >= 3:
+        print(result, json.dumps(result))
+    response.content_type = 'application/json'
+    return json.dumps(result)
 
 #
 ###  Special operations on specific PWO
