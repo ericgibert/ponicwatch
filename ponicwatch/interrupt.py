@@ -49,14 +49,17 @@ class Interrupt(Ponicwatch_Table):
                 self.controller.ponicwatch_notification()
                 msg = {
                     "text_value": "Notification email sent",
-                    "error_code": self["id"]
+                    "value": self["id"]
                 }
-                self.update() # just to get the last updated_on timestamp
-                self.controller.log.add_log(system_name=self.system_name, param=self)
         except KeyError as err:
             # no action? Really??
             self.controller.log.add_error(msg="Interrupt %s has NO action declared in its init field." % self.system_name)
             print(err)
+        else:
+            self.update()  # just to get the last updated_on timestamp
+            msg["id"] = self["id"]
+            msg["cls_name"] = self.__class__.__name__.upper()
+            self.controller.log.add_log(system_name=self.system_name, param=msg)
 
     def __str__(self):
         return "{}".format(self["name"])

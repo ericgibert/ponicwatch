@@ -81,18 +81,17 @@ class Ponicwatch_Log(Ponicwatch_Table):
                         created_on=datetime.now(timezone.utc)
                         )
             self.print_debug(log_type, param["error_code"], param["text_value"])
-        elif param.__class__.__name__ in ["Switch", "Sensor", "Hardware"]:
-            log_type = param.__class__.__name__.upper()
+        else:
+            log_type = param.get("cls_name", param.__class__.__name__.upper())
             self.insert(controller_name=self.controller_name,
                         log_type=log_type,
                         object_id=param["id"],
                         system_name=system_name,
                         float_value=float(param["value"]),
-                        # text_value=json.dumps(param, skipkeys=True, default=Ponicwatch_Log.json_exception),
                         text_value="{} value: {}".format(str(param), param["value"]),
                         created_on=datetime.now(timezone.utc)
                         )
-            self.print_debug(log_type, param["id"], param["name"], param["value"])
+            self.print_debug(log_type, param["value"], "\n", param)
 
 
     def print_debug(self, msg, id, name, value=""):

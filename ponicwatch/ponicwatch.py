@@ -28,7 +28,7 @@ from interrupt import Interrupt
 from http_view import http_view, get_image_file, one_pw_object_html, stop as bottle_stop
 from send_email import send_email
 
-__version__ = "1.20171216 beta"
+__version__ = "1.20171217"
 __author__ = 'Eric Gibert'
 __license__ = 'MIT'
 
@@ -171,8 +171,8 @@ class Controller(object):
             # example: [ "{}>10. and {}==1", "Sensor[1]", "Switch[2]" ]
             _format, pwo_values = if_expression[0], []
             for pwo_ref in if_expression[1:]:
-                pwo_cls, id = pwo_ref.split('[', 1)[:-1]   # drop the last ']'
-                pwo = self.get_pwo(pwo_cls, id)
+                pwo_cls, id = pwo_ref.split('[', 1)
+                pwo = self.get_pwo(pwo_cls, id[:-1]) # drop the last ']'
                 try:
                     pwo_values.append(pwo.value)
                 except AttributeError:

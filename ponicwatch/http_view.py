@@ -105,7 +105,7 @@ def pwo_update(id):
                 upd_dict[k] = v
                 if http_view.controller.debug >= 3:
                     print("Update id:", id, pwo, "changes:", k, v)
-        except IndexError:
+        except (KeyError, IndexError):
             pass
     if upd_dict:
         pwo.update(**upd_dict)
