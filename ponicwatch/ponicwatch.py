@@ -133,7 +133,7 @@ class Controller(object):
         signal.signal(signal.SIGUSR1, stop_handler)
 
         self.scheduler.start()
-        self.log.add_info("Controller is now running.", fval=1.0)
+        self.log.add_info("Controller {} is now running.".format(__version__), fval=1.0)
         # http_view.controller = self
         try:
             http_view.run(host=self.bottle_ip)
@@ -149,7 +149,7 @@ class Controller(object):
             pass
         for hw in self.hardwares.values():
             hw.cleanup()
-        self.log.add_info("Controller has been stopped.", fval=0.0)
+        self.log.add_info("Controller {} has been stopped.".format(__version__), fval=0.0)
         if not from_bottle: bottle_stop()
 
     # if_expression manipulation to provide conditional execution to PWO based on their 'if' string
