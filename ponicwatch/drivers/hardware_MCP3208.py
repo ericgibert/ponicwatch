@@ -31,13 +31,13 @@ class Hardware_MCP3208(object):
         # flags = trx_flags.split('.')  # like 0.50000.0  with the last .0 optional
         # spi_channel, baud, spi_flags = int(flags[0]), int(flags[1]), int(flags[2]) if len(flags)==3 else 0
         # { "channel": 0, "baud": 50000, "flags":0 }
-        spi_channel, baud, spi_flags = trx_flags["channel"], trx_flags["baud"], trx_flags["flags"]
+        self.spi_channel, baud, spi_flags = trx_flags["channel"], trx_flags["baud"], trx_flags["flags"]
         try:
-            self.spi_handle = self.pig.spi_open(spi_channel, baud, spi_flags)
+            self.spi_handle = self.pig.spi_open(self.spi_channel, baud, spi_flags)
         except AttributeError:
             pass  # simulation
 
-    def read(self, channel, param=3.3):
+    def read(self, channel=None, param=3.3):
         """
         First send three bytes
         - byte 0 has 7 zeros and a start bit
@@ -57,6 +57,8 @@ class Hardware_MCP3208(object):
             adc_out = ((r[1]&15) << 8) + r[2]
 
         """
+        if channel is None:
+            channel = self.spi_channel
         # count, adc = self.pig.spi_xfer(self.spi_handle, [6 + ((4 & channel) >> 2), (3 & channel) << 6, 0])  # for 10 bits: [1,(8 + channel) << 4,0]
         try:
             count, adc = self.pig.spi_xfer(self.spi_handle, [4 | 2 |(channel>>2), (channel &3) << 6,0])
@@ -73,3 +75,16 @@ class Hardware_MCP3208(object):
 
     def write(self):
         raise NotImplementedError("MCP3208 is 12bits ADC: read only IC i.e. cannot write")
+
+if __name__ == "__main__":
+    import pigpio
+    from time import sleep
+    pig = pigpio.pi()
+    mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 })
+    try:
+        while True:
+            d, v = mcp3208.read()
+            print("Read: {} , converted as {}V".format(d, v))
+            sleep(2)
+    finally:
+        mcp3208.cleanup()
