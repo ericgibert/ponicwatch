@@ -34,8 +34,8 @@ class Hardware_MCP3208(object):
         self.spi_channel, baud, spi_flags = trx_flags["channel"], trx_flags["baud"], trx_flags["flags"]
         try:
             self.spi_handle = self.pig.spi_open(self.spi_channel, baud, spi_flags)
-        except AttributeError:
-            pass  # simulation
+        except AttributeError as err:
+            print("Unable to open SPI\n", err)
 
     def read(self, channel=None, param=3.3):
         """
