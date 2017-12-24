@@ -37,7 +37,7 @@ class Hardware_MCP3208(object):
         except AttributeError as err:
             print("Unable to open SPI\n", err)
 
-    def read(self, channel=None, param=3.3):
+    def read(self, channel=None, param=5.0):
         """
         First send three bytes
         - byte 0 has 7 zeros and a start bit
