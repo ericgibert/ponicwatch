@@ -4,7 +4,7 @@ from glob import glob
 import datetime
 import json
 from markdown import markdown
-from bottle import Bottle, template, static_file, request, BaseTemplate, redirect, response
+from bottle import Bottle, template, static_file, request, BaseTemplate, redirect, response, abort, error
 from bottlesession import CookieSession, authenticator
 from user import User
 
@@ -14,6 +14,9 @@ valid_user = authenticator(session_manager)
 http_view = Bottle()
 BaseTemplate.defaults['login_logout'] = "Login"
 
+@error(404)
+def error404(error):
+    return '404 error:<h2>%s<//h2>' % error
 
 def get_pwo():
     """Helper function: returns a PonicWatch Object based on the object type and id found in the form.
@@ -154,7 +157,8 @@ def sensor_read(sensor_id):
         sensor = http_view.controller.sensors[sensor_id]
         sensor.execute()
     except KeyError:
-        pass
+        # pass
+        abort(404, "Unknown Sensor %d" % sensor_id)
     redirect("/sensors/%d" % sensor_id)
 
 @http_view.get('/interrupt/exec/<inter_id:int>')
