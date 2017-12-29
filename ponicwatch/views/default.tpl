@@ -21,7 +21,20 @@
    Author: &nbsp;{{__author__}}<br/>
    License: {{__license__}}<br/>
 </p>
-
+<ul>
+% import sys
+    <li>Python: {{sys.version}}</li>
+% import sqlite3
+    <li>sqlite3: {{sqlite3.version}}</li>
+% import bottle
+    <li>bottle: {{bottle.__version__}}</li>
+% import apscheduler
+    <li>apscheduler: {{apscheduler.__version__}}</li>
+% import markdown
+    <li>markdown: {{markdown.version}}</li>
+% import matplotlib
+    <li>matplotlib: {{matplotlib.__version__}}</li>
+</ul>
 <table border="1">
 % for row in rows:
     <tr><td>{{row[0]}}</td><td>{{row[2]}}</td><td>{{row[3]}}</td><td>{{row[4]}}</td><td>{{row[5]}}</td><td>{{row[6]}}</td><td>{{row[7]}}</td></tr>
