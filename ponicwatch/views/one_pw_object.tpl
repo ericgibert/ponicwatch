@@ -31,7 +31,7 @@
 
 %if pwo_cls_name == "Sensor":
 <tr><td style="text-align:right"> </td>
-    <td><button onclick="location.href='/sensor/read/{{pw_object["id"]}}'">Execute reading...</button></td></tr>
+    <td><button onclick="location.href='/sensor/exec/{{pw_object["id"]}}'">Execute reading...</button></td></tr>
 %end
 
 %if pwo_cls_name == "Interrupt":

@@ -141,7 +141,7 @@ def pwo_value(id):
 #
 ###  Special operations on specific PWO
 #
-@http_view.post('/switch/<pin>/<set_to>')
+@http_view.post('/hardware/<pin>/<set_to>')
 def set_pin_to(pin, set_to):
     """Set the pin of an IC to a value
     - to set a pin on MCP23017: outAx | outBx where the last 2 char are the pin number to set
@@ -150,36 +150,35 @@ def set_pin_to(pin, set_to):
     if pin.startswith("out"):
         http_view.controller.MCP23017.write(pin[-2:], int(set_to == "ON"))
 
-@http_view.get('/sensor/read/<sensor_id:int>')
-def sensor_read(sensor_id):
+@http_view.get('/sensor/exec/<sensor_id:int>')
+def sensor_exec(sensor_id):
     """Force read the sensor value now"""
     try:
         sensor = http_view.controller.sensors[sensor_id]
         sensor.execute()
     except KeyError:
-        # pass
         abort(404, "Unknown Sensor %d" % sensor_id)
-    redirect("/sensors/%d" % sensor_id)
+    # redirect("/sensors/%d" % sensor_id)
 
 @http_view.get('/interrupt/exec/<inter_id:int>')
-def sensor_read(inter_id):
+def interrupt_exec(inter_id):
     """Force the interruption's callback execution now"""
     try:
         inter = http_view.controller.interrupts[inter_id]
         inter.on_interrupt()
     except KeyError:
-        pass
-    redirect("/interrupts/%d" % inter_id)
+        abort(404, "Unknown Interrupt %d" % inter_id)
+    # redirect("/interrupts/%d" % inter_id)
 
 @http_view.get('/switch/exec/<switch_id:int>')
-def sensor_read(switch_id):
+def switch_exec(switch_id):
     """Force the setting of the switch now"""
     try:
         switch = http_view.controller.switchs[switch_id]
         switch.execute(switch.init_dict["set_value_to"])
     except KeyError:
-        pass
-    redirect("/switchs/%d" % switch_id)
+        abort(404, "Unknown Switch %d" % switch_id)
+    # redirect("/switchs/%d" % switch_id)
 
 #
 ####  *.md documents posted in the 'views' folder
