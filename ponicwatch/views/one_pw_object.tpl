@@ -31,17 +31,17 @@
 
 %if pwo_cls_name == "Sensor":
 <tr><td style="text-align:right"> </td>
-    <td><button onclick="location.href='/sensor/exec/{{pw_object["id"]}}'">Execute reading...</button></td></tr>
+    <td><button type="button" onclick="location.href='/sensor/exec/{{pw_object["id"]}}'">Execute reading...</button></td></tr>
 %end
 
 %if pwo_cls_name == "Interrupt":
 <tr><td style="text-align:right"> </td>
-    <td><button onclick="location.href='/interrupt/exec/{{pw_object["id"]}}'">Execute interruption callback...</button></td></tr>
+    <td><button type="button" onclick="location.href='/interrupt/exec/{{pw_object["id"]}}'">Execute interruption callback...</button></td></tr>
 %end
 
 %if pwo_cls_name == "Switch":
 <tr><td style="text-align:right"> </td>
-    <td><button onclick="location.href='/switch/exec/{{pw_object["id"]}}'">Set switch to {{pw_object.init_dict["set_value_to"]}} ...</button></td></tr>
+    <td><button type="button" onclick="location.href='/switch/exec/{{pw_object["id"]}}'">Set switch to {{pw_object.init_dict["set_value_to"]}} ...</button></td></tr>
 %end
 <tr><td>
     <input type="hidden" value="{{ pw_object['id'] }}" name="id" />

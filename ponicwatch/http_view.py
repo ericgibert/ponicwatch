@@ -175,7 +175,7 @@ def switch_exec(switch_id):
     """Force the setting of the switch now"""
     try:
         switch = http_view.controller.switchs[switch_id]
-        switch.execute(switch.init_dict["set_value_to"])
+        switch.execute(given_value=switch.init_dict["set_value_to"])
     except KeyError:
         abort(404, "Unknown Switch %d" % switch_id)
     # redirect("/switchs/%d" % switch_id)
