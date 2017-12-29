@@ -158,7 +158,7 @@ def sensor_exec(sensor_id):
         sensor.execute()
     except KeyError:
         abort(404, "Unknown Sensor %d" % sensor_id)
-    # redirect("/sensors/%d" % sensor_id)
+    redirect("/sensors/%d" % sensor_id)
 
 @http_view.get('/interrupt/exec/<inter_id:int>')
 def interrupt_exec(inter_id):
@@ -168,7 +168,7 @@ def interrupt_exec(inter_id):
         inter.on_interrupt()
     except KeyError:
         abort(404, "Unknown Interrupt %d" % inter_id)
-    # redirect("/interrupts/%d" % inter_id)
+    redirect("/interrupts/%d" % inter_id)
 
 @http_view.get('/switch/exec/<switch_id:int>')
 def switch_exec(switch_id):
@@ -178,7 +178,7 @@ def switch_exec(switch_id):
         switch.execute(given_value=switch.init_dict["set_value_to"])
     except KeyError:
         abort(404, "Unknown Switch %d" % switch_id)
-    # redirect("/switchs/%d" % switch_id)
+    redirect("/switchs/%d" % switch_id)
 
 #
 ####  *.md documents posted in the 'views' folder
