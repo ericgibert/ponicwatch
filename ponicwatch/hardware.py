@@ -56,7 +56,7 @@ class Hardware(Ponicwatch_Table):
         elif hardware in ["MCP23017"]:
             self.driver = Hardware_MCP23017(pig=controller.pig, hw_init_dict=hw_init)
         elif hardware in ["MCP3208"]:
-            self.driver = Hardware_MCP3208(pig=controller.pig, trx_flags=hw_init)
+            self.driver = Hardware_MCP3208(pig=controller.pig, init_dict=hw_init)
         else:
             raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], hardware))
 

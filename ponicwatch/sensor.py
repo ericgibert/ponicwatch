@@ -60,6 +60,7 @@ class Sensor(Ponicwatch_Table):
             if "interrupt" in self.init_dict:
                 hardware.register_interrupt(int(self.init_dict["interrupt"]), self.on_interrupt)
             # if the sensor needs to be power ON before reading / OFF after reading: { "POWER": "I/O_IC.pin" }
+            self.pwr_ic = None
             try:
                 pwr_ic_hw, self.pwr_pin = self.init_dict["POWER"].split('.')
                 for ic in self.controller.hardwares.values():

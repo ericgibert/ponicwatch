@@ -79,7 +79,7 @@ if __name__ == "__main__":
     mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 })
     try:
         while True:
-            d, v = mcp3208.read(channel=0)
+            d, v = mcp3208.read(channel=1)
             print("Read: {} , converted as {}V".format(d, v))
             sleep(2)
     finally:
