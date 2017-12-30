@@ -15,6 +15,14 @@
     <tr><td style="text-align:right">{{k}}:</td><td>
 %   if k=="init":
     <textarea rows="4" cols="50" name="{{k}}" {{ 'readonly' if login_logout=='Login' else '' }}/>{{pw_object[k]}}</textarea>
+%   elif k=="mode":
+%       if pwo_cls_name in ("Sensor", "Switch", "Hardware"):
+        <select name="mode" {{ 'disabled' if login_logout=='Login' else '' }}>
+%       for k in sorted(pw_object.MODE):
+            <option value="{{k}}"{{" selected" if pw_object["mode"]==k else ""}}>{{pw_object.MODE[k]}}</option>
+%       end
+        </select>
+%       end
 %   else:
     <input type="text" size="60" value="{{pw_object[k]}}" name="{{k}}" {{ '' if login_logout=='Logout' and k in ("name","timer") else 'readonly' }}/>
 %   end

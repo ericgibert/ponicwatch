@@ -26,14 +26,13 @@
     <li>Python: {{sys.version}}</li>
 % import sqlite3
     <li>sqlite3: {{sqlite3.version}}</li>
-% import bottle
-    <li>bottle: {{bottle.__version__}}</li>
-% import apscheduler
-    <li>apscheduler: {{apscheduler.__version__}}</li>
-% import markdown
-    <li>markdown: {{markdown.version}}</li>
-% import matplotlib
-    <li>matplotlib: {{matplotlib.__version__}}</li>
+% import pkg_resources
+    <li>bottle: {{pkg_resources.get_distribution("bottle").version}}</li>
+    <li>APScheduler: {{pkg_resources.get_distribution("apscheduler").version}}</li>
+    <li>Markdown: {{pkg_resources.get_distribution("markdown").version}}</li>
+    <li>matplotlib: {{pkg_resources.get_distribution("matplotlib").version}}</li>
+    <li>pigpio: {{pkg_resources.get_distribution("pigpio").version}}</li>
+    <li>tzlocal: {{pkg_resources.get_distribution("tzlocal").version}}</li>
 </ul>
 <table border="1">
 % for row in rows:

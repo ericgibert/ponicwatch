@@ -22,6 +22,7 @@ class Hardware(Ponicwatch_Table):
     - 'init': free string passed to the __init__ function to perform hardware initialization
     """
     MODE = {
+       -1: "INACTIVE",# IC is no longer accessible
         0: "READ",    # IC can only be access for reading data
         1: "WRITE",   # IC can only accessed for writing data
         2: "R/W",     # IC supports for 'read' and 'write' modes
@@ -46,19 +47,20 @@ class Hardware(Ponicwatch_Table):
         self.debug = controller.debug
         self.controller = controller
         self.system_name = system_name + "/" + self["name"]
-        hardware, hw_init = self["hardware"], self.init_dict
-        if hardware in Hardware_DHT.supported_models:  # DHT11|DHT22|AM2302
-            self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=translate_pin(hw_init["pin"]))
-        elif hardware in ["DS18B20"]:
-            self.driver = Hardware_DS18B20(pig=controller.pig, device_folder=hw_init["path"])
-        elif hardware in ["RPI3"]:
-            self.driver = Hardware_RPI3(pig=controller.pig, in_out=hw_init)
-        elif hardware in ["MCP23017"]:
-            self.driver = Hardware_MCP23017(pig=controller.pig, hw_init_dict=hw_init)
-        elif hardware in ["MCP3208"]:
-            self.driver = Hardware_MCP3208(pig=controller.pig, init_dict=hw_init)
-        else:
-            raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], hardware))
+        if self["mode"] > self.INACTIVE:
+            hardware, hw_init = self["hardware"], self.init_dict
+            if hardware in Hardware_DHT.supported_models:  # DHT11|DHT22|AM2302
+                self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=translate_pin(hw_init["pin"]))
+            elif hardware in ["DS18B20"]:
+                self.driver = Hardware_DS18B20(pig=controller.pig, device_folder=hw_init["path"])
+            elif hardware in ["RPI3"]:
+                self.driver = Hardware_RPI3(pig=controller.pig, in_out=hw_init)
+            elif hardware in ["MCP23017"]:
+                self.driver = Hardware_MCP23017(pig=controller.pig, hw_init_dict=hw_init)
+            elif hardware in ["MCP3208"]:
+                self.driver = Hardware_MCP3208(pig=controller.pig, init_dict=hw_init)
+            else:
+                raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], hardware))
 
     def read(self, pin, param):
         """

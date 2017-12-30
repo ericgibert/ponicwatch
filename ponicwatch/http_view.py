@@ -101,7 +101,7 @@ def pwo_update(id):
     # pwo = http_view.controller.get_pwo(cls_name, id)
     pwo = get_pwo()
     upd_dict = {}
-    for k in ("name", "timer", "init"):     # <-- ensure the tuple is the same in one_pw_object.tpl
+    for k in ("name", "timer", "init", "mode"):     # <-- ensure the tuple is the same in one_pw_object.tpl
         try:
             v = request.forms[k]
             if v != pwo[k]:

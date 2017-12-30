@@ -48,6 +48,15 @@ class Sensor(Ponicwatch_Table):
             }
 
     def __init__(self, controller, system_name, hardware, db=None, *args, **kwargs):
+        """
+        Create a sensor object
+        :param controller: reference to the controller
+        :param system_name: name of the system associated within the tb_link record
+        :param hardware: hardware pwo created in the controller's 'hardwares' dictionary - associated in tb_link
+        :param db: optional - useful for testing sensor independently of a controller
+        :param args: not used
+        :param kwargs: not used
+        """
         super().__init__(db or controller.db, Sensor.META, *args, **kwargs)
         self.controller = controller
         self.hardware = hardware
@@ -60,9 +69,11 @@ class Sensor(Ponicwatch_Table):
             if "interrupt" in self.init_dict:
                 hardware.register_interrupt(int(self.init_dict["interrupt"]), self.on_interrupt)
             # if the sensor needs to be power ON before reading / OFF after reading: { "POWER": "I/O_IC.pin" }
-            self.pwr_ic = None
             try:
                 pwr_ic_hw, self.pwr_pin = self.init_dict["POWER"].split('.')
+            except KeyError:
+                self.pwr_ic, self.pwr_pin = None, None
+            else:
                 for ic in self.controller.hardwares.values():
                     if ic["hardware"] == pwr_ic_hw:   # for example: RPI3 or MCP3208
                         self.pwr_ic = ic
@@ -72,16 +83,6 @@ class Sensor(Ponicwatch_Table):
                     # need to add ERROR on the LOG as the IC is not found!
                     self.controller.log.add_error("Unknown POWER IC {} for Sensor {}.".format(pwr_ic_hw, self["name"]),
                                                   err_code=self["id"], fval=-3.1)
-            except KeyError:
-                self.pwr_ic, self.pwr_pin = None, None
-
-
-    #
-    #     example:
-    #     "AM2302.4.T" --> ['AM2302', '4', 'T'] --> 'T' for temperature, 'H' for humidity
-    #     "RPI3.4" --> ['RPI3', '4', None] --> Simply reads pin 4 from the Raspi
-    #     "RPI3.4.16" --> ['RPI3', '4', '16'] --> Read pin 4 and declare an interrupt on pin 16
-    #     """
 
     def read_values(self):
         """Reads the direct and calculated values from a sensor
@@ -97,7 +98,13 @@ class Sensor(Ponicwatch_Table):
                 msg="Cannot write to hw: {} pin: {} power: {}".format(self.hardware, self.init_dict["pin"], self.pwr_pin)
                 self.controller.log.add_error(msg=msg, err_code=self["id"], fval=-3.2)
         # reads from sensor hardware
-        read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
+        try:
+            read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
+        except AttributeError as err:
+            msg = "Reading from hardware {} (mode={}) returns error:\{}".format(self.hardware["name"], self.hardware["more"], err)
+            if self.controller.debug >= 3:
+                print(msg)
+            self.controller.log.add_error(msg=msg, err_code=self["id"], fval=-3.5)
         # power off the sensor if necessary
         if self.pwr_ic:
             self.pwr_ic.write(self.pwr_pin, 0)
@@ -117,21 +124,6 @@ class Sensor(Ponicwatch_Table):
         """Called by the scheduler to perform the data reading
         Log the read values
         """
-        # try:
-        #     # need to power on the sensor if a power pin is given   { "POWER": "I/O_IC.pin" }
-        #     if self.pwr_ic:
-        #         self.pwr_ic.write(self.pwr_pin, 1)
-        #         self.controller.log.add_info("{}.{} powered on before reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
-        #         sleep(0.5)
-        #     read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
-        #     # power off the sensor if necessary
-        #     if self.pwr_ic:
-        #         self.pwr_ic.write(self.pwr_pin, 0)
-        #         self.controller.log.add_info("{}.{} powered off after reading {}".format(self.pwr_ic, self.pwr_pin, self["name"]))
-        # except TypeError as err:
-        #     self.controller.log.add_error(msg="Cannot write to hw: {} pin: {} power: {}".format(self.hardware, self.init_dict["pin"], self.pwr_pin),
-        #                                   err_code=self["id"], fval=-3.2)
-        # else:
         read_val, calc_val = self.read_values()
         if read_val is None:
             self.controller.log.add_error("Cannot read from " + str(self), err_code=self["id"], fval=-3.3)
