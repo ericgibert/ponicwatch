@@ -44,8 +44,11 @@
 </table>
 
 <p>
+<hr/>
 % if session_valid:
-Click <a href="/stop">here</a> to stop the application.
+<b><a href="/restart">Restart</a></b> the application.
+<hr/>
+To stop the application, click <a href="/stop">here</a>.
 % end
 </p>
 </body>

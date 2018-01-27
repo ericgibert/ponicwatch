@@ -1,5 +1,5 @@
 import sys
-from os import path
+from os import path, system
 from glob import glob
 import datetime
 import json
@@ -237,6 +237,11 @@ def logout():
     session_manager.save(session)
     BaseTemplate.defaults['login_logout'] = "Login"
     redirect('/')
+
+@http_view.route('/restart')
+def restart():
+    """Restarts the application"""
+    system(path.dirname(path.abspath(__file__)) + "/ponicwatch.sh restart")
 
 @http_view.route('/stop')
 def stop():
