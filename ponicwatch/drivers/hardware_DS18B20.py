@@ -8,7 +8,11 @@ import os
 from time import sleep
 from glob import glob
 from random import randint
-from pigpio import FILE_READ, error as pig_error
+try:
+    from pigpio import FILE_READ, error as pig_error
+except ImportError:
+    FILE_READ = 1
+    pig_error = ValueError
 
 class Hardware_DS18B20(object):
     """
