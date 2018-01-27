@@ -75,7 +75,7 @@ def pw_object(id=0):
         except IndexError:
             pwo, rows = None, []
             pwo_dict_name = "No %s found" % pwo_dict_name
-        return template("pw_objects", pw_object=pwo, rows=rows, pw_object_type=pwo_dict_name)
+        return template("pw_objects", pw_object=pwo, rows=rows, pw_object_type=pwo_dict_name, ctrl_pwo_dict=pwo_dict)
 
 def one_pw_object_html(pwo):
     """

@@ -14,8 +14,13 @@
     % end
         </tr>
     % for row in rows:
+        % if row[0] in ctrl_pwo_dict:
     <tr><td><a href="/{{ pw_object_type }}/{{row[0]}}">{{row[0]}}</a></td>
         <td><a href="/{{ pw_object_type }}/{{row[0]}}">{{row[1]}}</a></td>
+        % else:
+        <tr><td>{{row[0]}}</td>
+            <td>{{row[1]}}</td>
+        % end
     % for k in range(2, len(pw_object.META["columns"])):
         <td>{{row[k]}}</td>
     % end

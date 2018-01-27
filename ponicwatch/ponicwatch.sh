@@ -14,6 +14,7 @@ start)
 
     cd "$CWD"
     python ponicwatch.py -s local_ponicwatch.db -d2 -b $_IP > "$CWD"/../Private/ponicwatch.log 2>&1 &
+    echo http://$_IP:8080
     ;;
 stop)
     kill -10 $PID

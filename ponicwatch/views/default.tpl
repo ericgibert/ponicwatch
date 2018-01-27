@@ -31,7 +31,10 @@
     <li>APScheduler: {{pkg_resources.get_distribution("apscheduler").version}}</li>
     <li>Markdown: {{pkg_resources.get_distribution("markdown").version}}</li>
     <li>matplotlib: {{pkg_resources.get_distribution("matplotlib").version}}</li>
+% try:
     <li>pigpio: {{pkg_resources.get_distribution("pigpio").version}}</li>
+% except pkg_resources.DistributionNotFound:
+    <li>pigpio: not installed</li>
     <li>tzlocal: {{pkg_resources.get_distribution("tzlocal").version}}</li>
 </ul>
 <table border="1">
