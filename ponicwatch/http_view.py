@@ -16,7 +16,7 @@ BaseTemplate.defaults['login_logout'] = "Login"
 
 @error(404)
 def error404(error):
-    return '404 error:<h2>%s<//h2>' % error
+    return '404 error:<h2>%s</h2>' % error
 
 def get_pwo():
     """Helper function: returns a PonicWatch Object based on the object type and id found in the form.
@@ -34,7 +34,7 @@ def get_pwo():
 def default():
     session = session_manager.get_session()
     rows = http_view.controller.log.get_all_records(order_by="created_on desc",
-                                                    where_clause="log_type='ERROR' and julianday(date('now')) - julianday(created_on)  < 8")
+                                                    where_clause="(log_type='ERROR' or log_type='INFO') and julianday(date('now')) - julianday(created_on)  < 8")
     return template("default", session_valid=session["valid"],
                     controller=http_view.controller,
                     rows=rows)
@@ -45,7 +45,7 @@ def log(page=0):
     where, pwo, req_query = "", "", ""
     if "system" in request.query:
         log_type, object_id = request.query["system"].split('_')
-        if log_type in ("SENSOR", "SWITCH", "HARDWARE", "INTERRUPT"):
+        if log_type in ("INFO", "SENSOR", "SWITCH", "HARDWARE", "INTERRUPT"):
             where = "log_type='{}' and object_id={}".format(log_type, object_id)
             pwo = """<a href="/{}/{}">Go to PWO page</a>""".format(log_type.lower() + 's', object_id)
             req_query = "?system=" + request.query["system"]
@@ -305,4 +305,12 @@ def make_image(data_object):
 
 
 if __name__ == "__main__":
+    from model.pw_db import Ponicwatch_Db
+    from pw_log import Ponicwatch_Log
+    class ctrl:
+        def __init__(self):
+            self.name = 'test'
+            self.db = Ponicwatch_Db("sqlite3", {'database': 'ponicwatch.db'})
+            self.log = Ponicwatch_Log(controller=self, debug=3)
+    http_view.controller = ctrl()
     http_view.run()
