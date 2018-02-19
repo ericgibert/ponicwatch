@@ -40,10 +40,27 @@ class Ponicwatch_Table(dict):
                 self.db.conn.commit()
             except InterfaceError as err:
                 print('*'*30, err)
+
+
                 print(sql)
                 print(params)
             finally:
                 self.db.close()
+
+    def fetch(self, sql, params=[], only_one=False):
+        with self.db.exclusive_access:
+            rows= None
+            self.db.open()
+            try:
+                self.db.curs.execute(sql, params)
+                rows = self.db.curs.fetchone() if only_one else self.db.curs.fetchall()
+            except InterfaceError as err:
+                print('*'*30, err)
+                print(sql)
+                print(params)
+            finally:
+                self.db.close()
+        return rows
 
     def get_record(self, id=None, name=None):
         """select on record form the table"""

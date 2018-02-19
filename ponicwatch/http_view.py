@@ -33,6 +33,8 @@ def get_pwo():
 @http_view.route('/')
 def default():
     session = session_manager.get_session()
+    http_view.controller.last_start = http_view.controller.log.fetch("select max(created_on) from tb_log where log_type='INFO' and float_value=1.0", only_one=True)
+    http_view.controller.last_stop = http_view.controller.log.fetch("select max(created_on) from tb_log where log_type='INFO' and float_value=0.0", only_one=True)
     rows = http_view.controller.log.get_all_records(order_by="created_on desc",
                                                     where_clause="(log_type='ERROR' or log_type='INFO') and julianday(date('now')) - julianday(created_on)  < 8")
     return template("default", session_valid=session["valid"],

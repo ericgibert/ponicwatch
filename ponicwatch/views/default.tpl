@@ -21,21 +21,10 @@
    Author: &nbsp;{{__author__}}<br/>
    License: {{__license__}}<br/>
 </p>
+
 <ul>
-% import sys
-    <li>Python: {{sys.version}}</li>
-% import sqlite3
-    <li>sqlite3: {{sqlite3.version}}</li>
-% import pkg_resources
-    <li>bottle: {{pkg_resources.get_distribution("bottle").version}}</li>
-    <li>APScheduler: {{pkg_resources.get_distribution("apscheduler").version}}</li>
-    <li>Markdown: {{pkg_resources.get_distribution("markdown").version}}</li>
-    <li>matplotlib: {{pkg_resources.get_distribution("matplotlib").version}}</li>
-% try:
-    <li>pigpio: {{pkg_resources.get_distribution("pigpio").version}}</li>
-% except pkg_resources.DistributionNotFound:
-    <li>pigpio: not installed</li>
-    <li>tzlocal: {{pkg_resources.get_distribution("tzlocal").version}}</li>
+    <li>Last stop on:  {{controller.last_stop[0]}}</li>
+    <li>Last start on: {{controller.last_start[0]}}</li>
 </ul>
 <table border="1">
 % for row in rows:
@@ -46,6 +35,22 @@
 <p>
 <hr/>
 % if session_valid:
+<ul>
+    % import sys
+    <li>Python: {{sys.version}}</li>
+    % import sqlite3
+    <li>sqlite3: {{sqlite3.version}}</li>
+    % import pkg_resources
+    <li>bottle: {{pkg_resources.get_distribution("bottle").version}}</li>
+    <li>APScheduler: {{pkg_resources.get_distribution("apscheduler").version}}</li>
+    <li>Markdown: {{pkg_resources.get_distribution("markdown").version}}</li>
+    <li>matplotlib: {{pkg_resources.get_distribution("matplotlib").version}}</li>
+    % try:
+    <li>pigpio: {{pkg_resources.get_distribution("pigpio").version}}</li>
+    % except pkg_resources.DistributionNotFound:
+    <li>pigpio: not installed</li>
+    <li>tzlocal: {{pkg_resources.get_distribution("tzlocal").version}}</li>
+</ul>
 <b><a href="/restart">Restart</a></b> the application.
 <hr/>
 To stop the application, click <a href="/stop">here</a>.
