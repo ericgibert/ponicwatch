@@ -253,7 +253,7 @@ class Controller(object):
         for s in self.switchs.values(): objects.append(s)
         for s in self.sensors.values(): objects.append(s)
         for pwo in objects:
-            html += one_pw_object_html(pwo)
+            html += one_pw_object_html(pwo, only_html=True)
             if os.path.isfile(get_image_file(pwo)):
                 images.append(get_image_file(pwo))
         # print(html)

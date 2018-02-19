@@ -79,7 +79,7 @@ def pw_object(id=0):
             pwo_dict_name = "No %s found" % pwo_dict_name
         return template("pw_objects", pw_object=pwo, rows=rows, pw_object_type=pwo_dict_name, ctrl_pwo_dict=pwo_dict)
 
-def one_pw_object_html(pwo):
+def one_pw_object_html(pwo, only_html=False):
     """
     Use the template engine to return the HTML page giving all information from one object
     :param pwo:
@@ -89,7 +89,8 @@ def one_pw_object_html(pwo):
         pw_upd_local_datetime = pwo["updated_on"].replace(tzinfo=datetime.timezone.utc).astimezone()
     else:
         pw_upd_local_datetime = "no datetime given"
-    return template("one_pw_object", pw_object=pwo,
+    return template("one_pwo_html" if only_html else "one_pwo_form",
+                    pw_object=pwo,
                     image=make_image(pwo),
                     pw_upd_local_datetime=pw_upd_local_datetime)
 
