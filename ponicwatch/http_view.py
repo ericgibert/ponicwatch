@@ -8,6 +8,10 @@ from bottle import Bottle, template, static_file, request, BaseTemplate, redirec
 from bottlesession import CookieSession, authenticator
 from user import User
 
+__version__ = "1.20180220 Krabi"
+__author__ = 'Eric Gibert'
+__license__ = 'MIT'
+
 session_manager = CookieSession()    #  NOTE: you should specify a secret
 valid_user = authenticator(session_manager)
 

@@ -6,7 +6,7 @@
 </head>
 <body>
 % include('header.html')
-<h1>Dashboard for PonicWatch</h1>
+<h1>Dashboard</h1>
 
 <ol>
 %for sys in controller.systems.values():
@@ -14,14 +14,17 @@
 %end
 </ol>
 
+
+% from ponicwatch import __version__, __author__, __license__
+<p><h3>Ponicwatch:</h3>
+   - Version: {{__version__}}<br/>
+% from http_view import __version__
+   - http_view: {{__version__}}<br/>
+   - Author: &nbsp;{{__author__}}<br/>
+   - License: {{__license__}}<br/>
+</p>
 %import os
 <p>Database file size: {{os.path.getsize(controller.db.server_params["database"]) >> 10}} kB</p>
-% from ponicwatch import __version__, __author__, __license__
-<p>Version: {{__version__}}<br/>
-   Author: &nbsp;{{__author__}}<br/>
-   License: {{__license__}}<br/>
-</p>
-
 <ul>
     <li>Last stop on:  {{controller.last_stop[0]}}</li>
     <li>Last start on: {{controller.last_start[0]}}</li>
