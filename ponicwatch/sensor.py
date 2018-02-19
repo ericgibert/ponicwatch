@@ -101,7 +101,7 @@ class Sensor(Ponicwatch_Table):
         try:
             read_val, calc_val = self.hardware.read(self.init_dict["pin"], self.init_dict["hw_param"])
         except AttributeError as err:
-            msg = "Reading from hardware {} (mode={}) returns error:\{}".format(self.hardware["name"], self.hardware["more"], err)
+            msg = "Reading from hardware {} (mode={}) returns error:\{}".format(self.hardware["name"], self.hardware["mode"], err)
             if self.controller.debug >= 3:
                 print(msg)
             self.controller.log.add_error(msg=msg, err_code=self["id"], fval=-3.5)

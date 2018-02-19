@@ -257,7 +257,7 @@ class Controller(object):
             if os.path.isfile(get_image_file(pwo)):
                 images.append(get_image_file(pwo))
         # print(html)
-        send_email("Ponicwatch Notification - System status",
+        send_email("Ponicwatch Notification - %s" % ",".join([s["name"] for s in self.systems.values()]),
                    from_=self.user["email"],
                    to_=["ericgibert@yahoo.fr", ],
                    message_HTML=html,

@@ -269,7 +269,7 @@ def get_image_file(pwo):
 def make_image(data_object):
     """Creates an image for the status of the given object (sensor, switch)"""
     obj_class_name = data_object.__class__.__name__ # Sensor / Switch
-    if obj_class_name not in ("Sensor", "Switch"):
+    if obj_class_name not in ("Sensor", ):   #   ("Sensor", "Switch"):
         return ""
     image_file = get_image_file(data_object)  # images/sensor_id_1.png
     log_type = obj_class_name.upper()  # http_view.controller.log.LOG_TYPE[obj_class_name.upper()]
