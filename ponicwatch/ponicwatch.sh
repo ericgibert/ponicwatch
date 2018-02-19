@@ -9,7 +9,7 @@
 # Description:       Enable service provided by daemon.
 ### END INIT INFO
 # https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-startup/
-# to be executed in the same durectory as ponicwatch.py i.e. the executable part of the project
+# to be executed in the same directory as ponicwatch.py i.e. the executable part of the project
 #CWD=$(dirname $(readlink -f $BASH_SOURCE))
 CWD=/home/pi/ponicwatch/ponicwatch
 #_IP=$(hostname -I | awk '{print $1}')
