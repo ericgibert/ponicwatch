@@ -12,8 +12,8 @@
 # to be executed in the same durectory as ponicwatch.py i.e. the executable part of the project
 #CWD=$(dirname $(readlink -f $BASH_SOURCE))
 CWD=/home/pi/ponicwatch/ponicwatch
-#_IP=$(hostname -I | awk '{print $1}')
-_IP=10.0.10.218
+_IP=$(hostname -I | awk '{print $1}')
+#_IP=10.0.10.218
 rc=0
 PID=$(cat $CWD/ponicwatch.pid)
 # See how we were called.
