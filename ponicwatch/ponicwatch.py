@@ -26,7 +26,7 @@ from sensor import Sensor
 from switch import Switch
 from hardware import Hardware
 from interrupt import Interrupt
-from http_view import http_view, get_image_file, one_pw_object_html, stop as bottle_stop
+from http_view import http_view, get_image_file, one_pw_object_html, stop as bottle_stop, default as http_default
 from send_email import send_email
 
 __version__ = "1.20180127 Remy bday"
@@ -72,11 +72,12 @@ class Controller(object):
             _simulation = True
         # some plural are "fake" to respect the logic of: <cls name> + 's' --> dictionary of <cls> PonicWatch Object
         self.systems, self.sensors, self.switchs, self.hardwares, self.interrupts = {}, {}, {}, {}, {}
-        self.db.curs.execute("SELECT * from tb_link where system_id > 0 order by system_id, order_for_creation")
+        self.db.curs.execute("SELECT * from tb_link order by system_id desc, order_for_creation")
         self.links = self.db.curs.fetchall()
         for system_id, sensor_id, switch_id, hardware_id, order_for_creation, interrupt_id in self.links:
             # (1) create all necessary objects
             # (2) and register the system and hardware to a sensor/switch
+            if system_id <= 0: continue  # inactive link --> ignore this row
             if system_id not in self.systems:
                 self.systems[system_id] = System(self, id=system_id)
             if hardware_id and hardware_id not in self.hardwares:
@@ -200,7 +201,7 @@ class Controller(object):
 
         if self.debug >= 3:
             print("eval({}) == {}".format(_expression, result))
-        return  result
+        return result
 
     ### helper functions
     def get_pwo(self, cls, id):
@@ -247,7 +248,7 @@ class Controller(object):
         :return:
         """
         images = []     # list of .png to attach to the email
-        html = ""       # email's body
+        html = http_default()       # email's body
         objects = []    # working list of all Ponicwatch objects (pwo)
         for s in self.systems.values(): objects.append(s)
         for s in self.switchs.values(): objects.append(s)

@@ -6,6 +6,7 @@
 </head>
 <body>
 % include('header.html')
+<p>
 % if pw_object:
     <table border="1">
         <tr>
@@ -30,5 +31,6 @@
 % else:
     <h3>Empty list - no such object defined on this system</h3>
 % end
+</p>
 </body>
 </html>

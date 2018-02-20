@@ -12,7 +12,7 @@ __version__ = "1.20180220 Krabi"
 __author__ = 'Eric Gibert'
 __license__ = 'MIT'
 
-session_manager = CookieSession()    #  NOTE: you should specify a secret
+session_manager = CookieSession(cookie_expires=3600)    #  NOTE: you should specify a secret
 valid_user = authenticator(session_manager)
 
 http_view = Bottle()
@@ -57,6 +57,12 @@ def log(page=0):
             req_query = "?system=" + request.query["system"]
     rows = http_view.controller.log.get_all_records(from_page=page, order_by="created_on desc", where_clause=where)
     return template("log", rows=rows, current_page=page, pwo=pwo, req_query=req_query)
+
+@http_view.route('/links')
+def list_links():
+    """List all the links, even the inactive ones"""
+    return template("links", controller=http_view.controller)
+
 
 @http_view.route('/switchs')
 @http_view.route('/switchs/<id:int>')
