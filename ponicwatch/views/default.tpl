@@ -36,8 +36,8 @@
 </table>
 
 <p>
-<hr/>
 % if session_valid:
+<hr/>
 <ul>
     % import sys
     <li>Python: {{sys.version}}</li>

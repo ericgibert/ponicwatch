@@ -46,17 +46,15 @@ class Switch(Ponicwatch_Table):
         super().__init__(db or controller.db, Switch.META, *args, **kwargs)
         self.controller = controller
         self.hardware = hardware
-        #if hardware["mode"] == 2:  # R/W
-        if self["mode"] > self.INACTIVE:
-            self.hardware.set_pin_as_output(self.init_dict["pin"])
-            self.system_name = system_name + "/" + self["name"]
-            if self["timer"]:
-                self.controller.add_cron_job(self.execute, self["timer"])
-            # set the switch to 'set_value_to' if given in the init dictionary else to the last value recorded
-            # try:
-            #     self.execute(self.init_dict["set_value_to"])
-            # except KeyError:
-            #     self.execute(self.init_dict["value"])
+        self.hardware.set_pin_as_output(self.init_dict["pin"])
+        self.system_name = system_name + "/" + self["name"]
+        if self["mode"] > self.INACTIVE and self["timer"]:
+            self.controller.add_cron_job(self.execute, self["timer"])
+        # set the switch to 'set_value_to' if given in the init dictionary else to the last value recorded
+        # try:
+        #     self.execute(self.init_dict["set_value_to"])
+        # except KeyError:
+        #     self.execute(self.init_dict["value"])
 
 
     def execute(self, given_value=None):
@@ -79,9 +77,14 @@ class Switch(Ponicwatch_Table):
             except KeyError:
                 continue_execution = True
 
+            # the value is a toggle: ON --> OFF --> ON --> OFF --> ....
             if self.init_dict["set_value_to"] in ('t', 'T'):
                 set_to = abs(self.value - 1)         # abs(self["value"] - 1)
-            else:
+            # the value is define by the 'if' expression
+            elif self.init_dict["set_value_to"] in ('b', 'B'):
+                set_to = continue_execution
+                continue_execution = True
+            else: # the value is given in the switch definition i.e. 'hard coded'
                 try:
                     set_to = int(self.init_dict["set_value_to"])
                 except ValueError:
