@@ -8,6 +8,7 @@
 import sys, os
 import argparse
 import signal
+import json
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers import SchedulerNotRunningError
 
@@ -106,20 +107,36 @@ class Controller(object):
         self.db.allow_close = True
         self.db.close()
 
-    def add_cron_job(self, callback, cron_time):
-        # When do we need to read the sensor or activate a switch?
-        # ┌───────────── sec (0 - 59)
-        # | ┌───────────── min (0 - 59)
-        # | │ ┌────────────── hour (0 - 23)
-        # | │ │ ┌─────────────── day of month (1 - 31)
-        # | │ │ │ ┌──────────────── month (1 - 12)
-        # | │ │ │ │ ┌───────────────── day of week (0 - 6) (0 to 6 are Sunday to
-        # | │ │ │ │ │                  Saturday, or use names; 7 is also Sunday)
-        # | │ │ │ │ │
-        # | │ │ │ │ │
-        # * * * * * *
-        _sec, _min, _hrs, _dom, _mon, _dow = cron_time.split()  # like "*/5 * * * * *" --> every 5 seconds
-        self.scheduler.add_job(callback, 'cron', second=_sec, minute=_min, hour=_hrs, day=_dom, month=_mon, day_of_week=_dow)
+    def add_cron_job(self, callback, timer):
+        """
+        Add a new scheduled task
+        :param callback:
+        :param timer:  a string '* * * * * *' OR a JSON object as { 't': ['* * * * * *', t2, t3...]}
+        :return:
+        """
+        if timer[0]=='{':
+            # convert the JSON timer string to a python dictionary
+            try:
+                cron_times = json.loads(timer)
+                cron_times = cron_times['t']
+            except:  # json.JSONDecodeError:
+                print("Alarm: timer is not a JSON string!", timer)
+        else:
+            cron_times = [timer]
+        for cron_time in cron_times:
+            # When do we need to read the sensor or activate a switch?
+            # ┌───────────── sec (0 - 59)
+            # | ┌───────────── min (0 - 59)
+            # | │ ┌────────────── hour (0 - 23)
+            # | │ │ ┌─────────────── day of month (1 - 31)
+            # | │ │ │ ┌──────────────── month (1 - 12)
+            # | │ │ │ │ ┌───────────────── day of week (0 - 6) (0 to 6 are Sunday to
+            # | │ │ │ │ │                  Saturday, or use names; 7 is also Sunday)
+            # | │ │ │ │ │
+            # | │ │ │ │ │
+            # * * * * * *
+            _sec, _min, _hrs, _dom, _mon, _dow = cron_time.split()  # like "*/5 * * * * *" --> every 5 seconds
+            self.scheduler.add_job(callback, 'cron', second=_sec, minute=_min, hour=_hrs, day=_dom, month=_mon, day_of_week=_dow)
 
     def run(self):
         """Starts the APScheduler task and the Bottle HTTP server"""
