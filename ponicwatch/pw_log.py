@@ -71,16 +71,16 @@ class Ponicwatch_Log(Ponicwatch_Table):
         # MESSAGE:
         # log_type is mandatory to know the message level (info/warning/error)
         # param is a dictionary
-        if log_type in ["INFO", "WARNING", "ERROR"]:
+        if log_type in ["INFO", "WARNING", "ERROR", "SCHEDULER"]:
             self.insert(controller_name=self.controller_name,
                         log_type=log_type,
                         object_id=param["error_code"],
                         system_name=system_name,
-                        float_value=param["float_value"] if "float_value" in param else -1.0,
+                        float_value=param.get("float_value", -1.0),
                         text_value=param["text_value"],
                         created_on=datetime.now(timezone.utc)
                         )
-            self.print_debug(log_type, param["error_code"], param["text_value"])
+            self.print_debug(log_type, param["error_code"], param.get("float_value", -1.0), param["text_value"])
         else:
             log_type = param.get("cls_name", param.__class__.__name__.upper())
             self.insert(controller_name=self.controller_name,

@@ -15,7 +15,7 @@
     <td>{{row[2]}}</td>
     <td><a href="/log?system={{row[2]+'_'+str(row[3])}}">{{row[4]}}</a></td>
     <td>{{row[5]}}</td>
-    <td>{{row[6] if row[2] in ("INFO", "WARNING", "ERROR") else ""}}</td>
+    <td>{{row[6]}}</td>
     <td>{{str(row[7].replace(tzinfo=datetime.timezone.utc).astimezone())[2:19]}}</td></tr>
 % end
 </table>

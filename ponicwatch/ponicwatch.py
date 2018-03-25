@@ -30,7 +30,7 @@ from interrupt import Interrupt
 from http_view import http_view, get_image_file, one_pw_object_html, stop as bottle_stop, default as http_default
 from send_email import send_email
 
-__version__ = "1.20180220 Luc bday"
+__version__ = "1.20180325 Singapore"
 __author__ = 'Eric Gibert'
 __license__ = 'MIT'
 
@@ -123,6 +123,7 @@ class Controller(object):
                 print("Alarm: timer is not a JSON string!", timer)
         else:
             cron_times = [timer]
+        i = 0.0
         for cron_time in cron_times:
             # When do we need to read the sensor or activate a switch?
             # ┌───────────── sec (0 - 59)
@@ -137,6 +138,9 @@ class Controller(object):
             # * * * * * *
             _sec, _min, _hrs, _dom, _mon, _dow = cron_time.split()  # like "*/5 * * * * *" --> every 5 seconds
             self.scheduler.add_job(callback, 'cron', second=_sec, minute=_min, hour=_hrs, day=_dom, month=_mon, day_of_week=_dow)
+            self.log.add_log(log_type='SCHEDULER', system_name='@startup',
+                            param={ 'error_code':0, 'text_value': cron_time, 'float_value':i})
+            i += 1.0
 
     def run(self):
         """Starts the APScheduler task and the Bottle HTTP server"""

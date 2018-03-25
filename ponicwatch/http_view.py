@@ -51,7 +51,7 @@ def log(page=0):
     where, pwo, req_query = "", "", ""
     if "system" in request.query:
         log_type, object_id = request.query["system"].split('_')
-        if log_type in ("INFO", "SENSOR", "SWITCH", "HARDWARE", "INTERRUPT"):
+        if log_type in ("INFO", "SENSOR", "SWITCH", "HARDWARE", "INTERRUPT", "SCHEDULER"):
             where = "log_type='{}' and object_id={}".format(log_type, object_id)
             pwo = """<a href="/{}/{}">Go to PWO page</a>""".format(log_type.lower() + 's', object_id)
             req_query = "?system=" + request.query["system"]
