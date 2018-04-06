@@ -36,7 +36,11 @@ def get_pwo():
 
 @http_view.route('/')
 def default():
-    session = session_manager.get_session()
+    try:
+        session = session_manager.get_session()
+    except RuntimeError:
+        session = {}
+        session["valid"] = False
     http_view.controller.last_start = http_view.controller.log.fetch("select max(created_on) from tb_log where log_type='INFO' and float_value=1.0", only_one=True)
     http_view.controller.last_stop = http_view.controller.log.fetch("select max(created_on) from tb_log where log_type='INFO' and float_value=0.0", only_one=True)
     rows = http_view.controller.log.get_all_records(order_by="created_on desc",
