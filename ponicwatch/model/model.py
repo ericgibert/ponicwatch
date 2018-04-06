@@ -96,12 +96,12 @@ class Ponicwatch_Table(dict):
             print("init=", self["init"])
 
 
-    def get_all_records(self, page_len=20, from_page=0, where_clause=None, order_by=None, args=[]):
+    def get_all_records(self, page_len=20, from_page=0, where_clause=None, order_by=None, args=[], columns='*'):
         """
         Return a list of all the table records starting from the right page
             page_len: number of rows in one page. If given as 0 then no LIMIT set in the SELECT statement 
         """
-        sql = "SELECT * FROM {}".format(self.table)
+        sql = "SELECT {} FROM {}".format(columns, self.table)
         if where_clause:
             sql += " WHERE " + where_clause
         if order_by:
