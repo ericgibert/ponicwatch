@@ -193,16 +193,19 @@ class Controller(object):
             except AttributeError:
                 _expression = str(pwo["value"]) + test  # else take the latest read value
         elif isinstance(if_expression, list):
-            # expects list: format string followed by the pwo references
+            # expects list: format string followed by the pwo references or keyword 'now'
             # example: [ "{}>10. and {}==1", "Sensor[1]", "Switch[2]" ]
             _format, pwo_values = if_expression[0], []
             for pwo_ref in if_expression[1:]:
-                pwo_cls, id = pwo_ref.split('[', 1)
-                pwo = self.get_pwo(pwo_cls, id[:-1]) # drop the last ']'
-                try:
-                    pwo_values.append(pwo.value)
-                except AttributeError:
-                    pwo_values.append(pwo["value"])
+                if pwo_ref.lower() == "now":
+                    pwo_values.append(datetime.now())  # expects {:%H} for hour --> "8<={:%H}<=20".format(datetime.now())
+                else:
+                    pwo_cls, id = pwo_ref.split('[', 1)
+                    pwo = self.get_pwo(pwo_cls, id[:-1]) # drop the last ']'
+                    try:
+                        pwo_values.append(pwo.value)
+                    except AttributeError:
+                        pwo_values.append(pwo["value"])
             _expression = _format.format(*pwo_values)
         else:
             msg = "Error! Unknown if_expression type: {} for {}".format(type(if_expression), submitted_by)
