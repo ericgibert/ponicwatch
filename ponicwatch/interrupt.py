@@ -40,7 +40,10 @@ class Interrupt(Ponicwatch_Table):
 
 
     def on_interrupt(self):
-        """Callback function"""
+        """Callback function for the 'init' dictionary entry
+        - email_notification: to send an email listing all the PWO
+        - reduce_log_table: drop rows in tb_log
+        """
         if self.controller.debug >= 3:
             print("Call back on interrupt:", self, self.init_dict)
         # what to do?
@@ -51,6 +54,8 @@ class Interrupt(Ponicwatch_Table):
                     "text_value": "Notification email sent",
                     "value": self["id"]
                 }
+            elif self.init_dict["action"] == "reduce_log_table":
+                self.controller.log.reduce_size(keep_days=self.init_dict.get('days', 90))
         except KeyError as err:
             # no action? Really??
             self.controller.log.add_error(msg="Interrupt %s has NO action declared in its init field." % self.system_name)

@@ -11,7 +11,6 @@
     - WARNING: log a warning message, action might be required by an operator
     - ERROR: log an error message, an email should be trigger to raise an alarm to an operator
 """
-import json
 from datetime import datetime, timezone, timedelta
 from model.model import Ponicwatch_Table
 
@@ -110,6 +109,12 @@ class Ponicwatch_Log(Ponicwatch_Table):
         """Helper function for the controller to log an ERROR message"""
         self.add_log("ERROR", self.controller_name, {'error_code': err_code, 'float_value': fval, 'text_value': msg})
 
+    def reduce_size(self, keep_days=90):
+        """Delete all records above the number of days given as parameters"""
+        keep_from = datetime.now() - timedelta(days=keep_days)
+        self.execute_sql("delete from tb_log where created_on < ?", ("{:%Y-%m-%d}".format(keep_from), ))
+        self.execute_sql("vacuum")
+
     def __str__(self):
         return "[{}] {}".format(self.controller_name, self["text_value"])
 
@@ -139,4 +144,6 @@ if __name__ == "__main__":
                       text_value="reading simulation",
                       created_on=created_on)
         created_on += delta
+
+    logger.reduce_size(keep_days=0)
     db.close()

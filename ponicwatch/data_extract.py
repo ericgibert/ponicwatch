@@ -58,12 +58,12 @@ if __name__ == "__main__":
 # UTC_Offset = +08:00
 # TimeZone = SGT
 #
-# UTC_StartTime = 2014-06-02 00:00:00.00000
+# UTC_StartTime = {} 00:00:00.00000
 # LogInterval = 5
 # LogType = raw
 # MonitorID = SG1
 # Frequencies = 19800,18200,16300
-# Stations = {}""".format(','.join(pwo_list.keys())), file=fout)
+# Stations = {}""".format(min(data.keys())[:10], ','.join(pwo_list.keys())), file=fout)
         for t, vals in data.items():
             for v in vals:
                 pwo_list[v[0]] = v[1]
