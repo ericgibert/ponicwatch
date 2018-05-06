@@ -56,6 +56,10 @@ class Interrupt(Ponicwatch_Table):
                 }
             elif self.init_dict["action"] == "reduce_log_table":
                 self.controller.log.reduce_size(keep_days=self.init_dict.get('days', 90))
+                msg = {
+                    "text_value": "Log reduced",
+                    "value": self["id"]
+                }
         except KeyError as err:
             # no action? Really??
             self.controller.log.add_error(msg="Interrupt %s has NO action declared in its init field." % self.system_name)
