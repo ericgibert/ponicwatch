@@ -128,7 +128,13 @@ def pwo_update(id):
         except (KeyError, IndexError):
             pass
     if upd_dict:
-        pwo.update(**upd_dict)
+        # check that the init dictionary is JSON ok
+        try:
+            new_init_dict = json.loads(upd_dict.get('init', "{}"))
+        except:
+            return "<h1>Syntax error in the propose init JSON dictionary</h1>"
+        else:
+            pwo.update(**upd_dict)
     url = request.forms["pw_object_type"] + 's'
     redirect("/{}/{}".format(url, id))
 
