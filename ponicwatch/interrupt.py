@@ -55,10 +55,10 @@ class Interrupt(Ponicwatch_Table):
                     "value": self["id"]
                 }
             elif self.init_dict["action"] == "reduce_log_table":
-                self.controller.log.reduce_size(keep_days=self.init_dict.get('days', 90))
+                nb_rows = self.controller.log.reduce_size(keep_days=self.init_dict.get('days', 90))
                 msg = {
                     "text_value": "Log reduced",
-                    "value": self["id"]
+                    "value": nb_rows
                 }
         except KeyError as err:
             # no action? Really??

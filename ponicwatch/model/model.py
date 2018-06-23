@@ -32,18 +32,22 @@ class Ponicwatch_Table(dict):
 
     def execute_sql(self, sql, params=()):
         """Execute an SQL command on the cursor with exclusive access to the database"""
+        nb_row = -1
         with self.db.exclusive_access:
             self.db.open()
             # print(sql, params)
             try:
                 self.db.curs.execute(sql, params)
                 self.db.conn.commit()
+                nb_row = self.db.curs.rowcount
             except InterfaceError as err:
                 print('*'*30, err)
                 print(sql)
                 print(params)
             finally:
                 self.db.close()
+        return nb_row
+
 
     def fetch(self, sql, params=[], only_one=False):
         with self.db.exclusive_access:

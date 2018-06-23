@@ -112,8 +112,9 @@ class Ponicwatch_Log(Ponicwatch_Table):
     def reduce_size(self, keep_days=90):
         """Delete all records above the number of days given as parameters"""
         keep_from = datetime.now() - timedelta(days=keep_days)
-        self.execute_sql("delete from tb_log where created_on < ?", ("{:%Y-%m-%d}".format(keep_from), ))
+        nb_rows = self.execute_sql("delete from tb_log where created_on < ?", ("{:%Y-%m-%d}".format(keep_from), ))
         self.execute_sql("vacuum")
+        return nb_rows
 
     def __str__(self):
         return "[{}] {}".format(self.controller_name, self["text_value"])
