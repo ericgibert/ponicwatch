@@ -8,7 +8,7 @@ from bottle import Bottle, template, static_file, request, BaseTemplate, redirec
 from bottlesession import CookieSession, authenticator
 from user import User
 
-__version__ = "1.20180220 Krabi"
+__version__ = "1.20180623 HK"
 __author__ = 'Eric Gibert'
 __license__ = 'MIT'
 
