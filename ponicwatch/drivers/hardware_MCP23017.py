@@ -396,10 +396,11 @@ if __name__ == "__main__":
     test_IC = Hardware_MCP23017(pig, { "bus":1, "address": "0x20", "interrupt": ""})
     IN_PIN, OUT_PIN = test_IC.translate_pin("B0"), test_IC.translate_pin("A0")
     test_IC.set_pin_mode(IN_PIN, Hardware_MCP23017.INPUT)
-    test_IC.set_pull_up(IN_PIN, Hardware_MCP23017.LOW)
+    test_IC.set_pull_up(IN_PIN, Hardware_MCP23017.HIGH)
     for OUT_PIN in range(4):
         test_IC.set_pin_mode(OUT_PIN, Hardware_MCP23017.OUTPUT)
     v = 0
+    last_in = -1
     try:
         while True:
             for OUT_PIN in range(4):
@@ -408,11 +409,11 @@ if __name__ == "__main__":
             v = 0 if v==1 else 1
             time.sleep(2)
 
-            # nv = test_IC.read(IN_PIN)
-            # if v != nv:
+            new_in = test_IC.read(IN_PIN)
+            if last_in != new_in:
             #     test_IC.write(OUT_PIN, nv)
-            #     print("new value=", nv)
-            #     v = nv
+                print("new value=", new_in, "open" if new_in[0]==1 else "contact")
+                last_in = new_in
             # time.sleep(0.2)
     finally:
         test_IC.cleanup()
