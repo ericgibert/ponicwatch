@@ -72,6 +72,15 @@ class Hardware_MCP3208(object):
     def write(self):
         raise NotImplementedError("MCP3208 is 12bits ADC: read only IC i.e. cannot write")
 
+    def average(self, channel, samples, param=5.0):
+        """read 'samples' measures and returns the average ignoring the lowest and highest ones"""
+        readings = []
+        for s in range(samples+2):
+            readings.append(self.read(channel, param))
+            #sleep(0.1)
+        sampling = sorted(readings)[1:-1]
+        return sum([s[0] for s in sampling]) / len(sampling), sum([s[1] for s in sampling]) / len(sampling)
+
 if __name__ == "__main__":
     import pigpio
     from time import sleep
@@ -79,7 +88,7 @@ if __name__ == "__main__":
     mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 })
     try:
         while True:
-            d, v = mcp3208.read(channel=0)
+            d, v = mcp3208.average(channel=0, samples=10)
             print("Read: {} , converted as {}V".format(d, v))
             sleep(2)
     finally:
