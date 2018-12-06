@@ -29,11 +29,11 @@ class Hardware_Gravity_pH(object):
         self.MCP3208 = MCP3208 or self.pig.get_pwo("Hardware", init_dict["MCP3208"])
         self.pin = init_dict["pin"]
 
-    def read(self, pin, param):
+    def read(self, pin, param=5.0):
         """Reads the voltage and convert to pH
             param is the reference voltage
         """
-        data, volts12bits = self.MCP3208.average(channel=self.pin, samples=10)
+        data, volts12bits = self.MCP3208.average(channel=self.pin, samples=10, param=param)
         return data, volts12bits/1000.0*3.5
 
 if __name__ == "__main__":
