@@ -11,6 +11,7 @@ import signal
 import json
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers import SchedulerNotRunningError
+from datetime import datetime
 
 try:
     import pigpio
@@ -30,7 +31,7 @@ from interrupt import Interrupt
 from http_view import http_view, get_image_file, one_pw_object_html, stop as bottle_stop, default as http_default
 from send_email import send_email
 
-__version__ = "1.20180506 Shanghai"
+__version__ = "2.20181206 Thebes"
 __author__ = 'Eric Gibert'
 __license__ = 'MIT'
 
@@ -83,11 +84,6 @@ class Controller(object):
                 self.systems[system_id] = System(self, id=system_id)
             if hardware_id and hardware_id not in self.hardwares:
                 self.hardwares[hardware_id] = Hardware(controller=self, id=hardware_id, system_name=self.systems[system_id]["name"])
-                if self.hardwares[hardware_id]["hardware"] == 'RPI3':
-                    self.RPI3 = self.hardwares[hardware_id]
-                elif self.hardwares[hardware_id]["hardware"] == 'MCP23017':
-                    self.MCP23017 = self.hardwares[hardware_id]
-
             if sensor_id and sensor_id not in self.sensors:
                     self.sensors[sensor_id] = Sensor(controller=self,
                                                      id=sensor_id,
@@ -236,15 +232,15 @@ class Controller(object):
         """
         pwo_dict_name = (cls if isinstance(cls, str) else cls.__class__.__name__).lower() + 's'
         pwo_dict = getattr(self, pwo_dict_name)
+        pwo = None
         try:
             pwo = pwo_dict[int(id)]
-            return pwo
         except KeyError:
             msg = "No pwo id {} found in {}".format(id, pwo_dict_name)
             if self.debug >= 3:
                 print(msg)
             self.log.add_error(msg=msg, err_code=id, fval=-1.1)
-        return None
+        return pwo
 
     def print_list(self):
         """CLI: Print the list of all created objects in the __init__ phase"""

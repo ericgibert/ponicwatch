@@ -27,9 +27,19 @@ class Hardware_MCP3208(object):
     12bits ADC driver
     """
     def __init__(self, pig, init_dict):
+        """
+
+        :param pig: instance of a pigpio object created by the controller
+        :param init_dict: parameters provided at initialization time
+                { "channel": 0, "baud": 50000, "flags":0 }
+                - channel: 0 (default) or 1
+                - baud: int. default 50_000
+                - flags: check the doc. def 0
+        """
         self.pig = pig
-        # { "channel": 0, "baud": 50000, "flags":0 }
-        spi_channel, baud, spi_flags = init_dict["channel"], init_dict["baud"], init_dict["flags"]
+        spi_channel, baud, spi_flags = (init_dict.get("channel", 0),
+                                        init_dict.get("baud", 50000),
+                                        init_dict.get("flags", 0))
         try:
             self.spi_handle = self.pig.spi_open(spi_channel, baud, spi_flags)
         except AttributeError as err:

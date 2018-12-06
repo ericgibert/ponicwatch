@@ -369,7 +369,7 @@ class Hardware_MCP23017(object):
                 function handleClick(myRadio) {
                     var xhttp = new XMLHttpRequest();
                     xhttp.open("POST", 
-                               "/hardware/" +myRadio.name + "/" + myRadio.value, 
+                               "/hardware/" + document.getElementsByName('hardware_id')[0].value + "/" +myRadio.name + "/" + myRadio.value, 
                                true);
                     xhttp.setRequestHeader("Content-type", "application/json");
                     xhttp.send();

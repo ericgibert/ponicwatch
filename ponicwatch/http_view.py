@@ -164,14 +164,15 @@ def pwo_value(id):
 #
 ###  Special operations on specific PWO
 #
-@http_view.post('/hardware/<pin>/<set_to>')
-def set_pin_to(pin, set_to):
+@http_view.post('/hardware/<id:int>/<pin>/<set_to>')
+def set_pin_to(id, pin, set_to):
     """Set the pin of an IC to a value
     - to set a pin on MCP23017: outAx | outBx where the last 2 char are the pin number to set
     - to set a pin on RPI3: RPIxx where xx is the pin to set
     set_to: ON | OFF"""
-    if pin.startswith("out"):
-        http_view.controller.MCP23017.write(pin[-2:], int(set_to == "ON"))
+    if pin.startswith("out") or pin.startswith("RPI"):
+        MCP23017 = http_view.controller.get_pwo("Hardware", id)
+        MCP23017.write(pin[-2:], int(set_to == "ON"))
 
 @http_view.get('/sensor/exec/<sensor_id:int>')
 def sensor_exec(sensor_id):
@@ -332,8 +333,8 @@ if __name__ == "__main__":
     from pw_log import Ponicwatch_Log
     class ctrl:
         def __init__(self):
-            self.name = 'test'
-            self.db = Ponicwatch_Db("sqlite3", {'database': 'ponicwatch.db'})
+            self.name = 'Mushtent'
+            self.db = Ponicwatch_Db("sqlite3", {'database': 'local_ponicwatch.db'})
             self.log = Ponicwatch_Log(controller=self, debug=3)
     http_view.controller = ctrl()
     http_view.run()

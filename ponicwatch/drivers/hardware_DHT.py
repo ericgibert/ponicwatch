@@ -36,7 +36,7 @@ class Hardware_DHT(object):
     supported_models = ("DHT11", "DHT22", "AM2302")
     def __init__(self, pig, model, pin):
         """
-        :param pig: instance of a pigpio object cretaed by the controller
+        :param pig: instance of a pigpio object created by the controller
         :param model: DHT11|DHT22|AM2302
         :param pin: the IC data pin on the Raspberry Pi
         """

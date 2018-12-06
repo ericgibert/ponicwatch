@@ -12,6 +12,7 @@ from drivers.hardware_DS18B20 import Hardware_DS18B20
 from drivers.hardware_RPI3 import Hardware_RPI3, CALLBACKS as RPI3_CALLBACKS
 from drivers.hardware_MCP23017 import Hardware_MCP23017
 from drivers.hardware_MCP3208 import Hardware_MCP3208
+from drivers.hardware_Gravity_pH import Hardware_Gravity_pH
 
 class Hardware(Ponicwatch_Table):
     """
@@ -51,14 +52,16 @@ class Hardware(Ponicwatch_Table):
             hardware, hw_init = self["hardware"], self.init_dict
             if hardware in Hardware_DHT.supported_models:  # DHT11|DHT22|AM2302
                 self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=translate_pin(hw_init["pin"]))
-            elif hardware in ["DS18B20"]:
+            elif hardware == "DS18B20":
                 self.driver = Hardware_DS18B20(pig=controller.pig, device_folder=hw_init["path"])
-            elif hardware in ["RPI3"]:
+            elif hardware == "RPI3":
                 self.driver = Hardware_RPI3(pig=controller.pig, in_out=hw_init)
-            elif hardware in ["MCP23017"]:
+            elif hardware == "MCP23017":
                 self.driver = Hardware_MCP23017(pig=controller.pig, hw_init_dict=hw_init)
-            elif hardware in ["MCP3208"]:
+            elif hardware == "MCP3208":
                 self.driver = Hardware_MCP3208(pig=controller.pig, init_dict=hw_init)
+            elif hardware == "GRAVITY_pH":
+                self.driver = Hardware_Gravity_pH(pig=controller.pig, init_dict=hw_init)
             else:
                 raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], hardware))
 
