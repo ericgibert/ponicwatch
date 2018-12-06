@@ -1,12 +1,12 @@
 #!/bin/env python
 """
-    Reads the signal provided by the Graviti pH probe
+    Reads the signal provided by the Gravity pH probe
 
     https://www.dfrobot.com/product-1025.html
 
     Requires a ADC to read the voltage from the signal pin
 
-    Declaration in the database
+    Declaration in the database: tb_hardware.hardware == GRAVITY_pH
 """
 
 
@@ -29,12 +29,12 @@ class Hardware_Gravity_pH(object):
         self.MCP3208 = MCP3208 or self.pig.get_pwo("Hardware", init_dict["MCP3208"])
         self.pin = init_dict["pin"]
 
-    def read(self, pin, param=5.0):
+    def read(self, pin=None, param=5.0):
         """Reads the voltage and convert to pH
             param is the reference voltage
         """
         data, volts12bits = self.MCP3208.average(channel=self.pin, samples=10, param=param)
-        return data, volts12bits*3.5
+        return data, volts12bits * 3.5 # coefficient from documentation
 
 if __name__ == "__main__":
     import pigpio
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     gravity_pH = Hardware_Gravity_pH(pig, init_dict={ "pin": 0}, MCP3208=mcp3208)
     try:
         while True:
-            data, pH = gravity_pH.read(0)
+            data, pH = gravity_pH.read()
             print("Read: {} , converted as pH={:.2f}".format(data, pH))
             sleep(2)
     finally:

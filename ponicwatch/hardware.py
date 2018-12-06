@@ -13,6 +13,7 @@ from drivers.hardware_RPI3 import Hardware_RPI3, CALLBACKS as RPI3_CALLBACKS
 from drivers.hardware_MCP23017 import Hardware_MCP23017
 from drivers.hardware_MCP3208 import Hardware_MCP3208
 from drivers.hardware_Gravity_pH import Hardware_Gravity_pH
+from drivers.hardware_Gravity_pH import Hardware_Gravity_TDS
 
 class Hardware(Ponicwatch_Table):
     """
@@ -62,6 +63,8 @@ class Hardware(Ponicwatch_Table):
                 self.driver = Hardware_MCP3208(pig=controller.pig, init_dict=hw_init)
             elif hardware == "GRAVITY_pH":
                 self.driver = Hardware_Gravity_pH(pig=controller.pig, init_dict=hw_init)
+            elif hardware == "GRAVITY_TDS":
+                self.driver = Hardware_Gravity_TDS(pig=controller.pig, init_dict=hw_init)
             else:
                 raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], hardware))
 
