@@ -39,7 +39,7 @@ class Hardware_Gravity_TDS(object):
             param is the reference voltage
         """
         data, volts12bits = self.MCP3208.average(channel=self.pin, samples=10, param=param)
-        temperature = self.water_temp.read()
+        temperature = 23.0 if self.water_temp == "not_found" else self.water_temp.read()
         compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0)
         compensationVolatge = volts12bits / compensationCoefficient
         tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     pig = pigpio.pi()
     mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 })
     list_of_files = Hardware_DS18B20.list_probes()
-    ds18b20 = Hardware_DS18B20(pig, list_of_files[0]) # first probe selected for testing
+    ds18b20 = Hardware_DS18B20(pig, list_of_files[0]) if list_of_files else "not_found"  # first probe selected for testing
     gravity_tds = Hardware_Gravity_TDS(pig, init_dict={ "pin": 0}, MCP3208=mcp3208, DS18B20=ds18b20)
     try:
         while True:
