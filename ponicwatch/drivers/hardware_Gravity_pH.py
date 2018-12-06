@@ -34,7 +34,7 @@ class Hardware_Gravity_pH(object):
             param is the reference voltage
         """
         data, volts12bits = self.MCP3208.average(channel=self.pin, samples=10, param=param)
-        return data, volts12bits/1000.0*3.5
+        return data, volts12bits*3.5
 
 if __name__ == "__main__":
     import pigpio
