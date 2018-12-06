@@ -46,7 +46,7 @@ if __name__ == "__main__":
     try:
         while True:
             data, pH = gravity_pH.read(0)
-            print("Read: {} , converted as pH={}".format(data, pH))
+            print("Read: {} , converted as pH={:.2f}".format(data, pH))
             sleep(2)
     finally:
         mcp3208.cleanup()
