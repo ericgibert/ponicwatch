@@ -39,13 +39,13 @@ class Hardware_Gravity_TDS(object):
             param is the reference voltage
         """
         data, volts12bits = self.MCP3208.average(channel=self.pin, samples=10, param=param)
-        temperature = 23.0 if self.water_temp == "not_found" else self.water_temp.read()
+        temperature = 21.0 if self.water_temp == "not_found" else self.water_temp.read()
         compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0)
         compensationVolatge = volts12bits / compensationCoefficient
         tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge
                     - 255.86 * compensationVolatge * compensationVolatge
-                    + 857.39 * compensationVolatge) * 0.5
-        return data, tdsValue
+                    + 857.39 * compensationVolatge) * 5.5  #0.5
+        return data, round(tdsValue)
 
 if __name__ == "__main__":
     import pigpio
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     try:
         while True:
             data, ppm = gravity_tds.read(0)
-            print("Read: {} , converted as {}ppm".format(data, round(ppm)))
+            print("Read: {} , converted as {}ppm".format(data, ppm))
             sleep(2)
     finally:
         mcp3208.cleanup()
