@@ -74,16 +74,18 @@ class Controller(object):
             _simulation = True
         # some plural are "fake" to respect the logic of: <cls name> + 's' --> dictionary of <cls> PonicWatch Object
         self.systems, self.sensors, self.switchs, self.hardwares, self.interrupts = {}, {}, {}, {}, {}
-        self.db.curs.execute("SELECT * from tb_link order by system_id desc, order_for_creation")
+        # system_id <= 0:  inactive link --> ignore this row
+        self.db.curs.execute("SELECT * from tb_link where system_id > 0 order by system_id desc, order_for_creation")
         self.links = self.db.curs.fetchall()
         for system_id, sensor_id, switch_id, hardware_id, order_for_creation, interrupt_id in self.links:
             # (1) create all necessary objects
             # (2) and register the system and hardware to a sensor/switch
-            if system_id <= 0: continue  # inactive link --> ignore this row
             if system_id not in self.systems:
                 self.systems[system_id] = System(self, id=system_id)
             if hardware_id and hardware_id not in self.hardwares:
-                self.hardwares[hardware_id] = Hardware(controller=self, id=hardware_id, system_name=self.systems[system_id]["name"])
+                self.hardwares[hardware_id] = Hardware(controller=self,
+                                                       id=hardware_id,
+                                                       system_name=self.systems[system_id]["name"])
             if sensor_id and sensor_id not in self.sensors:
                     self.sensors[sensor_id] = Sensor(controller=self,
                                                      id=sensor_id,

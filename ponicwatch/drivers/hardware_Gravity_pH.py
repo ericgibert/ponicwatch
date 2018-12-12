@@ -15,25 +15,26 @@ class Hardware_Gravity_pH(object):
       Connection on +5V and Ground + signal on ADC pin
     """
 
-    def __init__(self, pig, init_dict, MCP3208=None):
+    def __init__(self, pig, init_dict, ADC):
         """
-
+        Reads on the ADC the voltage given by the probe.
+        Converts the voltage to pH reading.
         :param pig: instance of a pigpio object created by the controller
         :param init_dict: parameters provided at initialization time
-                { "MCP3208": 5, "pin": 1 }
-                - MCP3208: the tb_hardware.id of the MCP3208 the probe is connected too
-                - pin: the MCP3208's pin
-        :param MCP3208: only for testing - provide the MCP3208 PWO
+                { "ADC": 5, "pin": 1 }
+                - ADC: the tb_hardware.id of the ADC (MCP3208) the probe is connected too
+                - pin: the ADC's pin
+        :param ADC: only for testing - provide the MCP3208 PWO
         """
         self.pig = pig
-        self.MCP3208 = MCP3208 or self.pig.get_pwo("Hardware", init_dict["MCP3208"])
+        self.ADC = ADC  #  or self.pig.get_pwo("Hardware", init_dict["ADC"])
         self.pin = init_dict["pin"]
 
     def read(self, pin=None, param=5.0):
         """Reads the voltage and convert to pH
             param is the reference voltage
         """
-        data, volts12bits = self.MCP3208.average(channel=self.pin, samples=10, param=param)
+        data, volts12bits = self.ADC.average(channel=self.pin, samples=10, param=param) if self.pig.connected else 1000, 2.0
         return data, volts12bits * 3.5 # coefficient from documentation
 
 if __name__ == "__main__":
@@ -42,7 +43,7 @@ if __name__ == "__main__":
     from time import sleep
     pig = pigpio.pi()
     mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 })
-    gravity_pH = Hardware_Gravity_pH(pig, init_dict={ "pin": 0}, MCP3208=mcp3208)
+    gravity_pH = Hardware_Gravity_pH(pig, init_dict={ "pin": 0}, ADC=mcp3208)
     try:
         while True:
             data, pH = gravity_pH.read()
