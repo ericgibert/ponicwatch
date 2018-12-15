@@ -70,6 +70,7 @@ class Hardware_MCP3208(object):
             count, adc = self.pig.spi_xfer(self.spi_handle, [4 | 2 |(channel>>2), (channel &3) << 6,0])
         except AttributeError:
             # REPLACE BY SIMULATION
+            print("all zeroes for simulation")
             count, adc = 0, [0,0,0,0]
         # print("read from MCP3208:", (count, adc))
         data = ((adc[1] & 15) << 8) + adc[2]
@@ -98,8 +99,9 @@ if __name__ == "__main__":
     mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 })
     try:
         while True:
-            d, v = mcp3208.average(channel=0, samples=10)
-            print("Read: {} , converted as {}V".format(d, v))
+            for i in range(4):
+                d, v = mcp3208.average(channel=i, samples=10)
+                print("Read {}: {} , converted as {}V".format(i, d, v))
             sleep(2)
     finally:
         mcp3208.cleanup()

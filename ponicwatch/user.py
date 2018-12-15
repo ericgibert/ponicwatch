@@ -51,9 +51,9 @@ if __name__ == "__main__":
     from model.pw_db import Ponicwatch_Db
     # test for the database on Sqlite3
     pw_db = Ponicwatch_Db("sqlite3", {"database": "local_ponicwatch.db"})
-    user = User(db=pw_db)
-    user.get_user("test", "test")
-    print("1) Name: {}   user_id: {}".format(user, user["id"]))
+    user = User(db=pw_db, id=1)
+    #user.get_user(id=1)
+    print("1) Name: {}   user_id: {} {}".format(user, user["id"], user["password"]))
 
     new_user = User(db=pw_db, id=user["id"])
     print("2) Name: {}   user_id: {}".format(new_user, new_user["id"]))

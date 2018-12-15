@@ -55,6 +55,7 @@ if __name__ == "__main__":
     pig = pigpio.pi()
     mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 })
     list_of_files = Hardware_DS18B20.list_probes()
+    print("Found the following probes:", list_of_files)
     ds18b20 = Hardware_DS18B20(pig, list_of_files[0]) if list_of_files else "not_found"  # first probe selected for testing
     gravity_tds = Hardware_Gravity_TDS(pig, init_dict={ "pin": 0}, ADC=mcp3208, water_temp_sensor=ds18b20)
     try:
