@@ -43,7 +43,7 @@ DEBUG = 0
 class Controller(object):
     """The Controller in a MVC model"""
 
-    def __init__(self, db, , bottle_ip='127.0.0.1', pigpio_host="", pigpio_port=8888):
+    def __init__(self, db, bottle_ip='127.0.0.1', pigpio_host="", pigpio_port=8888):
         """- Create the controller, its Viewer and connect to database (Model)
            - Select all the hardware (sensors/switches) for the systems under its control
            - Launch the scheduler
