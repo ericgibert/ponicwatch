@@ -43,16 +43,19 @@ DEBUG = 0
 class Controller(object):
     """The Controller in a MVC model"""
 
-    def __init__(self, db, pigpio_host="", pigpio_port=8888, bottle_ip=None):
+    def __init__(self, db, , bottle_ip='127.0.0.1', pigpio_host="", pigpio_port=8888):
         """- Create the controller, its Viewer and connect to database (Model)
-           - Select all the hardware (sensors/switchs) for the systems under its control
+           - Select all the hardware (sensors/switches) for the systems under its control
            - Launch the scheduler
            - host:port is used to connect to the pigpio server running on the Raspberry Pi.
            Need to execute 'sudo pigpiod' to get that daemon running if it is not automatically started at boot time
+
+           :param db: instance of a Ponicwatch_Db
+           :param bottle_ip: IP to reach the webpages. Important to set properly for remote access.
         """
         global _simulation # if no PGIO port as we are not running on a Raspberry Pi
         self.debug = DEBUG
-        self.bottle_ip = bottle_ip or '127.0.0.1'
+        self.bottle_ip = bottle_ip
         # keep a link to the database i.e. M in MVC
         self.db = db
         self.db.allow_close = False
@@ -299,8 +302,8 @@ def exist_file(x):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--sqlite", dest="dbfilename", help="Path of a Sqlite3 database.")  # type=exist_file, # required=False,
-    parser.add_argument("-r", "--raspi",  dest="host", help="Optional: remote Raspberry Pi IP address", required=False, default="")
+    parser.add_argument("-s", "--sqlite", dest="dbfilename", help="Path of a Sqlite3 database.", type=exist_file, required=True),
+    parser.add_argument("-p", "--pigpio",  dest="pigpio", help="Optional: remote Raspberry Pi (pigpio) IP address", required=False, default="")
     parser.add_argument("-b", "--bottle", dest="bottle_ip", help="Optional: Raspberry Pi IP address to allow remote connections", required=False,  default="")
     parser.add_argument("-d", "--debug",  dest="debug", help="Optional: debug level [0..3]", required=False, type=int, default=None)
     parser.add_argument("-l", "--list",   dest="print_list", help="List all created objects - no running -", action='store_true')
@@ -314,7 +317,7 @@ if __name__ == "__main__":
 
     if args.dbfilename:
         db = Ponicwatch_Db("sqlite3", {'database': args.dbfilename}, args.cleandb)
-        ctrl = Controller(db, pigpio_host=args.host, bottle_ip=args.bottle_ip)
+        ctrl = Controller(db, bottle_ip=args.bottle_ip, pigpio_host=args.pigpio)
         http_view.controller = ctrl
         if args.print_list:
             ctrl.print_list()
@@ -322,6 +325,5 @@ if __name__ == "__main__":
             ctrl.ponicwatch_notification()
         else:
             ctrl.run()
-
     else:
         print("currently: -s dbfilename is mandatory")
