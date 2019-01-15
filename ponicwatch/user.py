@@ -53,11 +53,11 @@ if __name__ == "__main__":
     pw_db = Ponicwatch_Db("sqlite3", {"database": "local_ponicwatch.db"})
     user = User(db=pw_db, id=1)
     #user.get_user(id=1)
-    print("1) Name: {}   user_id: {} {}".format(user, user["id"], user["password"]))
+    print("1) Name: {}   user {}: {} {}".format(user, user["id"], user["login"], user["password"]))
 
     new_user = User(db=pw_db, id=user["id"])
     print("2) Name: {}   user_id: {}".format(new_user, new_user["id"]))
 
     new_user = User(db=pw_db)
     new_user.insert(login="new", email="new@new", authorization=0, password="qwertyuiop", name="New User")
-    print("3) Name: {}   user_id: {}".format(new_user, new_user["id"]))
+    # print("3) Name: {}   user_id: {}".format(new_user, new_user["id"]))

@@ -44,7 +44,7 @@
     % import sqlite3
     <li>sqlite3: {{sqlite3.version}}</li>
     % import pkg_resources
-    <li>bottle: {{pkg_resources.get_distribution("bottle").version}}</li>
+    <li>bottle: {{ pkg_resources.get_distribution("bottle").version}}</li>
     <li>APScheduler: {{pkg_resources.get_distribution("apscheduler").version}}</li>
     <li>Markdown: {{pkg_resources.get_distribution("markdown").version}}</li>
     <li>matplotlib: {{pkg_resources.get_distribution("matplotlib").version}}</li>
