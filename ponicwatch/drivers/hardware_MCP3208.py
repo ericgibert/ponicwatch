@@ -101,7 +101,8 @@ if __name__ == "__main__":
         while True:
             for i in range(4):
                 d, v = mcp3208.average(channel=i, samples=10)
-                print("Read {}: {} , converted as {}V".format(i, d, v))
+                print("{}: {} , converted as {:.2f}V".format(i, d, v), end="")
+            print("\r", end="")
             sleep(2)
     finally:
         mcp3208.cleanup()
