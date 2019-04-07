@@ -15,7 +15,7 @@ class Hardware_Gravity_pH(object):
       Connection on +5V and Ground + signal on ADC pin
     """
 
-    def __init__(self, pig, init_dict, ADC):
+    def __init__(self, pig, init_dict, ADC=None):
         """
         Reads on the ADC the voltage given by the probe.
         Converts the voltage to pH reading.
@@ -27,7 +27,7 @@ class Hardware_Gravity_pH(object):
         :param ADC: only for testing - provide the MCP3208 PWO
         """
         self.pig = pig
-        self.ADC = ADC  #  or self.pig.get_pwo("Hardware", init_dict["ADC"])
+        self.ADC = ADC or self.pig.get_pwo("Hardware", init_dict["ADC"])
         self.pin = init_dict["pin"]
 
     def read(self, pin=None, param=5.0):
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     from time import sleep
     pig = pigpio.pi()
     mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 })
-    gravity_pH = Hardware_Gravity_pH(pig, init_dict={ "pin": 0}, ADC=mcp3208)
+    gravity_pH = Hardware_Gravity_pH(pig, init_dict={ "pin": 1}, ADC=mcp3208)
     try:
         while True:
             data, pH = gravity_pH.read()
