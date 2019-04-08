@@ -92,6 +92,9 @@ class Hardware_MCP3208(object):
         sampling = sorted(readings)[1:-1]
         return sum([s[0] for s in sampling]) / len(sampling), sum([s[1] for s in sampling]) / len(sampling)
 
+    def __str__(self):
+        return "ADC MCP3208"
+
 if __name__ == "__main__":
     import pigpio
     from time import sleep

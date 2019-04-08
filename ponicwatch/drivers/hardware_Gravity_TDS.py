@@ -33,19 +33,24 @@ class Hardware_Gravity_TDS(object):
         self.ADC = ADC or self.pig.get_pwo("Hardware", init_dict["ADC"])
         self.pin = init_dict["pin"]
         self.water_temp_sensor = water_temp_sensor or self.pig.get_pwo("Sensor", init_dict["water_temp_sensor"])
+        print("--->  TDS:", self.ADC, self.pin, self.water_temp_sensor)
 
     def read(self, pin=None, param=5.0):
         """Reads the voltage and convert to pH
             param is the reference voltage
         """
-        data, volts12bits = self.ADC.average(channel=self.pin, samples=10, param=param) if self.pig.connected else 1000, 0.2
-        temperature, _ = self.water_temp_sensor.read() # if self.pig.connected else 21.0
+        print("Reading TDS probe...", end="")
+        data, volts12bits = self.ADC.average(self.pin, samples=10, param=param) if self.pig.connected else 1000, 0.2
+        print(data, volts12bits)
+        print("Reading water temperature...", end="")
+        temperature = self.water_temp_sensor.value # if self.pig.connected else 21.0
+        print(temperature)
         compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0)
         compensationVolatge = volts12bits / compensationCoefficient
         tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge
                     - 255.86 * compensationVolatge * compensationVolatge
                     + 857.39 * compensationVolatge) * 5.5  #0.5
-        return data, round(tdsValue)
+        return data[0], round(tdsValue)
 
 if __name__ == "__main__":
     import pigpio

@@ -60,6 +60,8 @@ class Sensor(Ponicwatch_Table):
         super().__init__(db or controller.db, Sensor.META, *args, **kwargs)
         self.controller = controller
         self.hardware = hardware
+        if self.controller.debug >= 3:
+            print("Sensor {} is attached to hardware {}".format(self, self.hardware))
         if self["mode"] > self.INACTIVE:
             if hardware["mode"] == 2:  # R/W
                 self.hardware.set_pin_as_input(self.init_dict["pin"])
@@ -103,9 +105,11 @@ class Sensor(Ponicwatch_Table):
                 self.controller.log.add_error(msg=msg, err_code=self["id"], fval=-3.2)
         # reads from sensor hardware
         try:
-            read_val, calc_val = self.hardware.read(self.init_dict.get("pin"), self.init_dict.get("hw_param"))
+            read_val, calc_val = self.hardware.read(self.init_dict.get("pin"), self.init_dict.get("hw_param", {}))
+            if self.controller.debug >= 3:
+                print("Reading sensor {}: read_val={} and calc_val={} from {}".format(self, read_val, calc_val, self.hardware))
         except AttributeError as err:
-            msg = "Reading from hardware {} (mode={}) returns error:\{}".format(self.hardware["name"], self.hardware["mode"], err)
+            msg = "Reading from hardware {} (mode={}) returns error: {}".format(self.hardware["name"], self.hardware["mode"], err)
             if self.controller.debug >= 3:
                 print(msg)
             self.controller.log.add_error(msg=msg, err_code=self["id"], fval=-3.5)

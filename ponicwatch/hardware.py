@@ -91,6 +91,13 @@ class Hardware(Ponicwatch_Table):
             self.update(value=new_val)
         self.controller.log.add_log(system_name=self.system_name, param=self)
 
+    def average(self, pin, samples, param):
+        """read many inpt and average"""
+        if self.debug >= 3:
+            print("Hardware average (pin, samples, param) =", (pin, samples, param))
+        return self.driver.average(translate_pin(pin), samples, param)
+
+
     def cleanup(self):
         try:
             self.driver.cleanup()

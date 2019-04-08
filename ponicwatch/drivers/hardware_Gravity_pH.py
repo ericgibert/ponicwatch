@@ -28,14 +28,20 @@ class Hardware_Gravity_pH(object):
         """
         self.pig = pig
         self.ADC = ADC or self.pig.get_pwo("Hardware", init_dict["ADC"])
+        print("--->  ADC:", self.ADC)
         self.pin = init_dict["pin"]
 
     def read(self, pin=None, param=5.0):
         """Reads the voltage and convert to pH
             param is the reference voltage
         """
-        data, volts12bits = self.ADC.average(channel=self.pin, samples=10, param=param) if self.pig.connected else 1000, 2.0
-        return data, volts12bits * 3.5 # coefficient from documentation
+        print("--> Called to read on", self.ADC)
+        data, volts12bits = self.ADC.average(self.pin, samples=10, param=param) if self.pig.connected else 1000, 2.0
+        print("readings: {}, {}".format(data, volts12bits))
+        return data[0], volts12bits * 3.5 # coefficient from documentation
+
+    def __str__(self):
+        return "pH Gravity probe on ADC pin {}".format(self.pin)
 
 if __name__ == "__main__":
     import pigpio
