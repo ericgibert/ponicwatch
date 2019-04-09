@@ -62,19 +62,20 @@ class Hardware_MCP23017(object):
     OLATA = 0x14
     OLATB = 0x15
 
-    def __init__(self, pig, hw_init_dict, num_gpios=16):
+    def __init__(self, pig, init_dict, num_gpios=16, debug=0):
         """
         Create the driver to communicate with the MCP23017 chip by i2c
         :param pig: pigpio from the controller
-        :param hw_init_dict: 1.0x20.16 when the 3 address pins are grounded and INTA is connected to RASPI pin 16
+        :param init_dict: 1.0x20.16 when the 3 address pins are grounded and INTA is connected to RASPI pin 16
         :param num_gpios: up to 16 for MCP23017
         """
         assert 0 <= num_gpios <= 16, "Number of GPIOs must be between 0 and 16"
         self.pig = pig
-        self.hw_init_dict = hw_init_dict
-        busnum, self.address, interrupt = (hw_init_dict["bus"],
-                                           hw_init_dict["address"] if isinstance(hw_init_dict["address"], int) else int(hw_init_dict["address"], 16),
-                                           hw_init_dict["interrupt"])
+        self.hw_init_dict = init_dict
+        self.debug = max(debug, init_dict.get("debug", 0))
+        busnum, self.address, interrupt = (init_dict["bus"],
+                                           init_dict["address"] if isinstance(init_dict["address"], int) else int(init_dict["address"], 16),
+                                           init_dict["interrupt"])
         self.i2c_handle = self.pig.i2c_open(busnum, self.address)
         self.num_gpios = num_gpios
 

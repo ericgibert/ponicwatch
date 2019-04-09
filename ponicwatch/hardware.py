@@ -52,24 +52,26 @@ class Hardware(Ponicwatch_Table):
         if self["mode"] > self.INACTIVE:
             hardware, hw_init = self["hardware"], self.init_dict
             if hardware in Hardware_DHT.supported_models:  # DHT11|DHT22|AM2302
-                self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=translate_pin(hw_init["pin"]))
+                self.driver = Hardware_DHT(pig=controller.pig, model=hardware, pin=translate_pin(hw_init["pin"]), debug=self.debug)
             elif hardware == "DS18B20":
-                self.driver = Hardware_DS18B20(pig=controller.pig, device_folder=hw_init["path"])
+                self.driver = Hardware_DS18B20(pig=controller.pig, device_folder=hw_init["path"], debug=self.debug)
             elif hardware == "RPI3":
-                self.driver = Hardware_RPI3(pig=controller.pig, in_out=hw_init)
+                self.driver = Hardware_RPI3(pig=controller.pig, init_dict=hw_init, debug=self.debug)
             elif hardware == "MCP23017":
-                self.driver = Hardware_MCP23017(pig=controller.pig, hw_init_dict=hw_init)
+                self.driver = Hardware_MCP23017(pig=controller.pig, init_dict=hw_init, debug=self.debug)
             elif hardware == "MCP3208":
-                self.driver = Hardware_MCP3208(pig=controller.pig, init_dict=hw_init)
+                self.driver = Hardware_MCP3208(pig=controller.pig, init_dict=hw_init, debug=self.debug)
             elif hardware == "GRAVITY_pH":
                 self.driver = Hardware_Gravity_pH(pig=controller.pig,
                                                   init_dict=hw_init,
-                                                  ADC=controller.get_pwo("Hardware", hw_init["ADC"]))
+                                                  ADC=controller.get_pwo("Hardware", hw_init["ADC"]),
+                                                  debug=self.debug)
             elif hardware == "GRAVITY_TDS":
                 self.driver = Hardware_Gravity_TDS(pig=controller.pig,
                                                    init_dict=hw_init,
                                                    ADC=controller.get_pwo("Hardware", hw_init["ADC"]),
-                                                   water_temp_sensor=controller.get_pwo("Sensor", hw_init["water_temp_sensor"]))
+                                                   water_temp_sensor=controller.get_pwo("Sensor", hw_init["water_temp_sensor"]),
+                                                   debug=self.debug)
             else:
                 raise ValueError("Unknown hardware declared: {0} {1}".format(self["id"], hardware))
 

@@ -26,7 +26,7 @@ class Hardware_MCP3208(object):
     """
     12bits ADC driver
     """
-    def __init__(self, pig, init_dict):
+    def __init__(self, pig, init_dict, debug=0):
         """
 
         :param pig: instance of a pigpio object created by the controller
@@ -40,8 +40,10 @@ class Hardware_MCP3208(object):
         spi_channel, baud, spi_flags = (init_dict.get("channel", 0),
                                         init_dict.get("baud", 50000),
                                         init_dict.get("flags", 0))
+        self.debug = max(debug, init_dict.get("debug", 0))
         try:
             self.spi_handle = self.pig.spi_open(spi_channel, baud, spi_flags)
+            if self.debug >= 3: print("spi_handle open OK")
         except AttributeError as err:
             print("Unable to open SPI\n", err)
 
@@ -72,7 +74,7 @@ class Hardware_MCP3208(object):
             # REPLACE BY SIMULATION
             print("all zeroes for simulation")
             count, adc = 0, [0,0,0,0]
-        # print("read from MCP3208:", (count, adc))
+        if self.debug >= 3: print("read from MCP3208:", (count, adc))
         data = ((adc[1] & 15) << 8) + adc[2]
         volts12bits = (data * param) / 4095.0
         return (data, volts12bits)
@@ -99,7 +101,7 @@ if __name__ == "__main__":
     import pigpio
     from time import sleep
     pig = pigpio.pi()
-    mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 })
+    mcp3208 = Hardware_MCP3208(pig, { "channel": 0, "baud": 50000, "flags":0 }, debug=3)
     try:
         while True:
             for i in range(4):

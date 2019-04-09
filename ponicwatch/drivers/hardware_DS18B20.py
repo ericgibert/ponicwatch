@@ -27,14 +27,15 @@ class Hardware_DS18B20(object):
         os.system('modprobe w1-therm')
         return glob(cls.base_dir + '28*')
 
-    def __init__(self, pig, device_folder):
+    def __init__(self, pig, device_folder, debug=0):
         self.pig = pig
         self.device_file = device_folder + '/w1_slave'
+        self.debug = debug
         if os.path.isfile(self.device_file):
             self.simulation = False
         elif self.pig.connected:
             self.simulation = False
-            print("Remote read of", self.device_file)
+            if self.debug>=3: print("Remote read of", self.device_file)
         else:
             self.simulation = True
             print("Simulation on", self)
@@ -106,7 +107,7 @@ if __name__ == "__main__":
     list_of_files = Hardware_DS18B20.list_probes()
     print(list_of_files)
     for probe_folder in list_of_files:
-        probes.append(Hardware_DS18B20(pi, probe_folder))
+        probes.append(Hardware_DS18B20(pi, probe_folder, debug=3))
 
     if probes:
         while True:

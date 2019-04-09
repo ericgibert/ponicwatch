@@ -29,22 +29,23 @@ class Hardware_RPI3(object):
     work with the pigpio library: http://abyz.co.uk/rpi/pigpio/python.html
     """
 
-    def __init__(self, pig, in_out):
+    def __init__(self, pig, init_dict, debug=0):
         """
         :param pig: instance of a pigpio object cretaed by the controller
-        :param in_out: dictionary of IN and OUT pins like {"IN":[],"OUT":[27,9]}
+        :param init_dict: dictionary of IN and OUT pins like {"IN":[],"OUT":[27,9]} and other parameters
         """
         global CALLBACKS
         self.pig = pig
-        self.in_out = in_out
-        for i in self.in_out["IN"]:
+        self.init_dict = init_dict
+        self.debug = max(debug, init_dict.get("debug", 0))
+        for i in self.init_dict["IN"]:
             self.pig.set_mode(i, pigpio.INPUT)
             self.pig.set_pull_up_down(i, pigpio.PUD_DOWN)
-        for o in self.in_out["OUT"]:
+        for o in self.init_dict["OUT"]:
             self.pig.set_mode(o, pigpio.OUTPUT)
             self.pig.write(o, 0)
         try:
-            for i in self.in_out["INTER"]:
+            for i in self.init_dict["INTER"]:
                 self.pig.callback(i, pigpio.RISING_EDGE, self.pigpio_callback)
         except KeyError:
             # no interruptions
@@ -54,11 +55,11 @@ class Hardware_RPI3(object):
         if param == 'T':
             data = self.read_cpu_temperature()
         else:
-            data = float(self.pig.read(pin)) if pin in self.in_out["IN"] else None
+            data = float(self.pig.read(pin)) if pin in self.init_dict["IN"] else None
         return data, data
 
     def write(self, pin, value):
-        if pin in self.in_out["OUT"]:
+        if pin in self.init_dict["OUT"]:
             self.pig.write(pin, value)
         return self.pig.read(pin)
 

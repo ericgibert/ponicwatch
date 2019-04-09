@@ -45,9 +45,10 @@ class Switch(Ponicwatch_Table):
     def __init__(self, controller, system_name, hardware, db=None, *args, **kwargs):
         super().__init__(db or controller.db, Switch.META, *args, **kwargs)
         self.controller = controller
+        self.system_name = system_name + "/" + self["name"]
         self.hardware = hardware
         self.hardware.set_pin_as_output(self.init_dict["pin"])
-        self.system_name = system_name + "/" + self["name"]
+        self.debug = max(self.controller.debug, self.init_dict.get("debug", 0))
         if self["mode"] > self.INACTIVE and self["timer"]:
             self.controller.add_cron_job(self.execute, self["timer"])
         # set the switch to 'set_value_to' if given in the init dictionary else to the last value recorded
@@ -96,7 +97,7 @@ class Switch(Ponicwatch_Table):
             self.hardware.write(self.init_dict["pin"], set_to)
             self.update(value=set_to)
             self.controller.log.add_log(system_name=self.system_name, param=self)
-        elif self.controller.debug >= 3:
+        elif self.debug >= 3:
             print(self, "'if' condition False: abort execution")
 
     @property

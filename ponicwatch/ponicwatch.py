@@ -31,7 +31,7 @@ from interrupt import Interrupt
 from http_view import http_view, get_image_file, one_pw_object_html, stop as bottle_stop, default as http_default
 from send_email import send_email
 
-__version__ = "2.20181206 Thebes"
+__version__ = "2.20190409 Seattle"
 __author__ = 'Eric Gibert'
 __license__ = 'MIT'
 
@@ -304,7 +304,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--sqlite", dest="dbfilename", help="Path of a Sqlite3 database.", type=exist_file, required=True),
     parser.add_argument("-p", "--pigpio",  dest="pigpio", help="Optional: remote Raspberry Pi (pigpio) IP address", required=False, default="")
-    parser.add_argument("-b", "--bottle", dest="bottle_ip", help="Optional: Raspberry Pi IP address to allow remote connections", required=False,  default="")
+    parser.add_argument("-b", "--bottle", dest="bottle_ip", help="Optional: Raspberry Pi IP address to allow remote connections", required=False,  default="127.0.0.1")
     parser.add_argument("-d", "--debug",  dest="debug", help="Optional: debug level [0..3]", required=False, type=int, default=None)
     parser.add_argument("-l", "--list",   dest="print_list", help="List all created objects - no running -", action='store_true')
     parser.add_argument("-c", "--clean",  dest="cleandb", help="Clean database tables/logs", action='store_true', default=False)

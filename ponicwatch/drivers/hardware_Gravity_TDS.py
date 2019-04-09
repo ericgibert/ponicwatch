@@ -17,7 +17,7 @@ class Hardware_Gravity_TDS(object):
       Connection on +5V and Ground + signal on ADC pin
     """
 
-    def __init__(self, pig, init_dict, ADC=None, water_temp_sensor=None):
+    def __init__(self, pig, init_dict, ADC=None, water_temp_sensor=None, debug=0):
         """
 
         :param pig: instance of a pigpio object created by the controller
@@ -30,21 +30,23 @@ class Hardware_Gravity_TDS(object):
         :param water_temp_sensor: only for testing - provide the DS18B20 PWO
         """
         self.pig = pig
-        self.ADC = ADC or self.pig.get_pwo("Hardware", init_dict["ADC"])
+        self.ADC = ADC #  or self.pig.get_pwo("Hardware", init_dict["ADC"])
         self.pin = init_dict["pin"]
         self.water_temp_sensor = water_temp_sensor or self.pig.get_pwo("Sensor", init_dict["water_temp_sensor"])
-        print("--->  TDS:", self.ADC, self.pin, self.water_temp_sensor)
+        self.debug = max(debug, init_dict.get("debug", 0))
+        if self.debug>=3: print("--->  TDS:", self.ADC, self.pin, self.water_temp_sensor)
 
     def read(self, pin=None, param=5.0):
         """Reads the voltage and convert to pH
             param is the reference voltage
         """
-        print("Reading TDS probe...", end="")
+        if self.debug>=3: print("Reading TDS probe...", end="")
         data, volts12bits = self.ADC.average(self.pin, samples=10, param=param) if self.pig.connected else 1000, 0.2
-        print(data, volts12bits)
-        print("Reading water temperature...", end="")
+        if self.debug >= 3:
+            print(data, volts12bits)
+            print("Reading water temperature...", end="")
         temperature = self.water_temp_sensor.value # if self.pig.connected else 21.0
-        print(temperature)
+        if self.debug>=3: print(temperature)
         compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0)
         compensationVolatge = volts12bits / compensationCoefficient
         tdsValue = (133.42 * compensationVolatge * compensationVolatge * compensationVolatge
@@ -62,7 +64,7 @@ if __name__ == "__main__":
     list_of_files = Hardware_DS18B20.list_probes()
     print("Found the following probes:", list_of_files)
     ds18b20 = Hardware_DS18B20(pig, list_of_files[0]) if list_of_files else "not_found"  # first probe selected for testing
-    gravity_tds = Hardware_Gravity_TDS(pig, init_dict={ "pin": 2}, ADC=mcp3208, water_temp_sensor=ds18b20)
+    gravity_tds = Hardware_Gravity_TDS(pig, init_dict={ "pin": 2}, ADC=mcp3208, water_temp_sensor=ds18b20, debug=3)
     try:
         while True:
             data, ppm = gravity_tds.read(0)

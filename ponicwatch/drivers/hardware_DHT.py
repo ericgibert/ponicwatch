@@ -34,7 +34,7 @@ class Hardware_DHT(object):
         Only expects a GPI pin for dialog
     """
     supported_models = ("DHT11", "DHT22", "AM2302")
-    def __init__(self, pig, model, pin):
+    def __init__(self, pig, model, pin, debug=0):
         """
         :param pig: instance of a pigpio object created by the controller
         :param model: DHT11|DHT22|AM2302
@@ -45,6 +45,7 @@ class Hardware_DHT(object):
         self.humidity = None
         self.last_read = datetime.now()
         self.sensor = dht_sensor(pig, self.pin) if pig.connected else dht_sensor_simu(pig, self.pin)
+        self.debug = debug
       
     def read(self, pins, T_or_H):
         """
@@ -52,12 +53,13 @@ class Hardware_DHT(object):
         3 seconds gap is guarantied between 2 readings
         Note: param pins is ignored as the reading pin is defined at __init__ time already
         """
-        # print("T_or_H:", T_or_H)
+        if self.debug>=3: print("T_or_H:", T_or_H)
         if (datetime.now() - self.last_read).seconds > 3 or self.humidity is None:
             #humidity, temperature = Adafruit_DHT.read_retry(self.model, self.pin)
             self.sensor.trigger()
             sleep(0.2)
             humidity, temperature = self.sensor.humidity(), self.sensor.temperature()
+            if self.debug >= 3: print("humidity, temperature =", (humidity, temperature))
             if humidity is not None and temperature is not None:
                 self.humidity, self.temperature = humidity, temperature
                 self.last_read = datetime.now()
@@ -79,7 +81,7 @@ if __name__ == "__main__":
     pig.connected = True
     pin = int(sys.argv[1])
     print(pin)
-    dht = Hardware_DHT(pig, "AM2302", pin)
+    dht = Hardware_DHT(pig, "AM2302", pin, debug=3)
     print("Temperature:", dht.read(T_or_H='T'))
     print("Humidity:", dht.read(T_or_H='H'))
 
