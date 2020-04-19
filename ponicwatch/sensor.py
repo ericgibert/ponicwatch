@@ -60,6 +60,7 @@ class Sensor(Ponicwatch_Table):
         super().__init__(db or controller.db, Sensor.META, *args, **kwargs)
         self.controller = controller
         self.hardware = hardware
+        self.read_value = -1
         self.debug = max(self.controller.debug, self.init_dict.get("debug", 0))
         if self.debug >= 3:
             print("Sensor {} is attached to hardware {}".format(self, self.hardware))
@@ -107,6 +108,7 @@ class Sensor(Ponicwatch_Table):
         # reads from sensor hardware
         try:
             read_val, calc_val = self.hardware.read(self.init_dict.get("pin"), self.init_dict.get("hw_param", {}))
+            self.read_value = read_val
             if self.debug >= 3:
                 print("Reading sensor {}: read_val={} and calc_val={} from {}".format(self, read_val, calc_val, self.hardware))
         except AttributeError as err:
@@ -133,17 +135,15 @@ class Sensor(Ponicwatch_Table):
         """Called by the scheduler to perform the data reading
         Log the read values
         """
+        last_read_val = self.read_value
         read_val, calc_val = self.read_values()
         if read_val is None:
             self.controller.log.add_error("Cannot read from " + str(self), err_code=self["id"], fval=-3.3)
         else:
             self.update(read_value=read_val, value=calc_val)   #  update_values(read_val, calc_val)
-            self.controller.log.add_log(system_name=self.long_name, param=self)
-            # try:
-            #     if calc_val >= float(self.init_dict["threshold"]):
-            #         getattr(self, self.init_dict["action"])()
-            # except KeyError:
-            #     pass
+            log_action = self.init_dict.get("LOG", "ON")
+            if log_action=="ON" or (log_action=="DIFF" and last_read_val!=read_val):
+                self.controller.log.add_log(system_name=self.long_name, param=self)
 
     def on_interrupt(self):
         print("Ready to take care of the interrupt", self)

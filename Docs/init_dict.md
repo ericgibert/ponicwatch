@@ -56,6 +56,10 @@ Sensor
 |IC     |str    |name of the hardware used by the sensor        |       |
 |pin    |int    |pin for reading the measuere reported by the sensor on the nammed hardware|        |
 |hw_param|str/free|optional: parameters for the hardware driver |       |
+|LOG	|ON	| Default: LOG insert happens a each reading execution
+|LOG	|OFF	| Does NOT INSERT in tb_log after reading execution
+|LOG	|DIFF	| Insert in LOG after reading execution ONLY if new read value is different from last
+
 
 
 
