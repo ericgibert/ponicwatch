@@ -56,8 +56,9 @@ then `cp bottlesession.py ~/.virtualenvs/ponicwatch/lib/python3.5/site-packages/
 
 Sqlite
 ------
+sudo apt-get install sqlite3
 
-GUI: 
+GUI: sudo apt-get install sqlitebrowser
 
 APScheduler
 -----------
