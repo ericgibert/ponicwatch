@@ -395,26 +395,26 @@ if __name__ == "__main__":
     import pigpio
     pig = pigpio.pi()
     test_IC = Hardware_MCP23017(pig, { "bus":1, "address": "0x20", "interrupt": ""})
-    IN_PIN, OUT_PIN = test_IC.translate_pin("B0"), test_IC.translate_pin("A0")
-    test_IC.set_pin_mode(IN_PIN, Hardware_MCP23017.INPUT)
-    test_IC.set_pull_up(IN_PIN, Hardware_MCP23017.HIGH)
+    #IN_PIN, OUT_PIN = test_IC.translate_pin("B0"), test_IC.translate_pin("A0")
+    for IN_PIN in range(2):
+        test_IC.set_pin_mode(IN_PIN, Hardware_MCP23017.INPUT)
+        test_IC.set_pull_up(IN_PIN, Hardware_MCP23017.HIGH)
     for OUT_PIN in range(4):
         test_IC.set_pin_mode(OUT_PIN, Hardware_MCP23017.OUTPUT)
     v = 0
     last_in = -1
     try:
         while True:
+            for IN_PIN in range(2):
+                in_pin = test_IC.translate_pin("B{}".format(IN_PIN))
+                new_in = test_IC.read(in_pin)
+                print("pin {}: {}  -> {}".format(in_pin, new_in, "OFF" if new_in[0]==0 else "ON"))
+                
             for OUT_PIN in range(4):
                 print("Set pin {} to {}".format(OUT_PIN,v))
                 test_IC.write(OUT_PIN, v)
             v = 0 if v==1 else 1
+            
             time.sleep(2)
-
-            new_in = test_IC.read(IN_PIN)
-            if last_in != new_in:
-            #     test_IC.write(OUT_PIN, nv)
-                print("new value=", new_in, "open" if new_in[0]==1 else "contact")
-                last_in = new_in
-            # time.sleep(0.2)
     finally:
         test_IC.cleanup()
