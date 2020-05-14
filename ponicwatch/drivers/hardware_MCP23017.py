@@ -396,16 +396,18 @@ if __name__ == "__main__":
     pig = pigpio.pi()
     test_IC = Hardware_MCP23017(pig, { "bus":1, "address": "0x20", "interrupt": ""})
     #IN_PIN, OUT_PIN = test_IC.translate_pin("B0"), test_IC.translate_pin("A0")
-    for IN_PIN in range(2):
-        test_IC.set_pin_mode(IN_PIN, Hardware_MCP23017.INPUT)
-        test_IC.set_pull_up(IN_PIN, Hardware_MCP23017.HIGH)
+    for IN_PIN in range(8):
+        in_pin = test_IC.translate_pin("B{}".format(IN_PIN))
+        test_IC.write(in_pin, 0)
+        test_IC.set_pin_as_input(in_pin)
+        test_IC.set_pull_up(in_pin, Hardware_MCP23017.LOW)
     for OUT_PIN in range(4):
         test_IC.set_pin_mode(OUT_PIN, Hardware_MCP23017.OUTPUT)
     v = 0
     last_in = -1
     try:
         while True:
-            for IN_PIN in range(2):
+            for IN_PIN in range(8):
                 in_pin = test_IC.translate_pin("B{}".format(IN_PIN))
                 new_in = test_IC.read(in_pin)
                 print("pin {}: {}  -> {}".format(in_pin, new_in, "OFF" if new_in[0]==0 else "ON"))
